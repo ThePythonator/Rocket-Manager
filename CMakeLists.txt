@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_FIND_DEBUG_MODE TRUE)
 
 # Change your project name here
-set(PROJECT_NAME YourGame)
+set(PROJECT_NAME CS_NEA_To_Rename)
 
 # Add your sources here (adding headers is optional, but helps some CMake generators)
 set(GAME_SOURCES

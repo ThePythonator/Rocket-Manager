@@ -4,7 +4,7 @@ namespace WINDOW {
 	const Framework::vec2 SIZE = Framework::vec2{ 1024, 768 };
 	const Framework::vec2 SIZE_HALF = SIZE / 2;
 
-	const char* TITLE = "Bucket, Inc.";
+	const char* TITLE = "CS NEA TO RENAME";
 
 	const float TARGET_FPS = 60.0f;
 	const float TARGET_DT = 1.0f / TARGET_FPS;
@@ -21,6 +21,7 @@ namespace PATHS {
 	namespace IMAGES {
 		const std::string LOCATION = "images/";
 
+		const std::string LOGO = "logo.png";
 		const std::string MAIN_SPRITESHEET = "demo_spritesheet.png";
 		const std::string FONT_SPRITESHEET = "font.png";
 	}
@@ -50,14 +51,28 @@ namespace COLOURS {
 }
 
 namespace TIMINGS {
+	namespace INTRO {
+		namespace DURATION {
+			const float FADE_LENGTH = 2.0f;
 
+			const float INITIAL_DELAY = 1.0f;
+			const float INTRO_DELAY = 2.5f;
+		}
+
+		namespace CUMULATIVE {
+			const float INITIAL_DELAY = DURATION::INITIAL_DELAY;
+			const float FADE_IN = DURATION::FADE_LENGTH + INITIAL_DELAY;
+			const float INTRO_DELAY = DURATION::INTRO_DELAY + FADE_IN;
+			const float FADE_OUT = DURATION::FADE_LENGTH + INTRO_DELAY;
+		}
+	}
 }
 
 namespace TRANSITIONS {
-	const float FADE_TIME = 1.0f;
+	const float FADE_TIME = 0.7f;
 }
 
-namespace SPRITE {
+namespace SPRITES {
 	const uint8_t SIZE = 16;
 	const uint8_t SIZE_HALF = SIZE / 2;
 	const uint8_t SCALE = 4;
@@ -65,6 +80,10 @@ namespace SPRITE {
 	
 	namespace INDEX {
 	}
+}
+
+namespace SCALES {
+	const uint8_t LOGO = 8;
 }
 
 namespace BUTTONS {

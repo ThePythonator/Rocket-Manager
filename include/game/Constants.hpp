@@ -30,6 +30,7 @@ namespace PATHS {
 	namespace IMAGES {
 		extern const std::string LOCATION;
 
+		extern const std::string LOGO;
 		extern const std::string MAIN_SPRITESHEET;
 		extern const std::string FONT_SPRITESHEET;
 	}
@@ -43,6 +44,7 @@ namespace GRAPHICS_OBJECTS {
 	// enum inside its own namespace allows multiple repeated names in the enums, without needing enum class and all the casting
 	namespace IMAGES {
 		enum IMAGES {
+			LOGO,
 			MAIN_SPRITESHEET,
 			FONT_SPRITESHEET,
 
@@ -94,14 +96,28 @@ namespace COLOURS {
 }
 
 namespace TIMINGS {
-	
+	namespace INTRO {
+		namespace DURATION {
+			extern const float FADE_LENGTH;
+
+			extern const float INITIAL_DELAY;
+			extern const float INTRO_DELAY;
+		}
+
+		namespace CUMULATIVE {
+			extern const float INITIAL_DELAY;
+			extern const float FADE_IN;
+			extern const float INTRO_DELAY;
+			extern const float FADE_OUT;
+		}
+	}
 }
 
 namespace TRANSITIONS {
 	extern const float FADE_TIME;
 }
 
-namespace SPRITE {
+namespace SPRITES {
 	extern const uint8_t SIZE;
 	extern const uint8_t SIZE_HALF;
 	extern const uint8_t SCALE;
@@ -110,6 +126,10 @@ namespace SPRITE {
 	namespace INDEX {
 		
 	}
+}
+
+namespace SCALES {
+	extern const uint8_t LOGO;
 }
 
 namespace CURVES {

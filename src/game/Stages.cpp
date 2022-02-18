@@ -1,5 +1,52 @@
 #include "Stages.hpp"
 
+// IntroStage
+
+void IntroStage::start() {
+	// Start timer for fading
+	_timer.start();
+}
+
+bool IntroStage::update(float dt) {
+	_timer.update(dt);
+
+	if (_timer.time() > TIMINGS::INTRO::CUMULATIVE::FADE_OUT) {
+		// Finished, start main title scene
+		finish(new TitleStage());
+	}
+
+	return true;
+}
+
+void IntroStage::render() {
+	graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
+
+	Framework::Image* logo_ptr = graphics_objects->image_ptrs[GRAPHICS_OBJECTS::IMAGES::LOGO];
+	Framework::vec2 logo_scaled_size = logo_ptr->get_size() * SCALES::LOGO;
+
+	logo_ptr->render(Framework::Rect(WINDOW::SIZE_HALF - logo_scaled_size / 2, logo_scaled_size));
+
+	if (_timer.time() < TIMINGS::INTRO::CUMULATIVE::INITIAL_DELAY) {
+		// All black
+		graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
+	}
+	else if (_timer.time() < TIMINGS::INTRO::CUMULATIVE::FADE_IN) {
+		// Fade in
+		graphics_objects->graphics_ptr->fill(COLOURS::BLACK, Framework::Curves::linear(0xFF, 0x00, (_timer.time() - TIMINGS::INTRO::CUMULATIVE::INITIAL_DELAY) / TIMINGS::INTRO::DURATION::FADE_LENGTH));
+	}
+	else if (_timer.time() < TIMINGS::INTRO::CUMULATIVE::INTRO_DELAY) {
+		// No overlay
+	}
+	else if (_timer.time() < TIMINGS::INTRO::CUMULATIVE::FADE_OUT) {
+		// Fade out
+		graphics_objects->graphics_ptr->fill(COLOURS::BLACK, Framework::Curves::linear(0x00, 0xFF, (_timer.time() - TIMINGS::INTRO::CUMULATIVE::INTRO_DELAY) / TIMINGS::INTRO::DURATION::FADE_LENGTH));
+	}
+	else {
+		// All black
+		graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
+	}
+}
+
 // TitleStage
 
 void TitleStage::start() {
@@ -55,7 +102,7 @@ void TitleStage::render() {
 
 	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(2, Framework::Vec(32, 48), Framework::SpriteTransform::ROTATE_90_ACW);
 
-	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(1, Framework::Vec(96, 48), SPRITE::SCALE, SDL_GetTicks() / 10);
+	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(1, Framework::Vec(96, 48), SPRITES::SCALE, SDL_GetTicks() / 10);
 
 	transition->render(graphics_objects->graphics_ptr);
 }
