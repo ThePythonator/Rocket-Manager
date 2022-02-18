@@ -70,7 +70,19 @@ set(FRAMEWORK_SOURCES
 	"SDLUtils.cpp"
 )
 
+set(PHYSICSENGINE_SOURCE
+	"Collisions.cpp"
+	"Constraints.cpp"
+	"Shape.cpp"
+	"RigidBody.cpp"
+
+	"PhysicsEngineMath.cpp"
+
+	"PhysicsEngine.cpp"
+)
+
 list(TRANSFORM GAME_SOURCES PREPEND src/game/)
+list(TRANSFORM PHYSICSENGINE_SOURCE PREPEND src/physicsengine/)
 list(TRANSFORM FRAMEWORK_SOURCES PREPEND src/framework/)
 
 if (USE_GLOB)
@@ -79,7 +91,7 @@ if (USE_GLOB)
 	# file(GLOB FRAMEWORK_SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/framework/*.cpp")
 endif()
 
-set(PROJECT_SOURCES ${FRAMEWORK_SOURCES};${GAME_SOURCES})
+set(PROJECT_SOURCES ${PHYSICSENGINE_SOURCE};${FRAMEWORK_SOURCES};${GAME_SOURCES})
 if(USE_ASSETS_YML)
 	list(APPEND PROJECT_SOURCES "Assets.cpp")
 endif()
@@ -119,6 +131,7 @@ endif()
 include(fetch/get_json.cmake)
 include(fetch/get_sdl2.cmake)
 
+include_directories(${PROJECT_SOURCE_DIR}/include/physicsengine)
 include_directories(${PROJECT_SOURCE_DIR}/include/framework)
 include_directories(${PROJECT_SOURCE_DIR}/include/game)
 include_directories(${PROJECT_SOURCE_DIR}/include/external)
