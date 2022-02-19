@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Graphics.hpp"
+#include "Window.hpp"
 
 #include "Image.hpp"
 #include "Spritesheet.hpp"
@@ -12,6 +13,7 @@
 namespace Framework {
 	struct GraphicsObjects {
 		Graphics* graphics_ptr = nullptr;
+		Window* window_ptr = nullptr;
 
 		std::vector<Image*> image_ptrs;
 		std::vector<Spritesheet*> spritesheet_ptrs;

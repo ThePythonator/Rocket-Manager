@@ -2,7 +2,7 @@
 
 namespace Framework::SDLUtils {
 
-	bool init_sdl(SDL_Window*& window, SDL_Renderer*& renderer) {
+	bool init_sdl(SDL_Window*& window, SDL_Renderer*& renderer, const std::string& title, const vec2& size) {
 		// Initialise SDL
 		if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		{
@@ -25,11 +25,11 @@ namespace Framework::SDLUtils {
 
 		// Create window
 		window = SDL_CreateWindow(
-			WINDOW::TITLE,
+			title.c_str(),
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
-			WINDOW::SIZE.x,
-			WINDOW::SIZE.y,
+			size.x,
+			size.y,
 			SDL_WINDOW_SHOWN
 		);
 
@@ -38,6 +38,9 @@ namespace Framework::SDLUtils {
 
 		// Set renderer mode
 		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+		// Set scaling so that fullscreen mode is actually the same logical resolution
+		SDL_RenderSetLogicalSize(renderer, size.x, size.y);
 
 		return renderer != nullptr && window != nullptr;
 	}
@@ -84,6 +87,11 @@ namespace Framework::SDLUtils {
 
 	void SDL_SetTextureColorMod(SDL_Texture* texture, const Colour& colour) {
 		SDL_SetTextureColorMod(texture, colour.r, colour.g, colour.b);
+	}
+
+	void SDL_RenderFillRect(SDL_Renderer* renderer, const Rect& rect) {
+		SDL_Rect sdl_rect = SDLUtils::get_sdl_rect(rect);
+		SDL_RenderFillRect(renderer, &sdl_rect);
 	}
 
 	void SDL_SetPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {

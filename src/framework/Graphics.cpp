@@ -7,15 +7,23 @@ namespace Framework {
 
 	void Graphics::fill(const Colour& colour) {
 		set_colour(colour);
-		// RenderClear doesn't do alpha
-		//SDL_RenderClear(renderer);
 
-		// So we draw a rectangle over the window instead
+		// NULL means draw rect over whole renderer
 		SDL_RenderFillRect(renderer, NULL);
 	}
 
 	void Graphics::fill(const Colour& colour, uint8_t alpha) {
 		fill(Colour(colour, alpha));
+	}
+
+	void Graphics::fill(const Rect& rect, const Colour& colour) {
+		set_colour(colour);
+
+		SDLUtils::SDL_RenderFillRect(renderer, rect);
+	}
+
+	void Graphics::fill(const Rect& rect, const Colour& colour, uint8_t alpha) {
+		fill(rect, Colour(colour, alpha));
 	}
 
 	void Graphics::render_line(const vec2& start, const vec2& end, const Colour& colour) {

@@ -6,20 +6,23 @@
 #include <cstdio>
 #include <string>
 
-#include "Constants.hpp"
+//#include "Constants.hpp"
+#include "Colour.hpp"
 
 #include "Maths.hpp"
 
 namespace Framework::SDLUtils {
 
 	// Initialises necessary SDL bits, and assigns window and renderer.
-	bool init_sdl(SDL_Window*& window, SDL_Renderer*& renderer);
+	bool init_sdl(SDL_Window*& window, SDL_Renderer*& renderer, const std::string& title, const vec2& size);
 
 	std::string find_assets_path(std::string test_file, uint8_t depth);
 
 	int SDL_SetRenderDrawColor(SDL_Renderer* renderer, const Colour& colour);
 
 	void SDL_SetTextureColorMod(SDL_Texture* texture, const Colour& colour);
+
+	void SDL_RenderFillRect(SDL_Renderer* renderer, const Rect& rect);
 
 	void SDL_SetPixel(SDL_Surface* surface, int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	void SDL_SetPixel(SDL_Surface* surface, int x, int y, const Colour& colour);

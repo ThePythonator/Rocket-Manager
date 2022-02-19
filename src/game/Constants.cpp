@@ -2,6 +2,7 @@
 
 namespace WINDOW {
 	const Framework::vec2 SIZE = Framework::vec2{ 1024, 768 };
+	//const Framework::vec2 SIZE = Framework::vec2{ 1280, 720 };
 	const Framework::vec2 SIZE_HALF = SIZE / 2;
 
 	const char* TITLE = "CS NEA TO RENAME";
@@ -88,6 +89,11 @@ namespace SCALES {
 
 namespace BUTTONS {
 	const uint8_t NONE = 255;
+}
+
+namespace MENU {
+	const Framework::Rect BACKGROUND_RECT = Framework::Rect(WINDOW::SIZE.x * 0.1f, 0.0f, WINDOW::SIZE.x * 0.2f, WINDOW::SIZE.y);
+	const uint8_t BACKGROUND_ALPHA = 0x7F;
 }
 
 namespace GAME {

@@ -58,6 +58,14 @@ void TitleStage::start() {
 bool TitleStage::update(float dt) {
 	transition->update(dt);
 
+	// Note: always use FULLSCREEN_DESKTOP, not normal FULLSCREEN (because it resises cursor, taskbar etc too and messes the OS all up when alt-tabbing or similar)
+	if (input->just_down(Framework::KeyHandler::Key::S)) {
+		graphics_objects->window_ptr->set_fullscreen_mode(Framework::Window::FullscreenMode::FULLSCREEN_DESKTOP);
+	}
+	if (input->just_down(Framework::KeyHandler::Key::D)) {
+		graphics_objects->window_ptr->set_fullscreen_mode(Framework::Window::FullscreenMode::NONE);
+	}
+
 	// Update buttons
 	for (Framework::Button& button : buttons) {
 		button.update(input);
@@ -103,6 +111,8 @@ void TitleStage::render() {
 	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(2, Framework::Vec(32, 48), Framework::SpriteTransform::ROTATE_90_ACW);
 
 	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(1, Framework::Vec(96, 48), SPRITES::SCALE, SDL_GetTicks() / 10);
+
+	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
 
 	transition->render(graphics_objects->graphics_ptr);
 }

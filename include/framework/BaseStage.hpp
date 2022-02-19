@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Constants.hpp"
+
 #include "Input.hpp"
 #include "GraphicsObjects.hpp"
 #include "Button.hpp"

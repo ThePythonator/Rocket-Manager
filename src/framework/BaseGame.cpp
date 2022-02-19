@@ -120,12 +120,16 @@ namespace Framework {
 
 	bool BaseGame::init() {
 		// Prep SDL, return false if it fails
-		if (!Framework::SDLUtils::init_sdl(window, renderer)) {
+		if (!Framework::SDLUtils::init_sdl(window, renderer, WINDOW::TITLE, WINDOW::SIZE)) {
 			return false;
 		}
 
+		// Add Graphics and Window pointers
 		graphics_objects.graphics_ptr = new Graphics();
 		graphics_objects.graphics_ptr->set_renderer(renderer);
+
+		graphics_objects.window_ptr = new Window();
+		graphics_objects.window_ptr->set_window(window);
 
 		// Set up graphics_objects vectors:
 		graphics_objects.image_ptrs = std::vector<Framework::Image*>(GRAPHICS_OBJECTS::IMAGES::TOTAL_IMAGES);
@@ -169,6 +173,10 @@ namespace Framework {
 			delete transition_ptr;
 		}
 		graphics_objects.transition_ptrs.clear();
+
+		// Clear graphics and window objects
+		delete graphics_objects.graphics_ptr;
+		delete graphics_objects.window_ptr;
 
 		
 		// Destroy renderer and window

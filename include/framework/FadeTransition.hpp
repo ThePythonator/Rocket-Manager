@@ -20,6 +20,6 @@ namespace Framework {
 
 		float _fade_time = 0.0f;
 
-		Colour _colour = COLOURS::BLACK;
+		Colour _colour = Colour(0xFF, 0xFF, 0xFF);
 	};
 }

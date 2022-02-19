@@ -53,6 +53,8 @@ set(FRAMEWORK_SOURCES
 	"Sound.cpp"
 	
 	"Graphics.cpp"
+	"Window.cpp"
+
 	"Font.cpp"
 	"Image.cpp"
 	"Spritesheet.cpp"

@@ -161,6 +161,11 @@ namespace BUTTONS {
 	}
 }
 
+namespace MENU {
+	extern const Framework::Rect BACKGROUND_RECT;
+	extern const uint8_t BACKGROUND_ALPHA;
+}
+
 namespace GAME {
 	
 }
