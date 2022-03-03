@@ -17,11 +17,11 @@ void GameStage::init() {
 	// Set camera position
 
 	// Just for testing
-	map_camera.set_position(Framework::Vec(GAME::SANDBOX::BODIES::APHELION_DISTANCES[3] * GAME::SANDBOX::UNIVERSE_SCALE, 0.0f));
+	map_camera.set_position(PhysicsEngine::to_fvec2({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3] * GAME::SANDBOX::UNIVERSE_SCALE, 0.0 }));
 	map_camera.set_scale(1e-5f);
 
 	// TODO
-	sandbox_camera.set_position(Framework::Vec(GAME::SANDBOX::BODIES::APHELION_DISTANCES[3] * GAME::SANDBOX::UNIVERSE_SCALE, -GAME::SANDBOX::BODIES::RADII[3] * GAME::SANDBOX::UNIVERSE_SCALE));
+	sandbox_camera.set_position(PhysicsEngine::to_fvec2({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3] * GAME::SANDBOX::UNIVERSE_SCALE, -GAME::SANDBOX::BODIES::RADII[3] * GAME::SANDBOX::UNIVERSE_SCALE }));
 	sandbox_camera.set_scale(1.0f);
 
 	// Create Solar System
@@ -100,7 +100,7 @@ void GameStage::create_solar_system(float scale) {
 	//float big = PhysicsEngine::gravitational_force(m1, m2, r * r);
 	//printf("largest: %f\n", big);
 
-	PhysicsEngine::vec2 sun_position; // defaults to (0,0)
+	PhysicsEngine::dvec2 sun_position; // defaults to (0,0)
 
 	for (uint8_t i = 0; i < GAME::SANDBOX::BODIES::ID::TOTAL; i++) {
 		float radius = GAME::SANDBOX::BODIES::RADII[i] * scale;
@@ -118,11 +118,11 @@ void GameStage::create_solar_system(float scale) {
 		float semimajor_axis = find_semimajor_axis(aphelion, perihelion);
 
 		// Todo: calculate actual position? or get position from save data?
-		PhysicsEngine::vec2 position = PhysicsEngine::vec2{ aphelion, 0.0f };
-		PhysicsEngine::vec2 me_to_sun = sun_position - position;
+		PhysicsEngine::dvec2 position = PhysicsEngine::dvec2{ aphelion, 0.0f };
+		PhysicsEngine::dvec2 me_to_sun = sun_position - position;
 
 		// Todo: get correct direction
-		PhysicsEngine::vec2 velocity_direction = PhysicsEngine::normalise(PhysicsEngine::perpendicular_acw(me_to_sun));
+		PhysicsEngine::dvec2 velocity_direction = PhysicsEngine::normalise(PhysicsEngine::perpendicular_acw(me_to_sun));
 
 		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, position); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
 		
@@ -143,7 +143,7 @@ void GameStage::create_solar_system(float scale) {
 }
 
 void GameStage::create_components() {
-	PhysicsEngine::Polygon* poly_ptr = PhysicsEngine::create_rect(GAME::SANDBOX::COMPONENTS::SIZES[0]); // just a test
+	PhysicsEngine::Polygon* poly_ptr = PhysicsEngine::create_rect(PhysicsEngine::to_dvec2(GAME::SANDBOX::COMPONENTS::SIZES[0])); // just a test
 	physics_data.shapes.push_back(poly_ptr);
 
 	Framework::vec2 position = sandbox_camera.get_position() - Framework::Vec(0.0f, GAME::SANDBOX::COMPONENTS::SIZES[0].y / 2); // testing
@@ -151,7 +151,7 @@ void GameStage::create_components() {
 	PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.5f, 0.3f, 0.2f, 2000); // todo
 	physics_data.materials.push_back(material_ptr);
 
-	PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(poly_ptr, material_ptr, position);
+	PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(poly_ptr, material_ptr, PhysicsEngine::to_dvec2(position));
 
 	object.render_id = 0; // test
 
@@ -190,7 +190,7 @@ void GameStage::render_planet(const PhysicsEngine::RigidBody& planet, const Came
 	PhysicsEngine::Circle* circle_ptr = static_cast<PhysicsEngine::Circle*>(planet.shape);
 	// For now assume circle
 	float radius = circle_ptr->radius * camera.get_scale();
-	Framework::vec2 position = camera.get_render_position(planet.centre);
+	Framework::vec2 position = camera.get_render_position(PhysicsEngine::to_fvec2(planet.centre));
 
 	// Get bounding rect to check if on screen
 	Framework::Rect bounding_rect = Framework::SDLUtils::get_bounds(position, radius);
@@ -219,7 +219,7 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 	if (map) {
 		// Draw small triangle representing componenet
 
-		Framework::vec2 position = map_camera.get_render_position(component.centre);
+		Framework::vec2 position = map_camera.get_render_position(PhysicsEngine::to_fvec2(component.centre));
 
 		// TODO: represent rocket instead????
 		std::vector<Framework::vec2> points{
@@ -233,7 +233,7 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 	else {
 		Framework::vec2 size = GAME::SANDBOX::COMPONENTS::SIZES[component.render_id] * sandbox_camera.get_scale(); // to change: render from spritesheet?
 
-		Framework::Rect render_rect = Framework::Rect(sandbox_camera.get_render_position(component.centre) - size / 2, size);
+		Framework::Rect render_rect = Framework::Rect(sandbox_camera.get_render_position(PhysicsEngine::to_fvec2(component.centre)) - size / 2, size);
 		Framework::Rect screen_rect = Framework::Rect(Framework::VEC_NULL, WINDOW::SIZE);
 
 		// Not sure if this check speeds it up or slows it down. TODO: test
@@ -370,7 +370,7 @@ void GameStage::update_sandbox_scale(float dt) {
 	//printf("%f,%f\n", body.centre.x, body.centre.y);
 	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
 		if (body.category_id == GAME::SANDBOX::CATEGORIES::COMPONENT) {
-			Framework::vec2 v = (body.centre - sandbox_camera.get_position()) * 1.0f;
+			Framework::vec2 v = PhysicsEngine::to_fvec2(body.centre - sandbox_camera.get_position()) * 1.0f;
 			sandbox_camera.set_position(sandbox_camera.get_position() + v);
 		}
 	}

@@ -10,7 +10,7 @@ namespace PhysicsEngine {
 
 	// Circle
 
-	Circle::Circle(float _radius) : Shape() {
+	Circle::Circle(double _radius) : Shape() {
 		radius = _radius;
 	}
 
@@ -18,34 +18,34 @@ namespace PhysicsEngine {
 		return ShapeType::CIRCLE;
 	}
 
-	float Circle::get_area() {
+	double Circle::get_area() {
 		// Area of circle
 		return PI * radius * radius;
 	}
 
-	float Circle::get_moment_of_inertia(float density) {
+	double Circle::get_moment_of_inertia(double density) {
 		// Not certain this is correct
-		return 0.5f * get_area() * density * radius * radius;
+		return 0.5 * get_area() * density * radius * radius;
 	}
 
-	vec2 Circle::get_centroid() {
+	dvec2 Circle::get_centroid() {
 		// Redundant
-		return vec2{ 0.0f, 0.0f };
+		return dvec2{ 0.0, 0.0 };
 	}
 
-	float Circle::get_bounding_radius() {
+	double Circle::get_bounding_radius() {
 		return radius;
 	}
 
 	// Polygon
 
 	// Note that vertices must be in anti-clockwise order
-	Polygon::Polygon(std::vector<vec2> _vertices) : Shape() {
+	Polygon::Polygon(std::vector<dvec2> _vertices) : Shape() {
 		vertices = _vertices;
 
 		reorder_vertices();
 
-		vec2 centroid = get_centroid();
+		dvec2 centroid = get_centroid();
 
 		// Shift vertices so centre is at centroid (centre of mass)
 		for (uint16_t i = 0; i < vertices.size(); i++) {
@@ -59,47 +59,47 @@ namespace PhysicsEngine {
 		return ShapeType::POLYGON;
 	}
 
-	float Polygon::get_area() {
-		float area = 0.0f;
+	double Polygon::get_area() {
+		double area = 0.0;
 
 		// Split polygon into many triangles
 		for (uint16_t i = 0; i < vertices.size(); i++) {
 			uint16_t next_i = i + 1 < vertices.size() ? i + 1 : 0;
 
 			// Use cross product to calculate area of trapezium, then half to get triangle area
-			area += 0.5f * cross(vertices[i], vertices[next_i]);
+			area += 0.5 * cross(vertices[i], vertices[next_i]);
 		}
 		return area;
 	}
 
-	float Polygon::get_moment_of_inertia(float density) {
+	double Polygon::get_moment_of_inertia(double density) {
 		// This is correct :)
-		float moment_of_inertia = 0.0f;
+		double moment_of_inertia = 0.0;
 
 		for (uint16_t i = 0; i < vertices.size(); i++) {
 			uint16_t next_i = i + 1 < vertices.size() ? i + 1 : 0;
 
-			float dot_sum = dot(vertices[i], vertices[i]) + dot(vertices[i], vertices[next_i]) + dot(vertices[next_i], vertices[next_i]);
+			double dot_sum = dot(vertices[i], vertices[i]) + dot(vertices[i], vertices[next_i]) + dot(vertices[next_i], vertices[next_i]);
 			moment_of_inertia += cross(vertices[i], vertices[next_i]) * dot_sum;
 		}
 		
-		return density * moment_of_inertia / 12.0f;
+		return density * moment_of_inertia / 12.0;
 	}
 
-	vec2 Polygon::get_centroid() {
+	dvec2 Polygon::get_centroid() {
 		// Similar to get_area
 
 		// Centroid is centre of mass, initially set to 0,0
-		vec2 centroid{ 0.0f, 0.0f };
+		dvec2 centroid{ 0.0, 0.0 };
 
-		float area = 0.0f;
+		double area = 0.0;
 
 		// Split polygon into many triangles
 		for (uint16_t i = 0; i < vertices.size(); i++) {
 			uint16_t next_i = i + 1 < vertices.size() ? i + 1 : 0;
 
 			// Use cross product to calculate area of trapezium
-			float triangle_area = 0.5f * cross(vertices[i], vertices[next_i]);
+			double triangle_area = 0.5 * cross(vertices[i], vertices[next_i]);
 
 			// Halve area of trapezium to get area of triangle
 			area += triangle_area;
@@ -110,7 +110,7 @@ namespace PhysicsEngine {
 
 		// Need to do the averaging bit now:
 		// Divide by total area, and divide by three for the vertices of each triangle (one vertex is 0,0)
-		centroid /= (area * 3.0f);
+		centroid /= (area * 3.0);
 
 		return centroid;
 	}
@@ -124,10 +124,10 @@ namespace PhysicsEngine {
 			// Face is defined as the vector from vertices[i] to vertices[next_i]
 			// We need to calculate the vector normal to this, then normalise it
 
-			vec2 face = vertices[next_i] - vertices[i];
+			dvec2 face = vertices[next_i] - vertices[i];
 
 			// Vertices are specified in acw order, so need normal in same direction (so it points outward)
-			vec2 normal = normalise(perpendicular_cw(face));
+			dvec2 normal = normalise(perpendicular_cw(face));
 
 			/*printf("v1: %f, %f\n", vertices[i].x, vertices[i].y);
 			printf("v2: %f, %f\n", vertices[next_i].x, vertices[next_i].y);
@@ -150,15 +150,17 @@ namespace PhysicsEngine {
 
 		// Argh: copying everywhere! (for some reason doesn't like vec2& in the pair, or const vec2&)
 
-		std::vector<std::pair<vec2, float>> vertex_angle_pairs;
+		typedef std::pair<dvec2, double> vertex_angle_pair;
+
+		std::vector<vertex_angle_pair> vertex_angle_pairs;
 
 		// Calculate angles
-		for (const vec2& vertex : vertices) {
-			vertex_angle_pairs.push_back(std::pair<vec2, float>(vertex, std::atan2(vertex.y, vertex.x)));
+		for (const dvec2& vertex : vertices) {
+			vertex_angle_pairs.push_back(vertex_angle_pair(vertex, std::atan2(vertex.y, vertex.x)));
 		}
 
 		// Now sort by angle
-		std::sort(vertex_angle_pairs.begin(), vertex_angle_pairs.end(), [](const std::pair<vec2, float>& lhs, const std::pair<vec2, float>& rhs) { return lhs.second < rhs.second; });
+		std::sort(vertex_angle_pairs.begin(), vertex_angle_pairs.end(), [](const vertex_angle_pair& lhs, const vertex_angle_pair& rhs) { return lhs.second < rhs.second; });
 
 		// Copy back to vertices
 		vertices.clear();
@@ -168,10 +170,10 @@ namespace PhysicsEngine {
 		}
 	}
 
-	float Polygon::get_bounding_radius() {
-		float max_squared_dist = 0.0f;
+	double Polygon::get_bounding_radius() {
+		double max_squared_dist = 0.0;
 
-		for (vec2 vertex : vertices) {
+		for (dvec2 vertex : vertices) {
 			max_squared_dist = std::max(max_squared_dist, length_squared(vertex));
 		}
 
@@ -179,17 +181,17 @@ namespace PhysicsEngine {
 	}
 
 
-	Polygon* create_rect(vec2 size) {
-		float half_width = size.x / 2.0f;
-		float half_height = size.y / 2.0f;
+	Polygon* create_rect(dvec2 size) {
+		double half_width = size.x / 2.0;
+		double half_height = size.y / 2.0;
 
 		// Vertices must be anti-clockwise
 		// Start top left
-		std::vector<vec2> vertices = {
-			vec2{-half_width, -half_height},
-			vec2{-half_width, half_height},
-			vec2{half_width, half_height},
-			vec2{half_width, -half_height}
+		std::vector<dvec2> vertices = {
+			dvec2{-half_width, -half_height},
+			dvec2{-half_width, half_height},
+			dvec2{half_width, half_height},
+			dvec2{half_width, -half_height}
 		};
 		return new Polygon(vertices);
 	}

@@ -250,9 +250,9 @@ namespace GAME {
 	}
 
 	namespace SANDBOX {
-		extern const float UNIVERSE_SCALE;
+		extern const double UNIVERSE_SCALE;
 
-		extern const float GRAVITATIONAL_CONSTANT;
+		extern const double GRAVITATIONAL_CONSTANT;
 
 		extern const std::vector<uint32_t> WARP_SPEEDS;
 
@@ -272,10 +272,10 @@ namespace GAME {
 		}
 
 		namespace BODIES {
-			extern const std::vector<float> RADII;
-			extern const std::vector<float> VOLUME_DENSITIES;
-			extern const std::vector<float> PERIHELION_DISTANCES;
-			extern const std::vector<float> APHELION_DISTANCES;
+			extern const std::vector<double> RADII;
+			extern const std::vector<double> VOLUME_DENSITIES;
+			extern const std::vector<double> PERIHELION_DISTANCES;
+			extern const std::vector<double> APHELION_DISTANCES;
 
 			namespace ID {
 				enum ID { // TODO: add moon(s)!

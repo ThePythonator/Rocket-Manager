@@ -6,12 +6,12 @@
 
 namespace PhysicsEngine {
 	struct ContactData {
-		vec2 contact_point;
-		float penetration_distance;
+		dvec2 contact_point;
+		double penetration_distance;
 	};
 
 	struct CollisionInformation {
-		vec2 collision_normal;
+		dvec2 collision_normal;
 
 		uint8_t contact_count;
 		ContactData contact_data[2];

@@ -34,7 +34,7 @@ namespace PhysicsEngine {
 		constants = _constants;
 	}
 
-	void PhysicsManager::update(float dt) {
+	void PhysicsManager::update(double dt) {
 		// Basic version
 		step(dt);
 
@@ -62,7 +62,7 @@ namespace PhysicsEngine {
 	}
 
 
-	void PhysicsManager::step(float dt) {
+	void PhysicsManager::step(double dt) {
 		// Old method
 		// Apply interaction forces
 		// update_forces();
@@ -107,31 +107,31 @@ namespace PhysicsEngine {
 	}
 
 
-	void PhysicsManager::update_velocity(RigidBody& body, float dt) {
+	void PhysicsManager::update_velocity(RigidBody& body, double dt) {
 		// Update object's velocity
 		if (body.category_id) {
 			printf("update vel:\n");
 			printf("py: %f,\n", body.centre.y);
 			printf("vely: %f,\n", body.velocity.y);
 			printf("fy:  %f,\n", body.force.y);
-			vec2 dv = body.force * body.inverse_mass * dt;
+			dvec2 dv = body.force * body.inverse_mass * dt;
 			printf("dvy:  %f,\n", dv.y);
 		}
 		body.velocity += body.force * body.inverse_mass * dt;
 		body.angular_velocity += body.torque * body.inverse_moment_of_inertia * dt;
 
 		// Reset forces
-		body.force = vec2{ 0.0f, 0.0f };
-		body.torque = 0.0f;
+		body.force = D_VEC_NULL;
+		body.torque = 0.0;
 	}
 
-	void PhysicsManager::update_position(RigidBody& body, float dt) {
+	void PhysicsManager::update_position(RigidBody& body, double dt) {
 		// Update object's position
 		body.centre += body.velocity * dt;
 		body.angle += body.angular_velocity * dt;
 	}
 
-	void PhysicsManager::add_impulse(RigidBody& body, const vec2& impulse, const vec2& vector_to_contact) {
+	void PhysicsManager::add_impulse(RigidBody& body, const dvec2& impulse, const dvec2& vector_to_contact) {
 		// Update object's velocity
 		/*printf("add impulse:\n");
 		printf("cat id: %u\n", body.category_id);
@@ -149,30 +149,27 @@ namespace PhysicsEngine {
 
 			// Note: torque should also be affected by changes in force
 		}
-		
-
-		static const float G = 6.67430e-11f;
 
 		// Calculate gravity between every unique pair of objects
 		for (uint16_t i = 0; i < bodies.size(); i++) {
 			for (uint16_t j = i + 1; j < bodies.size(); j++) {
 
-				vec2 difference = bodies[j].centre - bodies[i].centre;
+				dvec2 difference = bodies[j].centre - bodies[i].centre;
 
-				float dist_squared = length_squared(difference);
+				double dist_squared = length_squared(difference);
 
 				//printf("d_sqr %u: %f\n", i, dist_squared);
 
-				if (dist_squared != 0.0f) {
-					float force_magnitude = gravitational_force(bodies[i].mass, bodies[j].mass, dist_squared);
+				if (dist_squared != 0.0) {
+					double force_magnitude = gravitational_force(bodies[i].mass, bodies[j].mass, dist_squared);
 
-					float dist = std::sqrt(dist_squared);
+					double dist = std::sqrt(dist_squared);
 
 					//printf("f_mag %u-%u: %f\n", i, j, force_magnitude);
 
 					//if (j == 9) force_magnitude *= 10;
 
-					vec2 force = force_magnitude * difference / dist;
+					dvec2 force = force_magnitude * difference / dist;
 
 					bodies[i].apply_force(force);
 					bodies[j].apply_force(-force);
@@ -188,14 +185,14 @@ namespace PhysicsEngine {
 		}
 	}
 
-	void PhysicsManager::update_velocities(float dt) {
+	void PhysicsManager::update_velocities(double dt) {
 		// Updates velocities from forces applied to object
 		for (RigidBody& body : bodies) {
 			update_velocity(body, dt);
 		}
 	}
 
-	void PhysicsManager::update_positions(float dt) {
+	void PhysicsManager::update_positions(double dt) {
 		// Updates positions from current velocities
 		for (RigidBody& body : bodies) {
 			update_position(body, dt);
@@ -203,7 +200,7 @@ namespace PhysicsEngine {
 	}
 
 
-	void PhysicsManager::handle_collisions(float dt) {
+	void PhysicsManager::handle_collisions(double dt) {
 		std::vector<CollisionPacket> collision_packets;
 
 		// Detect collisions between every unique pair of objects
@@ -248,62 +245,62 @@ namespace PhysicsEngine {
 		return collision_detection_functions[static_cast<int>(a.shape->get_type())][static_cast<int>(b.shape->get_type())](a, b);
 	}
 
-	void PhysicsManager::resolve_collision(RigidBody& a, RigidBody& b, const CollisionInformation& collision_information, float dt) {
+	void PhysicsManager::resolve_collision(RigidBody& a, RigidBody& b, const CollisionInformation& collision_information, double dt) {
 		// If both objects have infinite mass, we can't move them
-		if (a.inverse_mass == 0.0f && b.inverse_mass == 0.0f) {
+		if (a.inverse_mass == 0.0 && b.inverse_mass == 0.0) {
 			return;
 		}
 
 		// Calculate basic weighted average between the restitutions of the materials
 		// Linear interpolation (25% along)
-		float restitution = a.material->restitution < b.material->restitution ? 3.0f * a.material->restitution + b.material->restitution : a.material->restitution + 3.0f * b.material->restitution;
-		restitution /= 4.0f;
+		double restitution = a.material->restitution < b.material->restitution ? 3.0 * a.material->restitution + b.material->restitution : a.material->restitution + 3.0 * b.material->restitution;
+		restitution /= 4.0;
 
 
 		// Calculate averages for friction coefficients
-		float static_friction_coefficient = 0.5f * (a.material->static_friction + b.material->static_friction);
-		float dynamic_friction_coefficient = 0.5f * (a.material->dynamic_friction + b.material->dynamic_friction);
+		double static_friction_coefficient = 0.5 * (a.material->static_friction + b.material->static_friction);
+		double dynamic_friction_coefficient = 0.5 * (a.material->dynamic_friction + b.material->dynamic_friction);
 
 		// For each contact point
 		for (uint8_t i = 0; i < collision_information.contact_count; i++) {
 			// Calculate distance from each centre of mass to contact point
-			vec2 centre_a_to_contact = collision_information.contact_data[i].contact_point - a.centre;
-			vec2 centre_b_to_contact = collision_information.contact_data[i].contact_point - b.centre;
+			dvec2 centre_a_to_contact = collision_information.contact_data[i].contact_point - a.centre;
+			dvec2 centre_b_to_contact = collision_information.contact_data[i].contact_point - b.centre;
 
 			// Calculate relative velocity (from A to B)
 			// Uses (sort of) pre-collision velocity (because velocity is updated, then position)
-			vec2 relative_velocity = (b.velocity + cross(b.angular_velocity, centre_b_to_contact)) - (a.velocity + cross(a.angular_velocity, centre_a_to_contact));
-			//vec2 relative_velocity = b.velocity - a.velocity;
+			dvec2 relative_velocity = (b.velocity + cross(b.angular_velocity, centre_b_to_contact)) - (a.velocity + cross(a.angular_velocity, centre_a_to_contact));
+			//dvec2 relative_velocity = b.velocity - a.velocity;
 
 			// Project relative velocity onto normal
-			float relative_velocity_along_normal = dot(relative_velocity, collision_information.collision_normal);
+			double relative_velocity_along_normal = dot(relative_velocity, collision_information.collision_normal);
 
 			// If objects are travelling apart, early-out:
-			if (relative_velocity_along_normal > 0.0f) {
+			if (relative_velocity_along_normal > 0.0) {
 				continue;
 			}
 
 			// Used in calculating magnitude
-			float cross_a = cross(centre_a_to_contact, collision_information.collision_normal);
-			float cross_b = cross(centre_b_to_contact, collision_information.collision_normal);
+			double cross_a = cross(centre_a_to_contact, collision_information.collision_normal);
+			double cross_b = cross(centre_b_to_contact, collision_information.collision_normal);
 
-			float denominator = a.inverse_mass + b.inverse_mass + a.inverse_moment_of_inertia * cross_a * cross_a + b.inverse_moment_of_inertia * cross_b * cross_b;
+			double denominator = a.inverse_mass + b.inverse_mass + a.inverse_moment_of_inertia * cross_a * cross_a + b.inverse_moment_of_inertia * cross_b * cross_b;
 
 			// Calculate magnitude of impulse along normal
-			float impulse_magnitude = -(1.0f + restitution) * relative_velocity_along_normal;
+			double impulse_magnitude = -(1.0 + restitution) * relative_velocity_along_normal;
 
 			// Add some extra impulse, proportional to the penetration - keeps objects from sinking into each other
 			// TODO: consider allowing some slop
-			impulse_magnitude += constants.bias_factor * std::max(collision_information.contact_data[i].penetration_distance - constants.penetration_slop, 0.0f) / dt;
+			impulse_magnitude += constants.bias_factor * std::max(collision_information.contact_data[i].penetration_distance - constants.penetration_slop, 0.0) / dt;
 
 			// Scale impulse magnitude
 			impulse_magnitude /= denominator;
 
 			// If we have two contact points, we need to half the impulse applied
-			impulse_magnitude /= static_cast<float>(collision_information.contact_count);
+			impulse_magnitude /= static_cast<double>(collision_information.contact_count);
 
 			// Get impulse
-			vec2 impulse = impulse_magnitude * collision_information.collision_normal;
+			dvec2 impulse = impulse_magnitude * collision_information.collision_normal;
 
 			// Apply impulses!
 			add_impulse(a, -impulse, centre_a_to_contact);
@@ -313,11 +310,11 @@ namespace PhysicsEngine {
 			// Now friction...
 
 			// Easy way to get tangent: subtract vector along normal from original vector
-			vec2 tangent = relative_velocity - relative_velocity_along_normal * collision_information.collision_normal;
+			dvec2 tangent = relative_velocity - relative_velocity_along_normal * collision_information.collision_normal;
 			
 			// Normalise tangent, only if length > 0:
-			float tangent_length_squared = length_squared(tangent);
-			if (tangent_length_squared > 0.0f) {
+			double tangent_length_squared = length_squared(tangent);
+			if (tangent_length_squared > 0.0) {
 				// Normalise tangent
 				tangent = tangent / std::sqrt(tangent_length_squared);
 			}
@@ -326,7 +323,7 @@ namespace PhysicsEngine {
 			// I'm going to use relative velocity from before
 			//relative_velocity = (b.velocity + cross(b.angular_velocity, centre_b_to_contact)) - (a.velocity + cross(a.angular_velocity, centre_a_to_contact));
 
-			float relative_velocity_along_tangent = dot(relative_velocity, tangent);
+			double relative_velocity_along_tangent = dot(relative_velocity, tangent);
 
 			//printf("n: %f,%f\n", collision_information.collision_normal.x, collision_information.collision_normal.y);
 			//printf("rv: %f,%f\n", relative_velocity.x, relative_velocity.y);
@@ -334,10 +331,10 @@ namespace PhysicsEngine {
 			//printf("t: %f,%f\n", tangent.x, tangent.y);
 			//printf("rv_t: %f\n", relative_velocity_along_tangent);
 
-			float friction_magnitude = -relative_velocity_along_tangent / denominator;
+			double friction_magnitude = -relative_velocity_along_tangent / denominator;
 
 			// If we have two contact points, we need to half the impulse applied??
-			friction_magnitude /= static_cast<float>(collision_information.contact_count);
+			friction_magnitude /= static_cast<double>(collision_information.contact_count);
 
 #if 1 // We don't like friction >:(
 #if 1
@@ -356,7 +353,7 @@ namespace PhysicsEngine {
 			//printf("imp mag: %f\n", impulse_magnitude);
 			//printf("fri mag: %f\n", friction_magnitude);
 
-			vec2 tangent_impulse = friction_magnitude * tangent;
+			dvec2 tangent_impulse = friction_magnitude * tangent;
 
 			// Apply friction impulse
 			add_impulse(a, -tangent_impulse, centre_a_to_contact);
@@ -365,15 +362,15 @@ namespace PhysicsEngine {
 			// My version... also not sure if correct
 
 			// need to change this bit:
-			float MINIMUM_STATIC_FRICTION_VELOCITY = 0.1f; // constant?
-			float dt = 1.0f / 120.0f; // get dt from main prog
+			double MINIMUM_STATIC_FRICTION_VELOCITY = 0.1f; // constant?
+			double dt = 1.0 / 120.0; // get dt from main prog
 			 
-			float friction_magnitude_a = friction_magnitude;
-			float friction_magnitude_b = friction_magnitude;
+			double friction_magnitude_a = friction_magnitude;
+			double friction_magnitude_b = friction_magnitude;
 			
 			if (std::abs(relative_velocity_along_tangent) < MINIMUM_STATIC_FRICTION_VELOCITY) {
 				// Stationary, so static friction
-				float static_friction_magnitude = static_friction_coefficient * impulse_magnitude;
+				double static_friction_magnitude = static_friction_coefficient * impulse_magnitude;
 				// If static friction is more than net force, only counter the net force
 				// We don't have dt :(
 				// This method requires update_forces being done before handle_collisions!!!
@@ -384,8 +381,8 @@ namespace PhysicsEngine {
 				friction_magnitude_a = friction_magnitude_b = dynamic_friction_coefficient * impulse_magnitude;
 			}
 
-			vec2 tangent_impulse_a = friction_magnitude_a * tangent;
-			vec2 tangent_impulse_b = friction_magnitude_b * tangent;
+			dvec2 tangent_impulse_a = friction_magnitude_a * tangent;
+			dvec2 tangent_impulse_b = friction_magnitude_b * tangent;
 
 			// Apply friction impulse
 			add_impulse(a, -tangent_impulse_a, centre_a_to_contact);

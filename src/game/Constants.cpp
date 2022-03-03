@@ -181,9 +181,9 @@ namespace GAME {
 	}
 
 	namespace SANDBOX {
-		const float UNIVERSE_SCALE = 0.1f;
+		const double UNIVERSE_SCALE = 0.1;
 
-		const float GRAVITATIONAL_CONSTANT = 6.674e-11f;
+		const double GRAVITATIONAL_CONSTANT = 6.674e-11;
 
 		const std::vector<uint32_t> WARP_SPEEDS {
 			1,
@@ -212,59 +212,59 @@ namespace GAME {
 
 		namespace BODIES {
 			// Radii are in metres, to 4sf
-			const std::vector<float> RADII = {
-				6963e5f,
-				2440e3f,
-				6052e3f,
-				6371e3f,
-				3390e3f,
-				6991e4f,
-				5823e4f,
-				2536e4f,
-				2462e4f
+			const std::vector<double> RADII = {
+				6963e5,
+				2440e3,
+				6052e3,
+				6371e3,
+				3390e3,
+				6991e4,
+				5823e4,
+				2536e4,
+				2462e4
 			};
 
 			// Densities are in kg / m^3, to 3sf
-			const std::vector<float> VOLUME_DENSITIES = {
-				1.41e3f,
-				5.43e3f,
-				5.24e3f,
-				5.51e3f,
-				3.93e3f,
-				1.33e3f,
-				6.87e2f,
-				1.27e3f,
-				1.64e3f
+			const std::vector<double> VOLUME_DENSITIES = {
+				1.41e3,
+				5.43e3,
+				5.24e3,
+				5.51e3,
+				3.93e3,
+				1.33e3,
+				6.87e2,
+				1.27e3,
+				1.64e3
 			};
 
 			// Distances are in metres, to 4sf
-			const std::vector<float> PERIHELION_DISTANCES = {
-				0.0f,
-				4600e7f,
-				1075e8f,
-				1471e8f,
-				2067e8f,
-				7405e8f,
-				1353e9f,
-				2736e9f,
-				4460e9f
+			const std::vector<double> PERIHELION_DISTANCES = {
+				0.0,
+				4600e7,
+				1075e8,
+				1471e8,
+				2067e8,
+				7405e8,
+				1353e9,
+				2736e9,
+				4460e9
 			};
-			const std::vector<float> APHELION_DISTANCES = {
-				0.0f,
-				6982e7f,
-				1089e8f,
-				1521e8f,
-				2492e8f,
-				8166e8f,
-				1515e9f,
-				3006e9f,
-				4537e9f
+			const std::vector<double> APHELION_DISTANCES = {
+				0.0,
+				6982e7,
+				1089e8,
+				1521e8,
+				2492e8,
+				8166e8,
+				1515e9,
+				3006e9,
+				4537e9
 			};
 		}
 
 		namespace COMPONENTS {
-			const std::vector<Framework::vec2> SIZES {
-				Framework::Vec(5, 20)
+			const std::vector<Framework::vec2> SIZES{
+				{ 5, 20 }
 			};
 		}
 	}

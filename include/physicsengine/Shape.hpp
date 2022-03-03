@@ -18,42 +18,42 @@ namespace PhysicsEngine {
 		Shape();
 
 		virtual ShapeType get_type() = 0;
-		virtual float get_area() = 0;
-		virtual float get_moment_of_inertia(float density) = 0;
-		virtual vec2 get_centroid() = 0;
-		virtual float get_bounding_radius() = 0;
+		virtual double get_area() = 0;
+		virtual double get_moment_of_inertia(double density) = 0;
+		virtual dvec2 get_centroid() = 0;
+		virtual double get_bounding_radius() = 0;
 	};
 
 	class Circle : public Shape {
 	public:
-		Circle(float _radius = 1.0f);
+		Circle(double _radius = 1.0);
 		
 		ShapeType get_type();
-		float get_area();
-		float get_moment_of_inertia(float density);
-		vec2 get_centroid();
-		float get_bounding_radius();
+		double get_area();
+		double get_moment_of_inertia(double density);
+		dvec2 get_centroid();
+		double get_bounding_radius();
 
-		float radius;
+		double radius;
 	};
 
 	class Polygon : public Shape {
 	public:
-		Polygon(std::vector<vec2> _vertices = { vec2{ 0.5f, -0.5f }, vec2{ 0.5f, 0.5f }, vec2{ -0.5f, 0.5f }, vec2{ -0.5f, -0.5f } });
+		Polygon(std::vector<dvec2> _vertices = { { 0.5, -0.5 }, { 0.5, 0.5 }, { -0.5, 0.5 }, { -0.5, -0.5 } });
 
 		ShapeType get_type();
-		float get_area();
-		float get_moment_of_inertia(float density);
-		vec2 get_centroid();
-		float get_bounding_radius();
+		double get_area();
+		double get_moment_of_inertia(double density);
+		dvec2 get_centroid();
+		double get_bounding_radius();
 
-		std::vector<vec2> vertices;
-		std::vector<vec2> face_normals;
+		std::vector<dvec2> vertices;
+		std::vector<dvec2> face_normals;
 
 	private:
 		void calculate_face_normals();
 		void reorder_vertices();
 	};
 
-	Polygon* create_rect(vec2 size);
+	Polygon* create_rect(dvec2 size);
 }
