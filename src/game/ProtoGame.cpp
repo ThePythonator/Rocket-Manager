@@ -54,7 +54,7 @@ bool GameStage::update(float dt) {
 	if (!paused) update_physics(dt);
 
 	update_map(dt);
-	update_sandbox_scale_TEST(dt); // TESTING
+	update_sandbox_scale(dt); // TESTING
 
 	fps = 1.0f / dt;
 
@@ -127,9 +127,9 @@ void GameStage::create_solar_system(float scale) {
 		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, position); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
 		
 		float speed = find_velocity(sun_mass, PhysicsEngine::length(position), semimajor_axis);
-
+		float TEST = 0.5f;
 		if (sun_position != position) {
-			object.velocity = speed * velocity_direction;
+			object.velocity = speed * velocity_direction * TEST; // testing
 		}
 
 		// Set render ID
@@ -362,8 +362,8 @@ void GameStage::update_map(float dt) {
 }
 
 
-void GameStage::update_sandbox_scale_TEST(float dt) {
-
+void GameStage::update_sandbox_scale(float dt) {
+	// TEST
 
 	// temp:
 	//sandbox_camera.set_position(body.centre);
@@ -376,7 +376,7 @@ void GameStage::update_sandbox_scale_TEST(float dt) {
 	}
 
 	// TESTING ONLY
-	// Only allow scrolling/dragging sandbox if we're not in fullscreen map mode and not clicking on the minimap
+	// Only allow scrolling/--dragging-- sandbox if we're not in fullscreen map mode and not clicking on the minimap
 	if (!show_map && !Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
 		float zoom = input->get_mouse()->scroll_amount() * GAME::SANDBOX::UI::SCROLL_ZOOM_RATE + 1.0f;
 
@@ -399,9 +399,7 @@ void GameStage::update_sandbox_scale_TEST(float dt) {
 
 
 void GameStage::update_physics(float dt) {
-	printf("UPDATE FRAME\n");
 	// Old method: make jumps bigger:
-	dt = 1.0f / 60.0f;
 	physics_manager.update(dt * GAME::SANDBOX::WARP_SPEEDS[time_warp_index]);
 
 	// Other method: iterate 10 times on each frame

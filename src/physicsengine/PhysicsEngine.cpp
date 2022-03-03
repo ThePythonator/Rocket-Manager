@@ -111,10 +111,9 @@ namespace PhysicsEngine {
 		// Update object's velocity
 		if (body.category_id) {
 			printf("update vel:\n");
+			printf("py: %f,\n", body.centre.y);
 			printf("vely: %f,\n", body.velocity.y);
 			printf("fy:  %f,\n", body.force.y);
-			printf("invm:  %f,\n", body.inverse_mass);
-			printf("dt:  %f,\n", dt);
 			vec2 dv = body.force * body.inverse_mass * dt;
 			printf("dvy:  %f,\n", dv.y);
 		}
@@ -139,7 +138,6 @@ namespace PhysicsEngine {
 		printf("vely: %f\n", body.velocity.y);
 		vec2 dv = impulse * body.inverse_mass;
 		printf("dvy:  %f\n", dv.y);*/
-		if (body.category_id) printf("IMPULSE\n");
 		body.velocity += impulse * body.inverse_mass;
 		body.angular_velocity += cross(vector_to_contact, impulse) * body.inverse_moment_of_inertia;
 	}
@@ -308,7 +306,6 @@ namespace PhysicsEngine {
 			vec2 impulse = impulse_magnitude * collision_information.collision_normal;
 
 			// Apply impulses!
-			printf("collision resolution\n");
 			add_impulse(a, -impulse, centre_a_to_contact);
 			add_impulse(b, impulse, centre_b_to_contact);
 
@@ -361,7 +358,6 @@ namespace PhysicsEngine {
 
 			vec2 tangent_impulse = friction_magnitude * tangent;
 
-			printf("friction\n");
 			// Apply friction impulse
 			add_impulse(a, -tangent_impulse, centre_a_to_contact);
 			add_impulse(b, tangent_impulse, centre_b_to_contact);

@@ -39,7 +39,7 @@ private:
 	void render_sandbox();
 
 	void update_map(float dt);
-	void update_sandbox_scale_TEST(float dt);
+	void update_sandbox_scale(float dt);
 	void update_physics(float dt);
 
 	void toggle_map();
