@@ -5,6 +5,7 @@ namespace Framework {
 	//const float EPSILON = 0.0001f; // todo: check if reasonable
 
 	const vec2 VEC_NULL = vec2{ 0.0f, 0.0f };
+	const vec2 VEC_ONES = vec2{ 1.0f, 1.0f };
 	const Rect RECT_NULL = Rect(VEC_NULL, VEC_NULL);
 
 	// Rect and collision detection
@@ -96,5 +97,22 @@ namespace Framework {
 
 	float randf() {
 		return (rand() % 1001) / 1000.0f;
+	}
+
+
+	std::string trim_precision(std::string string, uint8_t precision) {
+		// Trim string to precision
+		if (precision <= 0) {
+			// Assume trimming all after decimal place
+			return string.substr(0, string.find('.'));
+		}
+		else {
+			return string.substr(0, string.find('.') + precision + 1);
+		}
+	}
+
+
+	std::string trim_precision(float num, uint8_t precision) {
+		return trim_precision(std::to_string(num), precision);
 	}
 }

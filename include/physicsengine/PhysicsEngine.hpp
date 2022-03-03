@@ -8,6 +8,9 @@
 namespace PhysicsEngine {
 	// This struct can be used by the user to store the pointers.
 	struct PhysicsData {
+		PhysicsData();
+		~PhysicsData();
+
 		std::vector<Shape*> shapes;
 		std::vector<Constraint*> constraints;
 		std::vector<Material*> materials;

@@ -9,6 +9,7 @@
 #include "Spritesheet.hpp"
 #include "Font.hpp"
 #include "BaseTransition.hpp"
+#include "Button.hpp"
 
 namespace Framework {
 	struct GraphicsObjects {
@@ -19,6 +20,8 @@ namespace Framework {
 		std::vector<Spritesheet*> spritesheet_ptrs;
 		std::vector<Font*> font_ptrs;
 		std::vector<BaseTransition*> transition_ptrs;
+
+		std::vector<Button::ButtonImages> button_image_groups;
 
 		std::string asset_path;
 	};

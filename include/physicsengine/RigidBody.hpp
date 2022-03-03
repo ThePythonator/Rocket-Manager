@@ -31,6 +31,8 @@ namespace PhysicsEngine {
 		Shape* shape = nullptr;
 		Material* material = nullptr;
 
+		float bounding_radius = 0.0f;
+
 		vec2 centre, velocity, force;
 
 		// angle is in radians
@@ -46,6 +48,8 @@ namespace PhysicsEngine {
 
 		// Render ID can be used by other code to look up what objects and corresponding offsets to render at
 		uint16_t render_id = 0;
+		// Category ID can be used to group certain rigidbodies when searching
+		uint16_t category_id = 0;
 
 	private:
 		// Defaults to do nothing (i.e. angle = 0.0f)

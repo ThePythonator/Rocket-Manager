@@ -13,7 +13,12 @@ namespace Framework {
 		BaseStage();
 		virtual ~BaseStage();
 
+		// Called only once. Use instead of constructor if you need access to graphics_objects or input
+		virtual void init();
+
+		// Called when stage becomes the current stage
 		virtual void start();
+		// Called when stage stops being the current stage
 		virtual void end();
 
 		virtual bool update(float dt) = 0;
@@ -24,7 +29,7 @@ namespace Framework {
 		bool finished();
 		bool delete_me();
 
-		void init(GraphicsObjects* _graphics_objects, InputHandler* _input);
+		void _init(GraphicsObjects* _graphics_objects, InputHandler* _input);
 
 		void set_transition(BaseTransition* _transition);
 		void clear_transition();
@@ -44,5 +49,7 @@ namespace Framework {
 		bool _finished = false;
 		bool _delete_me = false;
 		BaseStage* _next = nullptr;
+
+		bool _initialised = false;
 	};
 }

@@ -5,6 +5,7 @@ namespace Framework {
 		key_data.keys = { KeyHandler::KeyState::STILL_UP };
 	}
 
+	// Need to call this before handle_sdl_event
 	void InputHandler::update() {
 		KeyHandler::update(key_data);
 		mouse.update();

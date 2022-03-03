@@ -20,6 +20,8 @@ namespace Framework {
 		void render_rect(const Rect& rect, const Colour& colour);
 		void render_circle(const vec2& centre, float radius, const Colour& colour);
 
+		//void render_trimmed_circle(const vec2& centre, float radius, const Rect& trim_rect, const Colour& colour);
+
 		void set_renderer(SDL_Renderer* _renderer);
 		SDL_Renderer* get_renderer();
 

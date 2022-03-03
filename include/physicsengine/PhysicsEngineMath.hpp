@@ -20,6 +20,7 @@ namespace PhysicsEngine {
 	using linalg::identity;
 
 	extern const float PI;
+	extern const float G;
 	// extern const float EPSILON;
 
 	// Struct used by clip_edge_to_line
@@ -28,6 +29,17 @@ namespace PhysicsEngine {
 		uint8_t points_count = 0;
 		vec2 points[2];
 	};
+
+
+	/*struct BoundingCircle {
+		vec2 centre;
+		float radius;
+	};
+
+
+	bool intersects(const BoundingCircle& a, const BoundingCircle& b);*/
+	bool intersects(const vec2& centre_a, float radius_a, const vec2& centre_b, float radius_b);
+
 
 	float length_squared(vec2 v);
 	vec2 normalise(vec2 v);
@@ -55,4 +67,10 @@ namespace PhysicsEngine {
 	// Clamp the point to the positive side of the line parallel to the normal, origin_distance from the origin (along the normal)
 	// Origin_distance could also be thought as the closest point the line perpendicular to the normal passes to the origin
 	ClipResult clip_edge_to_line(vec2 edge[2], vec2 line_normal, float origin_distance);
+
+
+	//float gravitational_force(float mass_a, float mass_b, float distance_squared);
+	
+	// Use version with double behind the scene so that we don't overflow
+	double gravitational_force(double mass_a, double mass_b, double distance_squared);
 }

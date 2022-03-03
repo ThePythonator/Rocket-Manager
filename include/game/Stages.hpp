@@ -4,9 +4,15 @@
 
 #include "Curves.hpp"
 
+#include "GameUtilities.hpp"
+#include "AttractMode.hpp"
+
+//#include "GameStage.hpp"
+#include "ProtoGame.hpp"
+
 class IntroStage : public Framework::BaseStage {
 public:
-	void start();
+	void init();
 
 	bool update(float dt);
 	void render();
@@ -18,25 +24,73 @@ private:
 
 class TitleStage : public Framework::BaseStage {
 public:
+	void init();
+
 	void start();
 
 	bool update(float dt);
 	void render();
+
+	Framework::vec2 get_submenu_root_position();
+
+	bool submenu_must_die();
+	void submenu_killed();
+
+	BaseStage* get_finish_target();
+
+private:
+	void sub_menu_init();
+
+	AttractMode _attract = nullptr;
+
+	bool _submenu = false;
+	bool _submenu_die = false;
 };
 
-class GameStage : public Framework::BaseStage {
+class PlayOptionsStage : public Framework::BaseStage {
 public:
-	bool update(float dt);
-	void render();
-};
+	PlayOptionsStage();
+	PlayOptionsStage(TitleStage* _title_stage);
 
-class PausedStage : public Framework::BaseStage {
-public:
-	PausedStage(BaseStage* background_stage);
+	void init();
+
+	void start();
 
 	bool update(float dt);
 	void render();
 
 private:
-	BaseStage* _background_stage;
+	TitleStage* title_stage = nullptr;
+};
+
+class SettingsStage : public Framework::BaseStage {
+public:
+	SettingsStage();
+	SettingsStage(TitleStage* _title_stage);
+
+	void init();
+
+	void start();
+
+	bool update(float dt);
+	void render();
+
+private:
+	TitleStage* title_stage = nullptr;
+};
+
+class CreditsStage : public Framework::BaseStage {
+public:
+	CreditsStage();
+	CreditsStage(TitleStage* _title_stage);
+
+	void init();
+
+	void start();
+
+	bool update(float dt);
+	void render();
+
+private:
+	TitleStage* title_stage = nullptr;
 };

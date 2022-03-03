@@ -18,7 +18,18 @@ set(GAME_SOURCES
 	"Application.cpp"
 	"Game.cpp"
 
+	"GameUtilities.cpp"
+
+	"AttractMode.cpp"
+
 	"Stages.cpp"
+#	"GameStage.cpp"
+	"ProtoGame.cpp" # to remove
+	"EditorStage.cpp"
+
+	"Component.cpp"
+
+	"Camera.cpp"
 
 	"Constants.cpp"
 )

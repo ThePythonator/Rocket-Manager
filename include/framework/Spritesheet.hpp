@@ -55,6 +55,8 @@ namespace Framework {
 		BaseSprite();
 
 		virtual void render(vec2 position) = 0;
+
+		virtual Rect bounding_rect(vec2 position) = 0;
 	};
 
 	class ImageSprite : public BaseSprite {
@@ -63,6 +65,8 @@ namespace Framework {
 		ImageSprite(Image* image, float scale = 1.0f);
 
 		void render(vec2 position);
+
+		Rect bounding_rect(vec2 position);
 
 	private:
 		Image* _image = nullptr;
@@ -77,6 +81,8 @@ namespace Framework {
 		SpritesheetSprite(Spritesheet* spritesheet, Rect rect, float scale = 1.0f);
 
 		void render(vec2 position);
+
+		Rect bounding_rect(vec2 position);
 
 	private:
 		Spritesheet* _spritesheet = nullptr;
@@ -97,6 +103,8 @@ namespace Framework {
 
 		void render(vec2 position);
 
+		Rect bounding_rect(vec2 position);
+
 	private:
 		Graphics* _graphics = nullptr;
 
@@ -110,6 +118,8 @@ namespace Framework {
 		CircleSprite(Graphics* graphics, float radius, const Colour& colour);
 
 		void render(vec2 position);
+
+		Rect bounding_rect(vec2 position);
 
 	private:
 		Graphics* _graphics = nullptr;

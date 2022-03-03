@@ -3,6 +3,7 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <string>
 
 #include "linalg.h"
 
@@ -23,6 +24,7 @@ namespace Framework {
 	// extern const float EPSILON;
 
 	extern const vec2 VEC_NULL;
+	extern const vec2 VEC_ONES;
 
 	class Rect {
 	public:
@@ -78,4 +80,17 @@ namespace Framework {
 	* Resolution is 0.001f.
 	*/
 	float randf();
+
+	/*
+	* Trims all characters which are more than 'precision' chars after a full stop/decimal place.
+	* 
+	* Example usage:
+	*		trim_precision(std::to_string(my_float), 3);
+	*/
+	std::string trim_precision(std::string string, uint8_t precision);
+
+	/*
+	* Overloaded version which automatically converts a float to a string before trimming.
+	*/
+	std::string trim_precision(float num, uint8_t precision);
 }

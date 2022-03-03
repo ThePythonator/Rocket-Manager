@@ -8,6 +8,10 @@ namespace Framework {
 
 	}
 
+	void BaseStage::init() {
+
+	}
+
 	void BaseStage::start() {
 
 	}
@@ -33,12 +37,16 @@ namespace Framework {
 		_next = next;
 	}
 
-	void BaseStage::init(GraphicsObjects* _graphics_objects, InputHandler* _input) {
-		graphics_objects = _graphics_objects;
-		input = _input;
+	void BaseStage::_init(GraphicsObjects* _graphics_objects, InputHandler* _input) {
+		if (!_initialised) {
+			graphics_objects = _graphics_objects;
+			input = _input;
 
-		// We need to reset these in case we're reusing a stage
-		buttons.clear();
+			// We need to reset these in case we're reusing a stage
+			buttons.clear();
+
+			init();
+		}
 
 		_finished = false;
 		_delete_me = false;

@@ -28,7 +28,7 @@ namespace Framework {
 
 	void Graphics::render_line(const vec2& start, const vec2& end, const Colour& colour) {
 		set_colour(colour);
-		SDL_RenderDrawLine(renderer, static_cast<int>(start.x), static_cast<int>(start.y), static_cast<int>(end.x), static_cast<int>(end.y));
+		SDLUtils::SDL_RenderDrawLine(renderer, start, end);
 	}
 
 	void Graphics::render_poly(const std::vector<vec2> points, const Colour& colour) {
@@ -57,6 +57,11 @@ namespace Framework {
 		set_colour(colour);
 		SDLUtils::SDL_RenderDrawCircle(renderer, static_cast<int>(centre.x), static_cast<int>(centre.y), static_cast<int>(radius));
 	}
+
+	//void Graphics::render_trimmed_circle(const vec2& centre, float radius, const Rect& trim_rect, const Colour& colour) {
+	//	SDLUtils::SDL_RenderDrawTrimmedCircle(renderer, centre, radius, trim_rect, colour); // Has to be fast for now - just uses lots of lines. Probably only good for small sections of a huge circle
+	//}
+
 
 	void Graphics::set_renderer(SDL_Renderer* _renderer) {
 		renderer = _renderer;

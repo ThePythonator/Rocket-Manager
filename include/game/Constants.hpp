@@ -21,7 +21,17 @@ namespace WINDOW {
 }
 
 namespace STRINGS {
+	namespace BUTTONS {
+		extern const std::vector<std::string> TITLE;
+		extern const std::vector<std::string> PLAY_OPTIONS;
+		extern const std::vector<std::string> SETTINGS;
+		extern const std::vector<std::string> CREDITS;
+		extern const std::vector<std::string> PAUSED;
+	}
 
+	namespace GAME {
+		extern const std::vector<std::string> PLANET_NAMES;
+	}
 }
 
 namespace PATHS {
@@ -48,7 +58,19 @@ namespace GRAPHICS_OBJECTS {
 			MAIN_SPRITESHEET,
 			FONT_SPRITESHEET,
 
+			BUTTON_DEFAULT,
+			BUTTON_HOVERED,
+			BUTTON_SELECTED,
+
 			TOTAL_IMAGES
+		};
+	}
+
+	namespace BUTTON_IMAGE_GROUPS {
+		enum BUTTON_IMAGE_GROUPS {
+			DEFAULT,
+
+			TOTAL_BUTTON_IMAGE_GROUPS
 		};
 	}
 
@@ -84,15 +106,20 @@ namespace FONTS {
 
 	namespace SCALE {
 		extern const uint8_t MAIN_FONT;
+		extern const uint8_t PLANET_NAME_FONT;
+		extern const uint8_t DEBUG_FONT;
 	}
 
 	namespace SPACING {
 		extern const uint8_t MAIN_FONT;
 	}
 }
+
 namespace COLOURS {
 	extern const Framework::Colour BLACK;
 	extern const Framework::Colour WHITE;
+
+	extern const std::vector<Framework::Colour> PLANETS;
 }
 
 namespace TIMINGS {
@@ -139,13 +166,49 @@ namespace CURVES {
 }
 
 namespace BUTTONS {
+	extern const Framework::vec2 SIZE;
+	
+	extern const uint8_t SELECTED_ALPHA;
+
 	extern const uint8_t NONE;
 
 	namespace TITLE {
 		enum TITLE {
 			PLAY,
+			EDITOR,
 			SETTINGS,
+			CREDITS,
 			QUIT,
+
+			TOTAL
+		};
+	}
+
+	namespace PLAY_OPTIONS {
+		enum PLAY_OPTIONS {
+			PLAY,
+			CREATE,
+			BACK,
+
+			TOTAL
+		};
+	}
+
+	namespace SETTINGS {
+		enum SETTINGS {
+			GAME,
+			GRAPHICS,
+			SOUND,
+			CONTROLS,
+			BACK,
+
+			TOTAL
+		};
+	}
+
+	namespace CREDITS {
+		enum CREDITS {
+			BACK,
 
 			TOTAL
 		};
@@ -163,9 +226,88 @@ namespace BUTTONS {
 
 namespace MENU {
 	extern const Framework::Rect BACKGROUND_RECT;
+	extern const Framework::Rect SUBMENU_BACKGROUND_RECT;
+
 	extern const uint8_t BACKGROUND_ALPHA;
 }
 
 namespace GAME {
-	
+	namespace MAP {
+		namespace UI {
+			extern const float SCROLL_ZOOM_RATE;
+			extern const float MAXIMUM_ZOOM;
+			extern const float MINIMUM_ZOOM;
+
+			namespace MINIMAP {
+				extern const float SIZE;
+				extern const float PADDING;
+
+				extern const Framework::Rect RECT;
+
+				extern const float EXTRA_ZOOM;
+			}
+		}
+	}
+
+	namespace SANDBOX {
+		extern const float UNIVERSE_SCALE;
+
+		extern const float GRAVITATIONAL_CONSTANT;
+
+		extern const std::vector<uint32_t> WARP_SPEEDS;
+
+		namespace UI {
+			extern const float SCROLL_ZOOM_RATE;
+			extern const float MAXIMUM_ZOOM;
+			extern const float MINIMUM_ZOOM;
+		}
+
+		namespace CATEGORIES {
+			enum CATEGORIES {
+				PLANET, // Can be planet, sun, moon etc
+				COMPONENT,
+
+				TOTAL
+			};
+		}
+
+		namespace BODIES {
+			extern const std::vector<float> RADII;
+			extern const std::vector<float> VOLUME_DENSITIES;
+			extern const std::vector<float> PERIHELION_DISTANCES;
+			extern const std::vector<float> APHELION_DISTANCES;
+
+			namespace ID {
+				enum ID { // TODO: add moon(s)!
+					SUN,
+					MERCURY,
+					VENUS,
+					EARTH,
+					MARS,
+					JUPITER,
+					SATURN,
+					URANUS,
+					NEPTUNE,
+
+					TOTAL
+				};
+			}
+		}
+
+		namespace COMPONENTS {
+			extern const std::vector<Framework::vec2> SIZES;
+		}
+	}
+
+	namespace DEBUG {
+		namespace PRECISION {
+			extern const uint8_t FPS;
+
+			extern const uint8_t MAP_SCALE;
+			extern const uint8_t MAP_POSITION;
+
+			extern const uint8_t SANDBOX_SCALE;
+			extern const uint8_t SANDBOX_POSITION;
+		}
+	}
 }

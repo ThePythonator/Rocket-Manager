@@ -2,7 +2,7 @@
 
 // IntroStage
 
-void IntroStage::start() {
+void IntroStage::init() {
 	// Start timer for fading
 	_timer.start();
 }
@@ -49,22 +49,35 @@ void IntroStage::render() {
 
 // TitleStage
 
-void TitleStage::start() {
+void TitleStage::init() {
+	// Initialise 'attract mode'
+	_attract = AttractMode(graphics_objects);
+
+	// Create buttons
+	buttons = create_menu_from_constants(graphics_objects, STRINGS::BUTTONS::TITLE);
+
 	// Start transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
-	transition->open();
+}
+
+void TitleStage::start() {
+	// Were we just in a submenu?
+	if (_submenu) {
+		transition->set_open();
+		_submenu = false;
+	}
+	else {
+		transition->open();
+	}
+
+	_submenu_die = false;
 }
 
 bool TitleStage::update(float dt) {
 	transition->update(dt);
 
-	// Note: always use FULLSCREEN_DESKTOP, not normal FULLSCREEN (because it resises cursor, taskbar etc too and messes the OS all up when alt-tabbing or similar)
-	if (input->just_down(Framework::KeyHandler::Key::S)) {
-		graphics_objects->window_ptr->set_fullscreen_mode(Framework::Window::FullscreenMode::FULLSCREEN_DESKTOP);
-	}
-	if (input->just_down(Framework::KeyHandler::Key::D)) {
-		graphics_objects->window_ptr->set_fullscreen_mode(Framework::Window::FullscreenMode::NONE);
-	}
+	// Update 'attract mode' background
+	_attract.update(dt);
 
 	// Update buttons
 	for (Framework::Button& button : buttons) {
@@ -72,25 +85,45 @@ bool TitleStage::update(float dt) {
 
 		if (button.pressed() && transition->is_open()) {
 			button_selected = button.get_id();
-			transition->close();
+
+			// Next stage!
+			switch (button_selected) {
+			case BUTTONS::TITLE::PLAY:
+				sub_menu_init();
+				finish(new PlayOptionsStage(this), false);
+				break;
+
+			case BUTTONS::TITLE::SETTINGS:
+				sub_menu_init();
+				finish(new SettingsStage(this), false);
+				break;
+
+			case BUTTONS::TITLE::CREDITS:
+				sub_menu_init();
+				finish(new CreditsStage(this), false);
+				break;
+
+			case BUTTONS::TITLE::EDITOR:
+			case BUTTONS::TITLE::QUIT:
+				transition->close();
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
 
 	if (transition->is_closed()) {
 		// Next stage!
 		switch (button_selected) {
-		case BUTTONS::TITLE::PLAY:
-			//finish(new GameStage());
-			break;
-
-		case BUTTONS::TITLE::SETTINGS:
-			//finish(new SettingsStage());
+		case BUTTONS::TITLE::EDITOR:
+			//finish(new EditorStage());
 			break;
 
 		case BUTTONS::TITLE::QUIT:
 			// Returning false causes program to exit
 			return false;
-			// (so we don't need the break)
 
 		default:
 			break;
@@ -101,65 +134,274 @@ bool TitleStage::update(float dt) {
 }
 
 void TitleStage::render() {
-	graphics_objects->graphics_ptr->fill(COLOURS::WHITE);
+	// Render 'attract mode' background
+	_attract.render();
 
-	graphics_objects->graphics_ptr->render_circle(Framework::Vec(20, 20), 10, COLOURS::BLACK);
-	graphics_objects->graphics_ptr->render_rect(Framework::Rect(40, 20, 10, 30), COLOURS::BLACK);
-
-	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(0, Framework::Vec(64, 48));
-
-	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(2, Framework::Vec(32, 48), Framework::SpriteTransform::ROTATE_90_ACW);
-
-	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(1, Framework::Vec(96, 48), SPRITES::SCALE, SDL_GetTicks() / 10);
-
+	// Menu bar
 	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
 
-	transition->render(graphics_objects->graphics_ptr);
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	// Transition
+	if (!_submenu) transition->render();
 }
 
-// GameStage
-
-bool GameStage::update(float dt) {
-	transition->update(dt);
-
-	return true;
+Framework::vec2 TitleStage::get_submenu_root_position() {
+	return buttons[button_selected].position();
 }
 
-void GameStage::render() {
-	transition->render(graphics_objects->graphics_ptr);
+bool TitleStage::submenu_must_die() {
+	return _submenu_die;
 }
 
-// PausedStage
-
-PausedStage::PausedStage(BaseStage* background_stage) : BaseStage() {
-	// Save the background stage so we can still render it, and then go back to it when done
-	_background_stage = background_stage;
+void TitleStage::submenu_killed() {
+	_submenu_die = false;
 }
 
-bool PausedStage::update(float dt) {
-	transition->update(dt);
+Framework::BaseStage* TitleStage::get_finish_target() {
+	switch (button_selected) {
+	case BUTTONS::TITLE::PLAY:
+		sub_menu_init();
+		return new PlayOptionsStage(this);
 
-	if (input->just_down(Framework::KeyHandler::Key::ESCAPE) || input->just_down(Framework::KeyHandler::Key::P)) {
-		transition->close();
+	case BUTTONS::TITLE::SETTINGS:
+		sub_menu_init();
+		return new SettingsStage(this);
+
+	case BUTTONS::TITLE::CREDITS:
+		sub_menu_init();
+		return new CreditsStage(this);
+
+	case BUTTONS::TITLE::EDITOR:
+	case BUTTONS::TITLE::QUIT:
+		// We want to show the transitions, so go back here first!
+		return this;
+
+	default:
+		// Should never happen!
+		return this;
+	}
+}
+
+// Handle anything we need before starting a submenu
+void TitleStage::sub_menu_init() {
+	_submenu_die = _submenu;
+
+	_submenu = true;
+}
+
+// PlayOptionsStage
+
+PlayOptionsStage::PlayOptionsStage() { }
+PlayOptionsStage::PlayOptionsStage(TitleStage* _title_stage) : title_stage(_title_stage) { }
+
+void PlayOptionsStage::init() {
+	// Create buttons
+	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::PLAY_OPTIONS, title_stage->get_submenu_root_position().y);
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void PlayOptionsStage::start() {
+	transition->set_open();
+}
+
+bool PlayOptionsStage::update(float dt) {
+	bool running = title_stage->update(dt);
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			// Next stage!
+			switch (button_selected) {
+			case BUTTONS::PLAY_OPTIONS::PLAY:
+			case BUTTONS::PLAY_OPTIONS::CREATE:
+				transition->close();
+				break;
+
+			case BUTTONS::PLAY_OPTIONS::BACK:
+				finish(title_stage);
+				break;
+
+			default:
+				break;
+			}
+		}
 	}
 
 	if (transition->is_closed()) {
-		if (button_selected == BUTTONS::PAUSED::EXIT) {
-			delete _background_stage;
-			finish(new TitleStage());
-		}
-		else {
-			// Return to game (exit pause)
-			finish(_background_stage);
+		// Next stage!
+		switch (button_selected) {
+		case BUTTONS::PLAY_OPTIONS::PLAY:
+			// TODO: delete title_stage???
+
+			finish(new GameStage()); // TEMP: remove later?
+			break;
+
+		default:
+			break;
 		}
 	}
 
-	return true;
+	// If we need to kill this submenu, we need to know where to go next
+	if (title_stage->submenu_must_die()) {
+		finish(title_stage->get_finish_target());
+		// Tell the title stage that this submenu has been killed
+		title_stage->submenu_killed();
+	}
+
+	return running;
 }
 
-void PausedStage::render() {
-	// Render background stage
-	_background_stage->render();
+void PlayOptionsStage::render() {
+	// Render title stage
+	title_stage->render();
 
-	// Render pause menu
+	// Menu bar
+	graphics_objects->graphics_ptr->fill(MENU::SUBMENU_BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
+}
+
+// SettingsStage
+
+SettingsStage::SettingsStage() { }
+SettingsStage::SettingsStage(TitleStage* _title_stage) : title_stage(_title_stage) { }
+
+void SettingsStage::init() {
+	// Create buttons
+	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::SETTINGS, title_stage->get_submenu_root_position().y);
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void SettingsStage::start() {
+	transition->set_open();
+}
+
+bool SettingsStage::update(float dt) {
+	bool running = title_stage->update(dt);
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			// Next stage!
+			switch (button_selected) {
+			/*case BUTTONS::SETTINGS::PLAY:
+			case BUTTONS::SETTINGS::CREATE:
+				transition->close();
+				break;*/
+
+			case BUTTONS::SETTINGS::BACK:
+				finish(title_stage);
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	// If we need to kill this submenu, we need to know where to go next
+	if (title_stage->submenu_must_die()) {
+		finish(title_stage->get_finish_target());
+		// Tell the title stage that this submenu has been killed
+		title_stage->submenu_killed();
+	}
+
+	return running;
+}
+
+void SettingsStage::render() {
+	// Render title stage
+	title_stage->render();
+
+	// Menu bar
+	graphics_objects->graphics_ptr->fill(MENU::SUBMENU_BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
+}
+
+// CreditsStage
+
+CreditsStage::CreditsStage() { }
+CreditsStage::CreditsStage(TitleStage* _title_stage) : title_stage(_title_stage) { }
+
+void CreditsStage::init() {
+	// Create buttons
+	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::CREDITS, title_stage->get_submenu_root_position().y);
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void CreditsStage::start() {
+	transition->set_open();
+}
+
+bool CreditsStage::update(float dt) {
+	bool running = title_stage->update(dt);
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			// Next stage!
+			switch (button_selected) {
+			/*case BUTTONS::CREDITS::PLAY:
+			case BUTTONS::PLAY_OPTIONS::CREATE:
+				transition->close();
+				break;*/
+
+			case BUTTONS::CREDITS::BACK:
+				finish(title_stage);
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	// If we need to kill this submenu, we need to know where to go next
+	if (title_stage->submenu_must_die()) {
+		finish(title_stage->get_finish_target());
+		// Tell the title stage that this submenu has been killed
+		title_stage->submenu_killed();
+	}
+
+	return running;
+}
+
+void CreditsStage::render() {
+	// Render title stage
+	title_stage->render();
+
+	// Menu bar
+	graphics_objects->graphics_ptr->fill(MENU::SUBMENU_BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
 }

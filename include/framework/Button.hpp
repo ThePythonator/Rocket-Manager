@@ -16,6 +16,7 @@ namespace Framework {
 
 		struct ButtonImages {
 			Image* unselected = nullptr;
+			Image* hovered = nullptr;
 			Image* selected = nullptr;
 		};
 
@@ -23,24 +24,29 @@ namespace Framework {
 		Button(Rect rect, ButtonImages images, Text text, uint8_t id = 0);
 		Button(Rect render_rect, Rect collider_rect, ButtonImages images, Text text, uint8_t id = 0);
 
-		ButtonState state();
+		ButtonState state() const;
 
 		// Pressed means 'just pressed' - i.e., clicked this frame
-		bool pressed();
+		bool pressed() const;
 		// Down means 'held down' - i.e. might have been clicked this frame, or might not
-		bool down();
+		bool down() const;
+
+		// Hovered means mouse is currently over the button
+		bool hovered() const;
 
 		void update(InputHandler* input);
-		void render();
+		void render() const;
 
 		void set_position(vec2 position);
 
-		uint8_t get_id();
+		uint8_t get_id() const;
 
-		vec2 initial_position();
+		vec2 initial_position() const;
+		vec2 position() const;
 
 	private:
 		ButtonState _state = ButtonState::STILL_UP;
+		bool _mouse_over = false;
 
 		Rect _render_rect, _collider_rect;
 		ButtonImages _images;

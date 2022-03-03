@@ -1,6 +1,31 @@
 #include "PhysicsEngine.hpp"
 
 namespace PhysicsEngine {
+
+	PhysicsData::PhysicsData() {
+
+	}
+	PhysicsData::~PhysicsData() {
+		// Delete everything
+		for (Shape* shape : shapes) {
+			delete shape;
+		}
+		shapes.clear();
+
+		for (Constraint* constraint : constraints) {
+			delete constraint;
+		}
+		constraints.clear();
+
+		for (Material* material : materials) {
+			delete material;
+		}
+		materials.clear();
+	}
+
+
+
+
 	PhysicsManager::PhysicsManager() {
 
 	}
@@ -84,6 +109,15 @@ namespace PhysicsEngine {
 
 	void PhysicsManager::update_velocity(RigidBody& body, float dt) {
 		// Update object's velocity
+		if (body.category_id) {
+			printf("update vel:\n");
+			printf("vely: %f,\n", body.velocity.y);
+			printf("fy:  %f,\n", body.force.y);
+			printf("invm:  %f,\n", body.inverse_mass);
+			printf("dt:  %f,\n", dt);
+			vec2 dv = body.force * body.inverse_mass * dt;
+			printf("dvy:  %f,\n", dv.y);
+		}
 		body.velocity += body.force * body.inverse_mass * dt;
 		body.angular_velocity += body.torque * body.inverse_moment_of_inertia * dt;
 
@@ -100,6 +134,12 @@ namespace PhysicsEngine {
 
 	void PhysicsManager::add_impulse(RigidBody& body, const vec2& impulse, const vec2& vector_to_contact) {
 		// Update object's velocity
+		/*printf("add impulse:\n");
+		printf("cat id: %u\n", body.category_id);
+		printf("vely: %f\n", body.velocity.y);
+		vec2 dv = impulse * body.inverse_mass;
+		printf("dvy:  %f\n", dv.y);*/
+		if (body.category_id) printf("IMPULSE\n");
 		body.velocity += impulse * body.inverse_mass;
 		body.angular_velocity += cross(vector_to_contact, impulse) * body.inverse_moment_of_inertia;
 	}
@@ -108,23 +148,12 @@ namespace PhysicsEngine {
 	void PhysicsManager::update_forces() {
 		// Could maybe allow user to specify own update function?
 		for (RigidBody& body : bodies) {
-			// TODO
-
-			// Gravity etc
-
-			// example, REMOVE LATER (actual gravity should be between objects)
-#define ORBIT_GRAV_DEMO
-#ifndef ORBIT_GRAV_DEMO
-			// gravity to floor
-			body.force += body.mass * vec2{ 0.0f, 9.81f } * 0.2f;// *100.0f;
-#endif
 
 			// Note: torque should also be affected by changes in force
 		}
-			
-		// GRAVITY DEMO
-#ifdef ORBIT_GRAV_DEMO
-		static float G = 6.67430e-11f;
+		
+
+		static const float G = 6.67430e-11f;
 
 		// Calculate gravity between every unique pair of objects
 		for (uint16_t i = 0; i < bodies.size(); i++) {
@@ -134,12 +163,16 @@ namespace PhysicsEngine {
 
 				float dist_squared = length_squared(difference);
 
+				//printf("d_sqr %u: %f\n", i, dist_squared);
+
 				if (dist_squared != 0.0f) {
-					float force_magnitude = G * bodies[i].mass * bodies[j].mass / dist_squared;
+					float force_magnitude = gravitational_force(bodies[i].mass, bodies[j].mass, dist_squared);
 
 					float dist = std::sqrt(dist_squared);
 
-					//printf("%f\n", force_magnitude);
+					//printf("f_mag %u-%u: %f\n", i, j, force_magnitude);
+
+					//if (j == 9) force_magnitude *= 10;
 
 					vec2 force = force_magnitude * difference / dist;
 
@@ -148,7 +181,6 @@ namespace PhysicsEngine {
 				}
 			}
 		}
-#endif // ORBIT_GRAV_DEMO
 	}
 
 	void PhysicsManager::update_constraints() {
@@ -177,16 +209,28 @@ namespace PhysicsEngine {
 		std::vector<CollisionPacket> collision_packets;
 
 		// Detect collisions between every unique pair of objects
+
 		for (uint16_t i = 0; i < bodies.size(); i++) {
 			for (uint16_t j = i + 1; j < bodies.size(); j++) {
-				// Only check for collisions if they have a layer in common
-				if (bodies[i].get_layers() & bodies[j].get_layers()) {
-					// Check for collision between objects
-					CollisionInformation collision_information = detect_collision(bodies[i], bodies[j]);
 
-					if (collision_information.contact_count) {
-						// Collision occurred
-						collision_packets.push_back(CollisionPacket{ collision_information, i, j });
+				// Only check for collisions if they have a layer in common
+
+				RigidBody& a = bodies[i];
+				RigidBody& b = bodies[j];
+
+				if (a.get_layers() & b.get_layers()) {
+
+					// Only check for collision if both bounding circles collide
+					// Note: this is redundant if you're using only/mostly circles, because it may result in double-checking when collisions do occur
+
+					if (intersects(a.centre, a.bounding_radius, b.centre, b.bounding_radius)) {
+						// Check for collision between objects
+						CollisionInformation collision_information = detect_collision(a, b);
+
+						if (collision_information.contact_count) {
+							// Collision occurred
+							collision_packets.push_back(CollisionPacket{ collision_information, i, j });
+						}
 					}
 				}
 			}
@@ -264,6 +308,7 @@ namespace PhysicsEngine {
 			vec2 impulse = impulse_magnitude * collision_information.collision_normal;
 
 			// Apply impulses!
+			printf("collision resolution\n");
 			add_impulse(a, -impulse, centre_a_to_contact);
 			add_impulse(b, impulse, centre_b_to_contact);
 
@@ -316,6 +361,7 @@ namespace PhysicsEngine {
 
 			vec2 tangent_impulse = friction_magnitude * tangent;
 
+			printf("friction\n");
 			// Apply friction impulse
 			add_impulse(a, -tangent_impulse, centre_a_to_contact);
 			add_impulse(b, tangent_impulse, centre_b_to_contact);

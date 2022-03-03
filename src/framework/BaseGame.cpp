@@ -14,7 +14,7 @@ namespace Framework {
 		// Allow game to get ready
 		// Game must set stage ptr
 		start();
-		stage->init(&graphics_objects, &input);
+		stage->_init(&graphics_objects, &input);
 
 		// Main game loop
 		bool running = true;
@@ -56,13 +56,23 @@ namespace Framework {
 		// Handle events
 		SDL_Event sdl_event;
 		while (SDL_PollEvent(&sdl_event) != 0) {
-			if (sdl_event.type == SDL_QUIT) {
+			switch (sdl_event.type) {
+			case SDL_QUIT:
 				// X (close) is pressed
 				return false;
-			}
-			else {
+
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+			case SDL_MOUSEMOTION:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEWHEEL:
 				// Delegate to InputHandler
 				input.handle_sdl_event(sdl_event);
+				break;
+
+			default:
+				break;
 			}
 		}
 
@@ -87,8 +97,6 @@ namespace Framework {
 			SDL_Delay(ticks_to_sleep);
 		}
 
-		//printf("FPS: %f\n", 1.0f / dt);
-
 		return running;
 	}
 
@@ -107,7 +115,7 @@ namespace Framework {
 			}
 			
 			// Setup next stage
-			stage->init(&graphics_objects, &input);
+			stage->_init(&graphics_objects, &input);
 		}
 
 		bool running = stage->update(dt);
@@ -137,6 +145,8 @@ namespace Framework {
 		graphics_objects.font_ptrs = std::vector<Framework::Font*>(GRAPHICS_OBJECTS::FONTS::TOTAL_FONTS);
 		graphics_objects.transition_ptrs = std::vector<Framework::BaseTransition*>(GRAPHICS_OBJECTS::TRANSITIONS::TOTAL_TRANSITIONS);
 
+		graphics_objects.button_image_groups = std::vector<Framework::Button::ButtonImages>(GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::TOTAL_BUTTON_IMAGE_GROUPS);
+
 		// Load game data
 		load_data();
 
@@ -151,12 +161,14 @@ namespace Framework {
 
 		// Clear spritesheets
 		for (Framework::Spritesheet* spritesheet_ptr : graphics_objects.spritesheet_ptrs) {
+			if (!spritesheet_ptr) continue;
 			delete spritesheet_ptr;
 		}
 		graphics_objects.spritesheet_ptrs.clear();
 
 		// Clear images
 		for (Framework::Image* image_ptr : graphics_objects.image_ptrs) {
+			if (!image_ptr) continue;
 			image_ptr->free();
 			delete image_ptr;
 		}
@@ -164,12 +176,14 @@ namespace Framework {
 
 		// Clear fonts
 		for (Framework::Font* font_ptr : graphics_objects.font_ptrs) {
+			if (!font_ptr) continue;
 			delete font_ptr;
 		}
 		graphics_objects.font_ptrs.clear();
 
 		// Clear transitions
 		for (Framework::BaseTransition* transition_ptr : graphics_objects.transition_ptrs) {
+			if (!transition_ptr) continue;
 			delete transition_ptr;
 		}
 		graphics_objects.transition_ptrs.clear();

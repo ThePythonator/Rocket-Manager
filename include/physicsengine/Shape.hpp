@@ -21,6 +21,7 @@ namespace PhysicsEngine {
 		virtual float get_area() = 0;
 		virtual float get_moment_of_inertia(float density) = 0;
 		virtual vec2 get_centroid() = 0;
+		virtual float get_bounding_radius() = 0;
 	};
 
 	class Circle : public Shape {
@@ -31,6 +32,7 @@ namespace PhysicsEngine {
 		float get_area();
 		float get_moment_of_inertia(float density);
 		vec2 get_centroid();
+		float get_bounding_radius();
 
 		float radius;
 	};
@@ -43,6 +45,7 @@ namespace PhysicsEngine {
 		float get_area();
 		float get_moment_of_inertia(float density);
 		vec2 get_centroid();
+		float get_bounding_radius();
 
 		std::vector<vec2> vertices;
 		std::vector<vec2> face_normals;

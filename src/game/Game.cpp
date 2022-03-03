@@ -17,7 +17,7 @@ void Game::load_data() {
 	graphics_objects.asset_path = ASSETS_PATH;
 	std::string IMAGES_PATH = ASSETS_PATH + PATHS::IMAGES::LOCATION;
 
-	// Load spritesheet image
+	// Load logo image
 	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::LOGO] = Framework::create_image(graphics_objects.graphics_ptr, IMAGES_PATH + PATHS::IMAGES::LOGO, Framework::Image::Flags::SDL_TEXTURE);
 
 	// Load spritesheet image
@@ -26,6 +26,10 @@ void Game::load_data() {
 	// Load font image
 	// Note: we *need* to add SURFACE flags because Font uses the surface bit
 	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::FONT_SPRITESHEET] = Framework::create_image(graphics_objects.graphics_ptr, IMAGES_PATH + PATHS::IMAGES::FONT_SPRITESHEET, Framework::Image::Flags::SDL_TEXTURE | Framework::Image::Flags::SDL_SURFACE);
+	
+	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_DEFAULT] = nullptr;
+	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_HOVERED] = Framework::create_image(graphics_objects.graphics_ptr, BUTTONS::SIZE, Framework::Colour(COLOURS::BLACK, BUTTONS::SELECTED_ALPHA), true);
+	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_SELECTED] = Framework::create_image(graphics_objects.graphics_ptr, BUTTONS::SIZE, COLOURS::BLACK);
 	
 	// Create spritesheet from spritesheet image
 	graphics_objects.spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET] = new Framework::Spritesheet(graphics_objects.graphics_ptr, graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::MAIN_SPRITESHEET], SPRITES::SIZE, SPRITES::SCALE);
@@ -37,7 +41,15 @@ void Game::load_data() {
 	graphics_objects.font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT] = new Framework::Font(graphics_objects.graphics_ptr, graphics_objects.spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::FONT_SPRITESHEET], FONTS::SPACING::MAIN_FONT);
 	
 	// Create transitions
-	graphics_objects.transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION] = new Framework::FadeTransition(COLOURS::BLACK, TRANSITIONS::FADE_TIME);
+	graphics_objects.transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION] = new Framework::FadeTransition(graphics_objects.graphics_ptr, COLOURS::BLACK, TRANSITIONS::FADE_TIME);
+
+
+	// Create button_images
+	graphics_objects.button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT] = {
+		graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_DEFAULT],
+		graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_HOVERED],
+		graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_SELECTED]
+	};
 }
 
 void Game::clear_data() {

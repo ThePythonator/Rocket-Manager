@@ -200,16 +200,16 @@ namespace Framework {
 		_scale = scale;
 	}
 
-	void Text::render(vec2 position) {
+	void Text::render(vec2 position) const {
 		render(position, _colour, _anchor);
 	}
-	void Text::render(vec2 position, Colour colour) {
+	void Text::render(vec2 position, Colour colour) const {
 		render(position, colour, _anchor);
 	}
-	void Text::render(vec2 position, Font::AnchorPosition anchor_position) {
+	void Text::render(vec2 position, Font::AnchorPosition anchor_position) const {
 		render(position, _colour, anchor_position);
 	}
-	void Text::render(vec2 position, Colour colour, Font::AnchorPosition anchor_position) {
+	void Text::render(vec2 position, Colour colour, Font::AnchorPosition anchor_position) const {
 		_font_ptr->render_text(_text, position, colour, _scale, anchor_position);
 	}
 

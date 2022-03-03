@@ -67,10 +67,10 @@ namespace Framework {
 		Text(Font* font, std::string text, Colour colour, Font::AnchorPosition anchor_position = Font::AnchorPosition::CENTER_CENTER);
 		Text(Font* font, std::string text, Colour colour, float scale, Font::AnchorPosition anchor_position = Font::AnchorPosition::CENTER_CENTER);
 
-		void render(vec2 position);
-		void render(vec2 position, Colour colour);
-		void render(vec2 position, Font::AnchorPosition anchor_position);
-		void render(vec2 position, Colour colour, Font::AnchorPosition anchor_position);
+		void render(vec2 position) const;
+		void render(vec2 position, Colour colour) const;
+		void render(vec2 position, Font::AnchorPosition anchor_position) const;
+		void render(vec2 position, Colour colour, Font::AnchorPosition anchor_position) const;
 		
 		void set_text(std::string text);
 

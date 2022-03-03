@@ -34,6 +34,8 @@ namespace PhysicsEngine {
 			moment_of_inertia = shape->get_moment_of_inertia(material->density);
 			inverse_moment_of_inertia = 1.0f / moment_of_inertia;
 		}
+
+		bounding_radius = shape->get_bounding_radius();
 	}
 
 	void RigidBody::set_layers(uint32_t layers) {

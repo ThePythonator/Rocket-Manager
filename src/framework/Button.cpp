@@ -27,16 +27,20 @@ namespace Framework {
 		// TODO: support different images for hover
 	}
 
-	Button::ButtonState Button::state() {
+	Button::ButtonState Button::state() const {
 		return _state;
 	}
 
-	bool Button::pressed() {
+	bool Button::pressed() const {
 		return _state == ButtonState::JUST_PRESSED;
 	}
 
-	bool Button::down() {
+	bool Button::down() const {
 		return _state == ButtonState::JUST_PRESSED || _state == ButtonState::STILL_DOWN;
+	}
+
+	bool Button::hovered() const {
+		return _mouse_over;
 	}
 
 	void Button::update(InputHandler* input) {
@@ -58,7 +62,9 @@ namespace Framework {
 		}*/
 
 		// THIS VERSION RELEASES WHEN CURSOR MOVES OFF IT
+		_mouse_over = false;
 		if (colliding(_collider_rect, input->get_mouse()->position())) {
+			_mouse_over = true;
 			if (input->just_up(MouseHandler::MouseButton::LEFT)) {
 				_state = ButtonState::JUST_RELEASED;
 			}
@@ -71,8 +77,11 @@ namespace Framework {
 		}
 	}
 
-	void Button::render() {
-		(down() ? _images.selected : _images.unselected)->render(_render_rect);
+	void Button::render() const {
+		// Only render image if it's been assigned
+		Image* image = down() ? _images.selected : hovered() ? _images.hovered : _images.unselected;
+		if (image != nullptr) image->render(_render_rect);
+
 		_text.render(_render_rect.centre());
 	}
 
@@ -80,11 +89,15 @@ namespace Framework {
 		_render_rect.position = position;
 	}
 
-	uint8_t Button::get_id() {
+	uint8_t Button::get_id() const {
 		return _id;
 	}
 
-	vec2 Button::initial_position() {
+	vec2 Button::initial_position() const {
 		return _initial_position;
+	}
+
+	vec2 Button::position() const {
+		return _render_rect.position;
 	}
 }

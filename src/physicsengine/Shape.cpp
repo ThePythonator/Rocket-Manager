@@ -33,6 +33,10 @@ namespace PhysicsEngine {
 		return vec2{ 0.0f, 0.0f };
 	}
 
+	float Circle::get_bounding_radius() {
+		return radius;
+	}
+
 	// Polygon
 
 	// Note that vertices must be in anti-clockwise order
@@ -162,6 +166,16 @@ namespace PhysicsEngine {
 			//printf("angle, ordered: %f\n", vertex_angle_pairs[i].second);
 			vertices.push_back(vertex_angle_pairs[i].first);
 		}
+	}
+
+	float Polygon::get_bounding_radius() {
+		float max_squared_dist = 0.0f;
+
+		for (vec2 vertex : vertices) {
+			max_squared_dist = std::max(max_squared_dist, length_squared(vertex));
+		}
+
+		return std::sqrt(max_squared_dist);
 	}
 
 

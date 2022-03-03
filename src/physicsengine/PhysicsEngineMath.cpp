@@ -2,7 +2,25 @@
 
 namespace PhysicsEngine {
 	const float PI = 3.14159265f;
+	const float G = 6.674e-11f;
 	//const float EPSILON = 0.0001f; // todo: check if reasonable
+
+	/*bool intersects(const BoundingCircle& a, const BoundingCircle& b) {
+		float dist_squared = length_squared(a.centre - b.centre);
+
+		float radii_sum = a.radius + b.radius;
+
+		return dist_squared <= radii_sum * radii_sum;
+	}*/
+
+	bool intersects(const vec2& centre_a, float radius_a, const vec2& centre_b, float radius_b) {
+		float dist_squared = length_squared(centre_a - centre_b);
+
+		float radii_sum = radius_a + radius_b;
+
+		return dist_squared <= radii_sum * radii_sum;
+	}
+
 
 	float length_squared(vec2 v) {
 		return linalg::length2(v);
@@ -99,5 +117,13 @@ namespace PhysicsEngine {
 		}
 
 		return result;
+	}
+
+	/*float gravitational_force(float mass_a, float mass_b, float distance_squared) {
+		return G * mass_a * mass_b / distance_squared;
+	}*/
+
+	double gravitational_force(double mass_a, double mass_b, double distance_squared) {
+		return G * mass_a * mass_b / distance_squared;
 	}
 }
