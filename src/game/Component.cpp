@@ -3,17 +3,15 @@
 Component::Component() {
 
 }
-
-Component::Component(uint32_t component_id, std::vector<ComponentNode> nodes, Framework::BaseSprite* sprite) : _component_id(component_id), _nodes(nodes), _sprite(sprite) {
+Component::Component(ComponentType type, std::vector<ComponentNode> nodes) : _type(type), _nodes(nodes) {//uint32_t component_id, //_component_id(component_id),
 
 }
-
-void Component::render() const {
-	_sprite->render(_position);
+const std::vector<ComponentNode>& Component::get_nodes() const {
+	return _nodes;
 }
 
-void Component::set_position(Framework::vec2 position) {
-	_position = position;
+ComponentType Component::get_type() const {
+	return _type;
 }
 
 
@@ -22,30 +20,33 @@ ComponentManager::ComponentManager() {
 
 }
 
-//ComponentManager::~ComponentManager() {
-//
-//}
-
-void ComponentManager::add_component(const Component& component) {
-	_components.push_back(component);
+uint32_t ComponentManager::add_component(const Component& component) {
+	uint32_t index = get_next_component_index();
+	_components[index] = component;
+	return index;
 }
 
 void ComponentManager::add_connection(const Connection& connection) {
 	_connections.push_back(connection);
 }
 
+void ComponentManager::erase_component(uint32_t component_id) {
+	_components.erase(component_id);
+}
 
-std::vector<Component> ComponentManager::get_components() {
+const std::map<uint32_t, Component>& ComponentManager::get_components() const {
 	return _components;
 }
 
-std::vector<Connection> ComponentManager::get_connections() {
+const std::vector<Connection>& ComponentManager::get_connections() const {
 	return _connections;
 }
 
-
-void ComponentManager::render() {
-	for (const Component& component : _components) {
-		component.render();
+uint32_t ComponentManager::get_next_component_index() const {
+	// Get next free index in map
+	uint32_t i = 0;
+	while (!_components.count(i)) {
+		i++;
 	}
+	return i;
 }

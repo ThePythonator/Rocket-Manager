@@ -6,7 +6,7 @@ namespace PhysicsEngine {
 
 	}
 
-	Constraint::Constraint(RigidBody* _a, RigidBody* _b, dvec2 _offset_a, dvec2 _offset_b) {
+	Constraint::Constraint(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b) {
 		a = _a;
 		b = _b;
 		offset_a = _offset_a;
@@ -14,7 +14,7 @@ namespace PhysicsEngine {
 	}
 
 	void Constraint::apply_force() {
-		dvec2 force = calculate_force(); // todo: apply torque too
+		phyvec force = calculate_force(); // todo: apply torque too
 		a->apply_force(force, to_world_space(offset_a, a->get_rotation_matrix()));
 		b->apply_force(-force, to_world_space(offset_b, b->get_rotation_matrix()));
 	}
@@ -25,30 +25,30 @@ namespace PhysicsEngine {
 
 	// Spring
 
-	Spring::Spring(RigidBody* _a, RigidBody* _b, dvec2 _offset_a, dvec2 _offset_b, double _natural_length, double _modulus_of_elasticity, double max_length_factor) : Constraint(_a, _b, _offset_a, _offset_b), natural_length(_natural_length), modulus_of_elasticity(_modulus_of_elasticity), max_length(_natural_length * std::max(max_length_factor, 1.0)) {
+	Spring::Spring(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b, phyflt _natural_length, phyflt _modulus_of_elasticity, phyflt max_length_factor) : Constraint(_a, _b, _offset_a, _offset_b), natural_length(_natural_length), modulus_of_elasticity(_modulus_of_elasticity), max_length(_natural_length * std::max(max_length_factor, 1.0)) {
 		
 	}
 
 	// Returns force exerted by constraint on A (B has equal and opposite force)
-	dvec2 Spring::calculate_force() {
+	phyvec Spring::calculate_force() {
 		// NOTE: MIGHT NEED TO BE DAMPED
 
 		if (broken) {
 			// Broken so no force exerted
-			return D_VEC_NULL;
+			return PHYVEC_NULL;
 		}
 
 		// T = mx/L
-		dvec2 a_to_b = (b->centre + to_world_space(offset_b, b->get_rotation_matrix())) - (a->centre + to_world_space(offset_a, a->get_rotation_matrix()));
+		phyvec a_to_b = (b->centre + to_world_space(offset_b, b->get_rotation_matrix())) - (a->centre + to_world_space(offset_a, a->get_rotation_matrix()));
 		float a_to_b_length = length(a_to_b);
 
 		if (a_to_b_length > max_length) {
 			// Exceeded max length, so broken (no longer provides a force, and flag set so it can be removed)
 			broken = true;
-			return D_VEC_NULL;
+			return PHYVEC_NULL;
 		}
 
-		dvec2 a_to_b_normalised = a_to_b / a_to_b_length;
+		phyvec a_to_b_normalised = a_to_b / a_to_b_length;
 		float force_magnitude = modulus_of_elasticity * (a_to_b_length - natural_length) / natural_length;
 
 		// Force is in same direction as a_to_b for A, opposite for B (applied by PhysicsManager)
@@ -57,12 +57,12 @@ namespace PhysicsEngine {
 
 	// String
 
-	String::String(RigidBody* _a, RigidBody* _b, dvec2 _offset_a, dvec2 _offset_b, double _natural_length, double _modulus_of_elasticity, double max_length_factor) : Spring(_a, _b, _offset_a, _offset_b, _natural_length, _modulus_of_elasticity, max_length_factor) {
+	String::String(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b, phyflt _natural_length, phyflt _modulus_of_elasticity, phyflt max_length_factor) : Spring(_a, _b, _offset_a, _offset_b, _natural_length, _modulus_of_elasticity, max_length_factor) {
 		
 	}
 
-	dvec2 String::calculate_force() {
+	phyvec String::calculate_force() {
 		// Only apply a force if extension is positive
-		return length_squared(b->centre - a->centre) > natural_length * natural_length ? Spring::calculate_force() : D_VEC_NULL;
+		return length_squared(b->centre - a->centre) > natural_length * natural_length ? Spring::calculate_force() : PHYVEC_NULL;
 	}
 }

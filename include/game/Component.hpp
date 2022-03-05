@@ -11,40 +11,49 @@ struct Connection {
 	ComponentNode a, b;
 };
 
+// Note: the order of this matters since it's used in Constants.hpp/cpp
+// Really there shouldn't be two separate things which both need to be the same, but I can't think of a better way of doing this right now.
+enum class ComponentType {
+	COMMAND_MODULE,
+	FUEL_TANK,
+	ENGINE,
+
+	TOTAL,
+	NONE
+};
+
 class Component {
 public:
 	Component();
-	Component(uint32_t component_id, std::vector<ComponentNode> nodes, Framework::BaseSprite* sprite);
+	Component(ComponentType type, std::vector<ComponentNode> nodes);//uint32_t component_id, 
 
-	void render() const;
+	const std::vector<ComponentNode>& get_nodes() const;
 
-	void set_position(Framework::vec2 position);
+	ComponentType get_type() const;
 
 private:
-	uint32_t _component_id = 0;
+	//uint32_t _component_id = 0;
+	ComponentType _type = ComponentType::NONE;
 
 	std::vector<ComponentNode> _nodes;
-
-	Framework::BaseSprite* _sprite = nullptr;
-
-	Framework::vec2 _position;
 };
 
 class ComponentManager {
 public:
 	ComponentManager();
-	//~ComponentManager();
 
-	void add_component(const Component& component);
+	uint32_t add_component(const Component& component);
 	void add_connection(const Connection& connection);
 
-	std::vector<Component> get_components();
-	std::vector<Connection> get_connections();
+	void erase_component(uint32_t component_id);
 
+	const std::map<uint32_t, Component>& get_components() const;
+	const std::vector<Connection>& get_connections() const;
 
-	void render();
+protected:
+	std::map<uint32_t, Component> _components;
+	std::vector<Connection> _connections;
 
 private:
-	std::vector<Component> _components;
-	std::vector<Connection> _connections;
+	uint32_t get_next_component_index() const;
 };

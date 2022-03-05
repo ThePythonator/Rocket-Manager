@@ -8,6 +8,8 @@
 
 #include "Maths.hpp"
 
+#include "PhysicsEngine.hpp"
+
 namespace WINDOW {
 	extern const Framework::vec2 SIZE;
 	extern const Framework::vec2 SIZE_HALF;
@@ -246,6 +248,10 @@ namespace GAME {
 
 				extern const float EXTRA_ZOOM;
 			}
+
+			namespace ICONS {
+				extern const std::vector<PhysicsEngine::phyvec> COMMAND_MODULE_VERTICES;
+			}
 		}
 	}
 
@@ -262,6 +268,17 @@ namespace GAME {
 			extern const float MINIMUM_ZOOM;
 		}
 
+		namespace RIGID_BODY_IDS {
+			enum RIGID_BODY_IDS {
+				CATEGORY, // is it a planet or component?
+				GROUP, // components are grouped into rockets
+				TYPE, // what type of object is it (e.g. Fuel Tank, Command Module)
+				OBJECT, // which (exact) object (planet or component) is it?
+				
+				TOTAL
+			};
+		}
+
 		namespace CATEGORIES {
 			enum CATEGORIES {
 				PLANET, // Can be planet, sun, moon etc
@@ -269,6 +286,14 @@ namespace GAME {
 
 				TOTAL
 			};
+		}
+
+		namespace DEFAULT_MATERIALS {
+			// No const only because it gets messy when using ptrs to here
+			extern PhysicsEngine::Material STEEL;
+			/*extern PhysicsEngine::Material WOOD;
+			extern PhysicsEngine::Material PLASTIC;
+			extern PhysicsEngine::Material GLASS;*/
 		}
 
 		namespace BODIES {
@@ -295,7 +320,10 @@ namespace GAME {
 		}
 
 		namespace COMPONENTS {
-			extern const std::vector<Framework::vec2> SIZES;
+			//extern const std::vector<PhysicsEngine::phyvec> SIZES;
+			extern const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES;
+
+			extern const std::vector<PhysicsEngine::Material*> MATERIALS;
 		}
 	}
 

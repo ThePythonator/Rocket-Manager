@@ -18,42 +18,42 @@ namespace PhysicsEngine {
 		Shape();
 
 		virtual ShapeType get_type() = 0;
-		virtual double get_area() = 0;
-		virtual double get_moment_of_inertia(double density) = 0;
-		virtual dvec2 get_centroid() = 0;
-		virtual double get_bounding_radius() = 0;
+		virtual phyflt get_area() = 0;
+		virtual phyflt get_moment_of_inertia(phyflt density) = 0;
+		virtual phyvec get_centroid() = 0;
+		virtual phyflt get_bounding_radius() = 0;
 	};
 
 	class Circle : public Shape {
 	public:
-		Circle(double _radius = 1.0);
+		Circle(phyflt _radius = 1.0);
 		
 		ShapeType get_type();
-		double get_area();
-		double get_moment_of_inertia(double density);
-		dvec2 get_centroid();
-		double get_bounding_radius();
+		phyflt get_area();
+		phyflt get_moment_of_inertia(phyflt density);
+		phyvec get_centroid();
+		phyflt get_bounding_radius();
 
-		double radius;
+		phyflt radius;
 	};
 
 	class Polygon : public Shape {
 	public:
-		Polygon(std::vector<dvec2> _vertices = { { 0.5, -0.5 }, { 0.5, 0.5 }, { -0.5, 0.5 }, { -0.5, -0.5 } });
+		Polygon(std::vector<phyvec> _vertices = { { 0.5, -0.5 }, { 0.5, 0.5 }, { -0.5, 0.5 }, { -0.5, -0.5 } });
 
 		ShapeType get_type();
-		double get_area();
-		double get_moment_of_inertia(double density);
-		dvec2 get_centroid();
-		double get_bounding_radius();
+		phyflt get_area();
+		phyflt get_moment_of_inertia(phyflt density);
+		phyvec get_centroid();
+		phyflt get_bounding_radius();
 
-		std::vector<dvec2> vertices;
-		std::vector<dvec2> face_normals;
+		std::vector<phyvec> vertices;
+		std::vector<phyvec> face_normals;
 
 	private:
 		void calculate_face_normals();
 		void reorder_vertices();
 	};
 
-	Polygon* create_rect(dvec2 size);
+	Polygon* create_rect(const phyvec& size);
 }

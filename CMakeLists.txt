@@ -4,8 +4,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Uncomment these to put the dlls in the same directory as the executable (useful if you don't have SDL2 installed and you're building from source)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Uncomment if you need to do some debugging :)
 # set(CMAKE_FIND_DEBUG_MODE TRUE)
@@ -26,8 +26,9 @@ set(GAME_SOURCES
 #	"GameStage.cpp"
 	"ProtoGame.cpp" # to remove
 	"EditorStage.cpp"
-
+	
 	"Component.cpp"
+	"Rocket.cpp"
 
 	"Camera.cpp"
 

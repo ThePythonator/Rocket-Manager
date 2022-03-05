@@ -10,6 +10,10 @@
 
 #include "PhysicsEngine.hpp"
 
+#include "Rocket.hpp"
+
+using namespace PhysicsEngine::phy_t;
+
 class GameStage : public Framework::BaseStage {
 public:
 	//~GameStage();
@@ -22,13 +26,16 @@ public:
 	void render();
 
 private:
-	void create_solar_system(float scale = 1.0f);
+	void create_solar_system();
 	void create_components();
 
-	float find_eccentricity(float aphelion, float perihelion);
-	float find_semimajor_axis(float aphelion, float perihelion);
-	float find_velocity(float primary_mass, float radius, float semimajor_axis);
-	float volume_to_area_density(float volume_density, float radius);
+	std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket);
+	std::vector<PhysicsEngine::Constraint> create_rocket_constraints(const Rocket& rocket);
+
+	phyflt find_eccentricity(phyflt aphelion, phyflt perihelion);
+	phyflt find_semimajor_axis(phyflt aphelion, phyflt perihelion);
+	phyflt find_velocity(phyflt primary_mass, phyflt radius, phyflt semimajor_axis);
+	phyflt volume_to_area_density(phyflt volume_density, phyflt radius);
 
 	//void render_physics_objects();
 	void render_planet(const PhysicsEngine::RigidBody& planet, const Camera& camera, bool map);
@@ -39,15 +46,21 @@ private:
 	void render_sandbox();
 
 	void update_map(float dt);
-	void update_sandbox_scale(float dt);
+	void update_sandbox(float dt);
 	void update_physics(float dt);
 
 	void toggle_map();
+
+	std::vector<Framework::vec2> convert_poly_vertices(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera);
+	std::vector<Framework::vec2> convert_poly_vertices_retain_size(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera);
+	//std::vector<Framework::vec2> convert_poly_vertices(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const phyvec& camera_position, phyflt camera_scale);
 
 	PhysicsEngine::PhysicsManager physics_manager;
 	PhysicsEngine::PhysicsData physics_data;
 
 	Camera map_camera, sandbox_camera;
+
+	std::map<uint32_t, Rocket> rockets;
 
 	// Images for all physics objects??
 	//std::vector<Framework::BaseSprite*> planets;
@@ -57,6 +70,8 @@ private:
 	bool paused = true;
 	bool show_map = false;
 	uint8_t time_warp_index = 0;
+
+	uint8_t nearest_planet = 0;
 
 	float fps = 0.0f; // Used for debug info
 };

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <map>
 #include <string>
 
 #include "linalg.h"

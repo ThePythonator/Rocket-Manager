@@ -114,10 +114,10 @@ namespace COLOURS {
 namespace TIMINGS {
 	namespace INTRO {
 		namespace DURATION {
-			const float FADE_LENGTH = 2.0f;
+			const float FADE_LENGTH = 0.1f;//2.0f;
 
-			const float INITIAL_DELAY = 1.0f;
-			const float INTRO_DELAY = 2.5f;
+			const float INITIAL_DELAY = 0.1f;// 1.0f;
+			const float INTRO_DELAY = 0.1f;// 2.5f;
 		}
 
 		namespace CUMULATIVE {
@@ -166,8 +166,8 @@ namespace GAME {
 	namespace MAP {
 		namespace UI {
 			const float SCROLL_ZOOM_RATE = 0.2f;
-			const float MAXIMUM_ZOOM = 5e-4f;
-			const float MINIMUM_ZOOM = 1e-10f;
+			const float MAXIMUM_ZOOM = 5e-5f / SANDBOX::UNIVERSE_SCALE;
+			const float MINIMUM_ZOOM = 1e-11f / SANDBOX::UNIVERSE_SCALE;
 
 			namespace MINIMAP {
 				const float SIZE = WINDOW::SIZE.y * 0.25f;
@@ -177,13 +177,18 @@ namespace GAME {
 
 				const float EXTRA_ZOOM = WINDOW::SIZE.y / SIZE;
 			}
+
+			namespace ICONS {
+				// Size in pixels
+				const std::vector<PhysicsEngine::phyvec> COMMAND_MODULE_VERTICES = PhysicsEngine::isosceles_vertices({ 8, 8 });
+			}
 		}
 	}
 
 	namespace SANDBOX {
-		const double UNIVERSE_SCALE = 0.1;
+		const double UNIVERSE_SCALE = 0.01;
 
-		const double GRAVITATIONAL_CONSTANT = 6.674e-11;
+		const double GRAVITATIONAL_CONSTANT = 6.674e-11 / (UNIVERSE_SCALE * UNIVERSE_SCALE);
 
 		const std::vector<uint32_t> WARP_SPEEDS {
 			1,
@@ -203,6 +208,8 @@ namespace GAME {
 			const float SCROLL_ZOOM_RATE = 0.2f;
 			const float MAXIMUM_ZOOM = 1e1f;
 			const float MINIMUM_ZOOM = 1e-1f;
+			//const float MAXIMUM_ZOOM = 1e0f / SANDBOX::UNIVERSE_SCALE;
+			//const float MINIMUM_ZOOM = 1e-2f / SANDBOX::UNIVERSE_SCALE;
 		}
 
 
@@ -210,61 +217,84 @@ namespace GAME {
 
 		}
 
+		namespace DEFAULT_MATERIALS {
+			// No const only because it gets messy when using ptrs to here
+			/*PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 7850 };
+			PhysicsEngine::Material WOOD{ 0.5f, 0.25f, 0.6f, 710 };
+			PhysicsEngine::Material PLASTIC{ 0.35f, 0.3f, 0.5f, 940 };
+			PhysicsEngine::Material GLASS{ 0.94f, 0.4f, 0.5f, 2500 };*/
+			PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 7850 }; // density 1?
+		}
+
 		namespace BODIES {
 			// Radii are in metres, to 4sf
 			const std::vector<double> RADII = {
-				6963e5,
-				2440e3,
-				6052e3,
-				6371e3,
-				3390e3,
-				6991e4,
-				5823e4,
-				2536e4,
-				2462e4
+				6963e5 * UNIVERSE_SCALE,
+				2440e3 * UNIVERSE_SCALE,
+				6052e3 * UNIVERSE_SCALE,
+				6371e3 * UNIVERSE_SCALE,
+				3390e3 * UNIVERSE_SCALE,
+				6991e4 * UNIVERSE_SCALE,
+				5823e4 * UNIVERSE_SCALE,
+				2536e4 * UNIVERSE_SCALE,
+				2462e4 * UNIVERSE_SCALE
 			};
 
 			// Densities are in kg / m^3, to 3sf
 			const std::vector<double> VOLUME_DENSITIES = {
-				1.41e3,
-				5.43e3,
-				5.24e3,
-				5.51e3,
-				3.93e3,
-				1.33e3,
-				6.87e2,
-				1.27e3,
-				1.64e3
+				1.41e3 * UNIVERSE_SCALE,
+				5.43e3 * UNIVERSE_SCALE,
+				5.24e3 * UNIVERSE_SCALE,
+				5.51e3 * UNIVERSE_SCALE,
+				3.93e3 * UNIVERSE_SCALE,
+				1.33e3 * UNIVERSE_SCALE,
+				6.87e2 * UNIVERSE_SCALE,
+				1.27e3 * UNIVERSE_SCALE,
+				1.64e3 * UNIVERSE_SCALE
 			};
 
 			// Distances are in metres, to 4sf
 			const std::vector<double> PERIHELION_DISTANCES = {
-				0.0,
-				4600e7,
-				1075e8,
-				1471e8,
-				2067e8,
-				7405e8,
-				1353e9,
-				2736e9,
-				4460e9
+				0.0 * UNIVERSE_SCALE,
+				4600e7 * UNIVERSE_SCALE,
+				1075e8 * UNIVERSE_SCALE,
+				1471e8 * UNIVERSE_SCALE,
+				2067e8 * UNIVERSE_SCALE,
+				7405e8 * UNIVERSE_SCALE,
+				1353e9 * UNIVERSE_SCALE,
+				2736e9 * UNIVERSE_SCALE,
+				4460e9 * UNIVERSE_SCALE
 			};
 			const std::vector<double> APHELION_DISTANCES = {
-				0.0,
-				6982e7,
-				1089e8,
-				1521e8,
-				2492e8,
-				8166e8,
-				1515e9,
-				3006e9,
-				4537e9
+				0.0 * UNIVERSE_SCALE,
+				6982e7 * UNIVERSE_SCALE,
+				1089e8 * UNIVERSE_SCALE,
+				1521e8 * UNIVERSE_SCALE,
+				2492e8 * UNIVERSE_SCALE,
+				8166e8 * UNIVERSE_SCALE,
+				1515e9 * UNIVERSE_SCALE,
+				3006e9 * UNIVERSE_SCALE,
+				4537e9 * UNIVERSE_SCALE
 			};
 		}
 
 		namespace COMPONENTS {
-			const std::vector<Framework::vec2> SIZES{
-				{ 5, 20 }
+			//const std::vector<PhysicsEngine::phyvec> SIZES {
+			//	{ 5, 3 },	// CommandModule
+			//	{ 5, 20 },	// FuelTank
+			//	{ 3, 3 }	// Engine
+			//};
+
+			const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES{
+				PhysicsEngine::isosceles_vertices({ 5, 3 }),
+				PhysicsEngine::rect_vertices({ 5, 20 }),
+				PhysicsEngine::isosceles_vertices({ 3, 3 })
+			};
+
+			const std::vector<PhysicsEngine::Material*> MATERIALS {
+				&DEFAULT_MATERIALS::STEEL,
+				&DEFAULT_MATERIALS::STEEL,
+				&DEFAULT_MATERIALS::STEEL
 			};
 		}
 	}

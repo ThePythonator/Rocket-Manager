@@ -8,17 +8,17 @@ namespace PhysicsEngine {
 	class Constraint {
 	public:
 		Constraint();
-		Constraint(RigidBody* _a, RigidBody* _b, dvec2 _offset_a = D_VEC_NULL, dvec2 _offset_b = D_VEC_NULL);
+		Constraint(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL);
 
-		virtual dvec2 calculate_force() = 0;
+		virtual phyvec calculate_force() = 0;
 		void apply_force();
 
 		bool is_broken();
 
 		RigidBody* a = nullptr;
 		RigidBody* b = nullptr;
-		dvec2 offset_a;
-		dvec2 offset_b;
+		phyvec offset_a;
+		phyvec offset_b;
 
 	protected:
 		bool broken = false;
@@ -26,18 +26,18 @@ namespace PhysicsEngine {
 
 	class Spring : public Constraint {
 	public:
-		Spring(RigidBody* _a, RigidBody* _b, dvec2 _offset_a = D_VEC_NULL, dvec2 _offset_b = D_VEC_NULL, double _natural_length = 1.0, double _modulus_of_elasticity = 1.0, double _max_length_factor = 2.0);
-		dvec2 calculate_force();
+		Spring(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL, phyflt _natural_length = 1.0, phyflt _modulus_of_elasticity = 1.0, phyflt _max_length_factor = 2.0);
+		phyvec calculate_force();
 
 	protected:
-		const double natural_length = 1.0;
-		const double modulus_of_elasticity = 1.0;
-		const double max_length = 2.0;
+		const phyflt natural_length = 1.0;
+		const phyflt modulus_of_elasticity = 1.0;
+		const phyflt max_length = 2.0;
 	};
 
 	class String : public Spring {
 	public:
-		String(RigidBody* _a, RigidBody* _b, dvec2 _offset_a = D_VEC_NULL, dvec2 _offset_b = D_VEC_NULL, double _natural_length = 1.0, double _modulus_of_elasticity = 1.0, double _max_length_factor = 2.0);
-		dvec2 calculate_force();
+		String(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL, phyflt _natural_length = 1.0, phyflt _modulus_of_elasticity = 1.0, phyflt _max_length_factor = 2.0);
+		phyvec calculate_force();
 	};
 }

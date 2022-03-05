@@ -35,29 +35,29 @@ namespace PhysicsEngine {
 		Circle* circle_b = static_cast<Circle*>(b.shape);
 
 		// Calculate initial data needed
-		dvec2 normal = b.centre - a.centre;
-		double squared_distance = length_squared(normal);
-		double radii_sum = circle_a->radius + circle_b->radius;
-		double squared_radii_sum = radii_sum * radii_sum;
+		phyvec normal = b.centre - a.centre;
+		phyflt squared_distance = length_squared(normal);
+		phyflt radii_sum = circle_a->radius + circle_b->radius;
+		phyflt squared_radii_sum = radii_sum * radii_sum;
 
 		// Are objects intersecting?
 		if (squared_distance < squared_radii_sum) {
 			// Collision has occurred
 
 			// Caluclate distance between centres
-			double distance = std::sqrt(squared_distance);
+			phyflt distance = std::sqrt(squared_distance);
 
 			// Calculate penetration
-			double penetration_depth = radii_sum - distance;
+			phyflt penetration_depth = radii_sum - distance;
 
 			// The following defaults are used if distance is 0
 
 			// Choose a default value for the normal
 			// (it doesn't matter which direction)
-			dvec2 collision_normal = D_VEC_NULL;
+			phyvec collision_normal = PHYVEC_NULL;
 
 			// As default, set contact point to centre of circle
-			dvec2 contact_point = a.centre;
+			phyvec contact_point = a.centre;
 
 			// If distance is 0, we can't divide by it
 			if (distance > 0.0) {
@@ -91,7 +91,7 @@ namespace PhysicsEngine {
 		Polygon* polygon_b = static_cast<Polygon*>(b.shape);
 
 		// Convert circle's centre to the model space of the polygon
-		dvec2 circle_a_converted_centre = to_model_space(a.centre, b.centre, b.get_rotation_matrix());
+		phyvec circle_a_converted_centre = to_model_space(a.centre, b.centre, b.get_rotation_matrix());
 		//printf("rot mat: row1: %f, %f, row2: %f, %f\n", b.get_rotation_matrix().x.x, b.get_rotation_matrix().x.y, b.get_rotation_matrix().y.x, b.get_rotation_matrix().y.y);
 		/*printf("circle centre: %f, %f\n", a.centre.x, a.centre.y);
 		printf("polygon centre: %f, %f\n", b.centre.x, b.centre.y);
@@ -99,13 +99,17 @@ namespace PhysicsEngine {
 		// ISSUE: FOR SOME REASON, CIRCLE'S CENTRE SEEMS TO DRIFT OFF OF WHERE IT SHOULD BE (maybe fixed)
 		
 		// Find minimum penetration
-		double separation = -DBL_MAX;
+		phyflt separation = -PHYFLT_MAX;
 		uint16_t closest_face = 0;
 		for (uint16_t i = 0; i < polygon_b->vertices.size(); i++) {
 			// Find which side of each polygon face the circle is on
 			// signed_distance is distance from line to centre of circle
-			double signed_distance = dot(polygon_b->face_normals[i], circle_a_converted_centre - polygon_b->vertices[i]);
+			phyflt signed_distance = dot(polygon_b->face_normals[i], circle_a_converted_centre - polygon_b->vertices[i]);
+
+			// TODO: ISSUE tracked to here: signed_distance is slightly out....? about 0.5 units
+
 			//printf("signed_dist: %f\n", signed_distance);
+			//printf("circle_rads: %f\n", circle_a->radius);
 
 			if (signed_distance > circle_a->radius) {
 				// Impossible for a collision to have occurred with ANY face, so early-out
@@ -122,11 +126,11 @@ namespace PhysicsEngine {
 		uint16_t next_face = closest_face + 1 < polygon_b->vertices.size() ? closest_face + 1 : 0;
 
 		// Vector parallel to face
-		dvec2 face_vector = polygon_b->vertices[next_face] - polygon_b->vertices[closest_face];
+		phyvec face_vector = polygon_b->vertices[next_face] - polygon_b->vertices[closest_face];
 
 		// Vectors from vertices (on either side of closest face) to the centre of circle_a
-		dvec2 vertex_to_circle_centre = circle_a_converted_centre - polygon_b->vertices[closest_face];
-		dvec2 next_vertex_to_circle_centre = circle_a_converted_centre - polygon_b->vertices[next_face];
+		phyvec vertex_to_circle_centre = circle_a_converted_centre - polygon_b->vertices[closest_face];
+		phyvec next_vertex_to_circle_centre = circle_a_converted_centre - polygon_b->vertices[next_face];
 
 		// Check if centre is in face region by confirming both angles between face and vector from vertex to circle centre are acute
 		// Dot product is positive if theta < 90
@@ -137,7 +141,7 @@ namespace PhysicsEngine {
 			// In vertex region, closest to vertex vertices[closest_face]
 
 			// Since it is possible to reach here without intersecting the polygon, we need to check:
-			double distance_to_vertex = length_squared(vertex_to_circle_centre);
+			phyflt distance_to_vertex = length_squared(vertex_to_circle_centre);
 
 			if (distance_to_vertex > circle_a->radius * circle_a->radius) {
 				// No collision
@@ -148,7 +152,7 @@ namespace PhysicsEngine {
 				collision_information.contact_count = 1;
 
 				// Penetration is distance between radius and vertex
-				double penetration_distance = circle_a->radius - std::sqrt(distance_to_vertex);
+				phyflt penetration_distance = circle_a->radius - std::sqrt(distance_to_vertex);
 
 				// Contact point is vertex (not sure why though)
 				collision_information.contact_data[0] = ContactData{ to_world_space(polygon_b->vertices[closest_face], b.centre, b.get_rotation_matrix()), penetration_distance };
@@ -162,7 +166,7 @@ namespace PhysicsEngine {
 			// In vertex region, closest to vertex vertices[next_face]
 
 			// Since it is possible to reach here without intersecting the polygon, we need to check:
-			double distance_to_vertex = length_squared(next_vertex_to_circle_centre);
+			phyflt distance_to_vertex = length_squared(next_vertex_to_circle_centre);
 
 			if (length_squared(next_vertex_to_circle_centre) > circle_a->radius * circle_a->radius) {
 				// No collision
@@ -173,7 +177,7 @@ namespace PhysicsEngine {
 				collision_information.contact_count = 1;
 
 				// Penetration is distance between radius and vertex
-				double penetration_distance = circle_a->radius - std::sqrt(distance_to_vertex);
+				phyflt penetration_distance = circle_a->radius - std::sqrt(distance_to_vertex);
 
 				// Contact point is vertex (not sure why though)
 				collision_information.contact_data[0] = ContactData{ to_world_space(polygon_b->vertices[next_face], b.centre, b.get_rotation_matrix()), penetration_distance };
@@ -194,7 +198,7 @@ namespace PhysicsEngine {
 			collision_information.collision_normal = -to_world_space(polygon_b->face_normals[closest_face], b.get_rotation_matrix());
 
 			// Penetration is just radius - perpendicular distance to face
-			double penetration_distance = circle_a->radius - separation;
+			phyflt penetration_distance = circle_a->radius - separation;
 
 			// Contact point is on edge of circle
 			collision_information.contact_data[0] = ContactData{ a.centre + collision_information.collision_normal * circle_a->radius, penetration_distance };
@@ -227,27 +231,27 @@ namespace PhysicsEngine {
 		// If the distance is negative, all vertices are on the outer side of the edge, so there cannot be a collision (if this is the case, early out)
 
 		// Iterate through A's face normals and check against B's vertices
-		double maximum_distance_a = -DBL_MAX;
+		phyflt maximum_distance_a = -PHYFLT_MAX;
 		uint16_t face_index_a = 0;
 
 		for (uint16_t i = 0; i < polygon_a->face_normals.size(); i++) {
 			// Need to rotate face normal into B's model space - note that only requires rotation since we don't want to translate the vector
 			// First rotate into world space
-			dvec2 normal = to_world_space(polygon_a->face_normals[i], a.get_rotation_matrix());
+			phyvec normal = to_world_space(polygon_a->face_normals[i], a.get_rotation_matrix());
 			// Now rotate into B's model space
 			normal = to_model_space(normal, b.get_rotation_matrix());
 
 			// Calculate B's furthest vertex along negative normal
-			dvec2 support_point = find_support_point(-normal, polygon_b->vertices);
+			phyvec support_point = find_support_point(-normal, polygon_b->vertices);
 
 			// Get perpendicular distance from support point to face, using dot product
 			// First we need to convert vertex of A to world space:
-			dvec2 vertex = to_world_space(polygon_a->vertices[i], a.centre, a.get_rotation_matrix());
+			phyvec vertex = to_world_space(polygon_a->vertices[i], a.centre, a.get_rotation_matrix());
 			// Now convert to B's model space:
 			vertex = to_model_space(vertex, b.centre, b.get_rotation_matrix());
 
 			// Project vector from vertex to support point along normal to get distance:
-			double distance = dot(normal, support_point - vertex);
+			phyflt distance = dot(normal, support_point - vertex);
 
 			// Since we've projected along the POSITIVE normal, the distance will be positive if a separating axis has been found
 			// Hence if distance >= 0.0 then we can early out
@@ -262,27 +266,27 @@ namespace PhysicsEngine {
 		}
 
 		// Now B to A
-		double maximum_distance_b = -DBL_MAX;
+		phyflt maximum_distance_b = -PHYFLT_MAX;
 		uint16_t face_index_b = 0;
 
 		for (uint16_t i = 0; i < polygon_b->face_normals.size(); i++) {
 			// Need to rotate face normal into A's model space - note that only requires rotation since we don't want to translate the vector
 			// First rotate into world space
-			dvec2 normal = to_world_space(polygon_b->face_normals[i], b.get_rotation_matrix());
+			phyvec normal = to_world_space(polygon_b->face_normals[i], b.get_rotation_matrix());
 			// Now rotate into A's model space
 			normal = to_model_space(normal, a.get_rotation_matrix());
 			
 			// Calculate A's furthest vertex along negative normal
-			dvec2 support_point = find_support_point(-normal, polygon_a->vertices);
+			phyvec support_point = find_support_point(-normal, polygon_a->vertices);
 
 			// Get perpendicular distance from support point to face, using dot product
 			// First we need to convert vertex of B to world space:
-			dvec2 vertex = to_world_space(polygon_b->vertices[i], b.centre, b.get_rotation_matrix());
+			phyvec vertex = to_world_space(polygon_b->vertices[i], b.centre, b.get_rotation_matrix());
 			// Now convert to A's model space:
 			vertex = to_model_space(vertex, a.centre, a.get_rotation_matrix());
 
 			// Project vector from vertex to support point along normal to get distance:
-			double distance = dot(normal, support_point - vertex);
+			phyflt distance = dot(normal, support_point - vertex);
 
 			// Since we've projected along the POSITIVE normal, the distance will be positive if a separating axis has been found
 			// Hence if distance >= 0.0 then we can early out
@@ -298,8 +302,8 @@ namespace PhysicsEngine {
 
 		// maximum_distance is negative, we want the one closer to 0
 		// Polygon with least penetration is the reference polygon
-		double maximum_distance = maximum_distance_a;
-		double reference_face_index = face_index_a;
+		phyflt maximum_distance = maximum_distance_a;
+		phyflt reference_face_index = face_index_a;
 		Polygon* reference_polygon = polygon_a;
 		Polygon* incident_polygon = polygon_b;
 
@@ -329,7 +333,7 @@ namespace PhysicsEngine {
 		// Incident face is the face which has the largest component in the direction of the negative reference face's normal
 
 		// Need to convert to world space
-		dvec2 reference_normal = to_world_space(reference_polygon->face_normals[reference_face_index], reference_body->get_rotation_matrix());
+		phyvec reference_normal = to_world_space(reference_polygon->face_normals[reference_face_index], reference_body->get_rotation_matrix());
 		// Now convert to incident's model space
 		reference_normal = to_model_space(reference_normal, incident_body->get_rotation_matrix());
 
@@ -339,10 +343,10 @@ namespace PhysicsEngine {
 		// Note: this could be done more efficiently by using the fact that the vertex used to get the minimum penetration must be one of the vertices of the incident edge
 		// Since we don't store that vertex, it's easier to do it this way:
 		uint16_t incident_face_index = 0;
-		double minimum_dot_product = DBL_MAX;
+		phyflt minimum_dot_product = PHYFLT_MAX;
 
 		for (uint16_t i = 0; i < incident_polygon->face_normals.size(); i++) {
-			double d = dot(reference_normal, incident_polygon->face_normals[i]);
+			phyflt d = dot(reference_normal, incident_polygon->face_normals[i]);
 
 			// Dot product is less, this is closer to 'anti-normal'
 			if (d < minimum_dot_product) {
@@ -352,7 +356,7 @@ namespace PhysicsEngine {
 		}
 
 		// Get incident face vertices using incident_face_index
-		dvec2 incident_face_vertices[2];
+		phyvec incident_face_vertices[2];
 		incident_face_vertices[0] = incident_polygon->vertices[incident_face_index];
 		incident_face_vertices[1] = incident_polygon->vertices[incident_face_index + 1 < incident_polygon->vertices.size() ? incident_face_index + 1 : 0];
 		
@@ -361,7 +365,7 @@ namespace PhysicsEngine {
 		incident_face_vertices[1] = to_world_space(incident_face_vertices[1], incident_body->centre, incident_body->get_rotation_matrix());
 
 		// Get reference face vertices using reference_face_index
-		dvec2 reference_face_vertices[2];
+		phyvec reference_face_vertices[2];
 		reference_face_vertices[0] = reference_polygon->vertices[reference_face_index];
 		reference_face_vertices[1] = reference_polygon->vertices[reference_face_index + 1 < reference_polygon->vertices.size() ? reference_face_index + 1 : 0];
 
@@ -373,10 +377,10 @@ namespace PhysicsEngine {
 		// Clip lines are the two lines parallel to the normal, each passing through one of the vertices of the reference face
 		
 		// Find vector parallel to line normals
-		dvec2 reference_edge = normalise(reference_face_vertices[1] - reference_face_vertices[0]);
+		phyvec reference_edge = normalise(reference_face_vertices[1] - reference_face_vertices[0]);
 
 		// Find first clip line origin distance (from origin to second vertex)
-		double first_origin_distance = dot(reference_face_vertices[1], reference_edge);
+		phyflt first_origin_distance = dot(reference_face_vertices[1], reference_edge);
 
 		// Clip incident face to line
 		ClipResult half_clipped_face = clip_edge_to_line(incident_face_vertices, reference_edge, first_origin_distance);
@@ -391,7 +395,7 @@ namespace PhysicsEngine {
 		}
 
 		// Find second clip line origin distance (from origin to first vertex)
-		double second_origin_distance = dot(reference_face_vertices[0], -reference_edge);
+		phyflt second_origin_distance = dot(reference_face_vertices[0], -reference_edge);
 
 		// Clip incident face to line
 		ClipResult clipped_face = clip_edge_to_line(half_clipped_face.points, -reference_edge, second_origin_distance);
@@ -403,19 +407,19 @@ namespace PhysicsEngine {
 		}
 
 		// Get collision normal
-		dvec2 collision_normal = to_world_space(reference_polygon->face_normals[reference_face_index], reference_body->get_rotation_matrix());
+		phyvec collision_normal = to_world_space(reference_polygon->face_normals[reference_face_index], reference_body->get_rotation_matrix());
 		// Flip if necessary
 		collision_information.collision_normal = flipped ? -collision_normal : collision_normal;
 
 		// Get distance from reference face to origin along normal
-		double reference_face_distance = dot(collision_normal, reference_face_vertices[0]);
+		phyflt reference_face_distance = dot(collision_normal, reference_face_vertices[0]);
 		
 		// Only keep points behind reference face
 		collision_information.contact_count = 0;
 
 		// Each vertex
 		for (uint8_t i = 0; i < clipped_face.points_count; i++) {
-			double separation = dot(collision_normal, clipped_face.points[i]) - reference_face_distance;
+			phyflt separation = dot(collision_normal, clipped_face.points[i]) - reference_face_distance;
 
 			if (separation <= 0.0) {
 				// Point is behind reference face, keep it
