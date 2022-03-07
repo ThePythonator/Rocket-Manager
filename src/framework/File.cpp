@@ -1,10 +1,16 @@
 #include "File.hpp"
 
 namespace Framework {
+	std::string get_directory_path(std::string filepath) {
+		return filepath.substr(0, filepath.find_last_of("\\/"));
+	}
+
 	namespace JSONHandler {
 		// Uses https://github.com/nlohmann/json
 
 		json read(std::string filepath) {
+			printf("Attempting to read from %s\n", filepath.c_str());
+
 			// Read from file
 			json data;
 			try {
@@ -12,12 +18,17 @@ namespace Framework {
 				file >> data;
 			}
 			catch (const parse_error& error) {
-				printf("No save file found!\n");
+				printf("Couldn't find file!\n");
 			}
 			return data;
 		}
 
 		void write(std::string filepath, json data) {
+			if (std::filesystem::create_directories(get_directory_path(filepath))) {
+				printf("Created necessary directories.");
+			}
+
+			printf("Written to %s\n", filepath.c_str());
 			// Write to the file
 			std::ofstream file(filepath);
 			file << data << std::endl;

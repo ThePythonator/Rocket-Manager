@@ -14,8 +14,10 @@ void Game::end() {
 
 void Game::load_data() {
 	std::string ASSETS_PATH = Framework::SDLUtils::find_assets_path(PATHS::IMAGES::LOCATION + PATHS::IMAGES::MAIN_SPRITESHEET, PATHS::DEPTH);
-	graphics_objects.asset_path = ASSETS_PATH;
+	std::string BASE_PATH = ASSETS_PATH + PATHS::PARENT;
 	std::string IMAGES_PATH = ASSETS_PATH + PATHS::IMAGES::LOCATION;
+
+	graphics_objects.base_path = BASE_PATH;
 
 	// Load logo image
 	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::LOGO] = Framework::create_image(graphics_objects.graphics_ptr, IMAGES_PATH + PATHS::IMAGES::LOGO, Framework::Image::Flags::SDL_TEXTURE);

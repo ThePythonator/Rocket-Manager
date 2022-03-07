@@ -26,6 +26,8 @@ set(GAME_SOURCES
 #	"GameStage.cpp"
 	"ProtoGame.cpp" # to remove
 	"EditorStage.cpp"
+
+	"Settings.cpp"
 	
 	"Component.cpp"
 	"Rocket.cpp"

@@ -21,48 +21,46 @@ void GameStage::init() {
 	// Set camera position
 
 	// Just for testing
-	//map_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3] * GAME::SANDBOX::UNIVERSE_SCALE, 0.0f });
-	map_camera.set_position({});
+	map_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3], 0.0f });
+	//map_camera.set_position({});
 	map_camera.set_scale(1e-5f / GAME::SANDBOX::UNIVERSE_SCALE);
 
 	// TODO
-	//sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3] * GAME::SANDBOX::UNIVERSE_SCALE,  -GAME::SANDBOX::BODIES::RADII[3] * GAME::SANDBOX::UNIVERSE_SCALE });
-	sandbox_camera.set_position({ 0.0f ,  -GAME::SANDBOX::BODIES::RADII[3] });
-	sandbox_camera.set_scale(1.0f);
+	sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3],  -GAME::SANDBOX::BODIES::RADII[3] });
+	//sandbox_camera.set_position({ 0.0f ,  -GAME::SANDBOX::BODIES::RADII[3] });
+	sandbox_camera.set_scale(5.0f);
 
 	// Create Solar System
 	create_solar_system();
 
 	create_components(); // todo: load from save
+
+	init_temporaries();
 }
 
 void GameStage::start() {
+	load_settings();
+}
 
+void GameStage::end() {
+	save_settings();
 }
 
 bool GameStage::update(float dt) {
 	//transition->update(dt);
 
-	// Warping. To redo controls
-	if (input->just_down(Framework::KeyHandler::Key::Z)) {
-		time_warp_index++;
-		if (time_warp_index >= GAME::SANDBOX::WARP_SPEEDS.size()) time_warp_index = 0;
-	}
-
-
-	if (input->just_down(Framework::KeyHandler::Key::SPACE)) paused = !paused;
-
-	if (input->just_down(Framework::KeyHandler::Key::M)) toggle_map();
-
+	// Handle inputs etc
+	update_game_state(dt);
 
 	// Note: slight issue where sun actually does slowly move
 	// This seems to cause other orbit to go crazy after a little bit too
-	if (!paused) update_physics(dt);
+	if (!game_state.paused) update_physics(dt);
+
+	// Temporary positions etc
+	update_temporaries(dt);
 
 	update_map(dt);
-	update_sandbox(dt); // TESTING
-
-	fps = 1.0f / dt;
+	update_sandbox(dt);
 
 	return true;
 }
@@ -79,19 +77,81 @@ void GameStage::render() {
 
 	//render_physics_objects();
 
-	if (!show_map) render_sandbox();
+	if (!game_state.show_map) render_sandbox();
 
 	render_map();
 
-	// todo: check if debug has been set
-	render_debug();
+
+	if (settings.show_debug) render_debug();
 }
 
 
 
 
+void GameStage::init_temporaries() {
+	// Sandbox temporaries
+
+	// Find position of current_rocket's command module
+	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+			// Does this component belong to the current rocket?
+			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+				// Is the component a command module?
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::COMMAND_MODULE) {
+					sandbox_temporaries.cmd_mdl_centre = body.centre;
+				}
+			}
+		}
+	}
+
+	sandbox_temporaries.last_cmd_mdl_centre = sandbox_temporaries.cmd_mdl_centre;
+
+	// Find nearest planet
+	phyflt nearest_planet_squared_distance = PHYFLT_MAX;
+
+	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
+			phyflt squared_distance = PhysicsEngine::length_squared(body.centre - sandbox_temporaries.cmd_mdl_centre);
+
+			if (squared_distance < nearest_planet_squared_distance) {
+				nearest_planet_squared_distance = squared_distance;
+
+				// Set nearest planet
+				sandbox_temporaries.nearest_planet = body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
+			}
+		}
+	}
+
+	// Debug temporaries
+
+	// Calculate fps
+	debug_temporaries.fps = WINDOW::TARGET_FPS;
+}
+
+void GameStage::load_settings() {
+	// Set defaults
+	settings = Settings();
+
+	// Read json
+	json j = Framework::JSONHandler::read(graphics_objects->base_path + PATHS::SAVE_DATA::LOCATION + PATHS::SAVE_DATA::SETTINGS);
+
+	if (!j.empty()) {
+		try {
+			// Fill settings struct
+			j.get_to(settings);
+		}
+		catch (const json::out_of_range& e) {
+			// Ignore - we set defaults already so it's not the end of the world
+		}
+	}
+}
+void GameStage::save_settings() {
+	Framework::JSONHandler::write(graphics_objects->base_path + PATHS::SAVE_DATA::LOCATION + PATHS::SAVE_DATA::SETTINGS, settings);
+}
+
+
 void GameStage::create_solar_system() {
-#define JUST_EARTH
+//#define JUST_EARTH
 #ifdef JUST_EARTH
 	uint8_t i = GAME::SANDBOX::BODIES::ID::EARTH;
 
@@ -119,7 +179,7 @@ void GameStage::create_solar_system() {
 	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
 
 	physics_manager.add_body(object);
-#else
+#endif
 	// TODO: create method to load system from object positions
 	phyflt sun_radius = GAME::SANDBOX::BODIES::RADII[GAME::SANDBOX::BODIES::ID::SUN];
 	phyflt sun_area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[GAME::SANDBOX::BODIES::ID::SUN], sun_radius);
@@ -169,7 +229,6 @@ void GameStage::create_solar_system() {
 
 		physics_manager.add_body(object);
 	}
-#endif
 }
 
 void GameStage::create_components() {
@@ -187,7 +246,7 @@ void GameStage::create_components() {
 	object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 
 
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = static_cast<uint32_t>(ComponentType::COMMAND_MODULE); // test
+	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = Component::ComponentType::COMMAND_MODULE; // test
 
 	// Set category ID
 	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT;
@@ -199,33 +258,56 @@ void GameStage::create_components() {
 	physics_manager.add_body(object);
 }
 
+// Creates RigidBody instances, using the positions stored in the Rocket instance, offsetting by the supplied offset
+std::vector<PhysicsEngine::RigidBody> GameStage::create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset) {
+	std::vector<PhysicsEngine::RigidBody> objects;
 
-std::vector<PhysicsEngine::RigidBody> GameStage::create_rocket_rigidbodies(const Rocket& rocket) {
+	// TODO: load position from file
+	// TODO: load angle from file
+
+	// For now, just work out offsets?
+
 	// Create the physics RigidBodies to be added to the engine
 	for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
-		uint32_t index = p.first;
+		uint32_t rocket_id = p.first;
 		const Component& component = p.second;
 
-		uint32_t type = static_cast<uint32_t>(component.get_type());
+		uint32_t component_type = component.get_type();
 
-		PhysicsEngine::Shape* shape_ptr = new PhysicsEngine::Polygon(GAME::SANDBOX::COMPONENTS::VERTICES[type]);
+		PhysicsEngine::Shape* shape_ptr = new PhysicsEngine::Polygon(GAME::SANDBOX::COMPONENTS::VERTICES[component_type]);
 		physics_data.shapes.push_back(shape_ptr);
 
 		// Don't add material_ptr to physics_data since it's not a heap allocated ptr
-		PhysicsEngine::Material* material_ptr = GAME::SANDBOX::COMPONENTS::MATERIALS[type];
+		PhysicsEngine::Material* material_ptr = GAME::SANDBOX::COMPONENTS::MATERIALS[component_type];
+		
+		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_position()) + offset);
 
-		//PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, centre); // TODO
+		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT; // It's a component
+		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = rocket_id; // Which rocket is it part of
+		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = component_type; // What type of component is it
+		//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = 0; // Currently not needed?
 
-		// todo : set velocity? position?
+		// todo : set velocity??
+
+		objects.push_back(object);
 	}
 
-
-	return std::vector<PhysicsEngine::RigidBody>(); // TODO
+	return objects;
 }
 
-std::vector<PhysicsEngine::Constraint> GameStage::create_rocket_constraints(const Rocket& rocket) {
-	// TODO 
-	return std::vector<PhysicsEngine::Constraint>(); // TODO
+std::vector<PhysicsEngine::Constraint*> GameStage::create_rocket_constraints(const Rocket& rocket) {
+	std::vector<PhysicsEngine::Constraint*> constraints;
+
+	for (Connection c : rocket.get_connections()) {
+		//c.a.component_id
+
+		//PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, natural_length, modulus_of_elasticity, max_length_factor);
+		//physics_data.constraints.push_back(constraint);
+
+		//constraints.push_back(constraint);
+	}
+
+	return constraints;
 }
 
 
@@ -288,15 +370,14 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 		// Draw small triangle representing command module
 
 		// Only render icon on map if it's a command module
-		if (component_type == static_cast<uint32_t>(ComponentType::COMMAND_MODULE)) {
+		if (component_type == Component::ComponentType::COMMAND_MODULE) {
 
 			phyvec position = map_camera.get_render_position(component.centre);
-
-			// TODO: represent rocket instead????
-			// TODO: rotate
+			
 			std::vector<Framework::vec2> points = convert_poly_vertices_retain_size(GAME::MAP::UI::ICONS::COMMAND_MODULE_VERTICES, component.centre, component.get_rotation_matrix(), map_camera);
 
-			graphics_objects->graphics_ptr->render_poly(points, COLOURS::WHITE);
+			// TODO: change colour if current_rocket
+			graphics_objects->graphics_ptr->render_poly(points, rocket_id == sandbox_temporaries.current_rocket ? COLOURS::CURRENT_ROCKET : COLOURS::WHITE);
 		}
 	}
 	else {
@@ -327,9 +408,12 @@ void GameStage::render_map() {
 
 	map_image.fill(COLOURS::BLACK);
 
-	if (!show_map) {
+	if (!game_state.show_map) {
 		map_image.set_render_target();
 	}
+
+	// TODO: render planets first, then components!!! (also filled in triangle rather than outline?)
+	// TODO: render rocket name with command module icon?
 
 	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
 		switch (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
@@ -345,7 +429,7 @@ void GameStage::render_map() {
 		}
 	}
 
-	if (show_map) {
+	if (game_state.show_map) {
 		// Fullscreen map
 		// Title text
 		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text("Map", Framework::Vec(WINDOW::SIZE_HALF.x, 0.0f), COLOURS::WHITE, FONTS::SCALE::MAIN_FONT, Framework::Font::TOP_CENTER);
@@ -369,15 +453,17 @@ void GameStage::render_map() {
 void GameStage::render_debug() {
 	std::vector<std::string> debug_text{
 		"DEBUG INFORMATION:",
-		"Frames per second: " + Framework::trim_precision(fps, GAME::DEBUG::PRECISION::FPS),
-		"Paused: " + std::string(paused ? "yes" : "no"),
-		"Time multiplier: " + std::to_string(GAME::SANDBOX::WARP_SPEEDS[time_warp_index]) + "x",
-		"Map type: " + std::string(show_map ? "fullscreen" : "minimap"),
+		"Frames per second: " + Framework::trim_precision(debug_temporaries.fps, GAME::DEBUG::PRECISION::FPS),
+		"Paused: " + std::string(game_state.paused ? "yes" : "no"),
+		"Time multiplier: " + std::to_string(GAME::SANDBOX::WARP_SPEEDS[game_state.time_warp_index]) + "x",
+		"Map type: " + std::string(game_state.show_map ? "fullscreen" : "minimap"),
 		"Map Scale: " + Framework::trim_precision(map_camera.get_scale() * 1e6f, GAME::DEBUG::PRECISION::MAP_SCALE) + "e-6x",
 		"Map Position: (" + Framework::trim_precision(map_camera.get_position().x, GAME::DEBUG::PRECISION::MAP_POSITION) + ", " + Framework::trim_precision(map_camera.get_position().y, GAME::DEBUG::PRECISION::MAP_POSITION) + ")",
 		"Sandbox Scale: " + Framework::trim_precision(sandbox_camera.get_scale(), GAME::DEBUG::PRECISION::SANDBOX_SCALE) + "x",
 		"Sandbox Position: (" + Framework::trim_precision(sandbox_camera.get_position().x, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ", " + Framework::trim_precision(sandbox_camera.get_position().y, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ")",
-		"Nearest planet: " + STRINGS::GAME::PLANET_NAMES[nearest_planet]
+		"Nearest planet: " + STRINGS::GAME::PLANET_NAMES[sandbox_temporaries.nearest_planet]
+		// TODO: altitude
+		// TODO: relative velocity
 	};
 
 	for (uint8_t i = 0; i < debug_text.size(); i++) {
@@ -407,16 +493,75 @@ void GameStage::render_sandbox() {
 	// todo
 }
 
+
+void GameStage::update_temporaries(float dt) {
+	// Sandbox temporaries
+
+	sandbox_temporaries.last_cmd_mdl_centre = sandbox_temporaries.cmd_mdl_centre;
+	
+	// Find position of current_rocket's command module
+	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+			// Does this component belong to the current rocket?
+			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+				// Is the component a command module?
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::COMMAND_MODULE) {
+					sandbox_temporaries.cmd_mdl_centre = body.centre;
+				}
+			}
+		}
+	}
+
+	// Find nearest planet
+	phyflt nearest_planet_squared_distance = PHYFLT_MAX;
+
+	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
+			phyflt squared_distance = PhysicsEngine::length_squared(body.centre - sandbox_temporaries.cmd_mdl_centre);
+
+			if (squared_distance < nearest_planet_squared_distance) {
+				nearest_planet_squared_distance = squared_distance;
+
+				// Set nearest planet
+				sandbox_temporaries.nearest_planet = body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
+			}
+		}
+	}
+
+	// Debug temporaries
+
+	// Calculate fps
+	debug_temporaries.fps = 1.0f / dt;
+}
+
+void GameStage::update_game_state(float dt) {
+	// Warping. To redo controls
+	if (input->just_down(Framework::KeyHandler::Key::Z)) {
+		game_state.time_warp_index++;
+		if (game_state.time_warp_index >= GAME::SANDBOX::WARP_SPEEDS.size()) game_state.time_warp_index = 0;
+	}
+
+
+	if (input->just_down(Framework::KeyHandler::Key::SPACE)) game_state.paused = !game_state.paused;
+
+	if (input->just_down(Framework::KeyHandler::Key::M)) toggle_map();
+}
+
+
 void GameStage::update_map(float dt) {
 	// Handle map controls
+	
+	// Move camera by distance the command module has moved
+	phyvec distance = sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre;
+	map_camera.set_position(map_camera.get_position() + distance);
 
 	// Only allow scrolling/dragging map if we're in fullscreen map mode, or if the mouse is over the minimap
-	if (show_map || Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
+	if (game_state.show_map || Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
 		float maximum_zoom = GAME::MAP::UI::MAXIMUM_ZOOM;
-		if (!show_map) maximum_zoom /= GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
+		if (!game_state.show_map) maximum_zoom /= GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
 
 		float minimum_zoom = GAME::MAP::UI::MINIMUM_ZOOM;
-		if (!show_map) minimum_zoom /= GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
+		if (!game_state.show_map) minimum_zoom /= GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
 
 		float zoom = input->get_mouse()->scroll_amount() * GAME::MAP::UI::SCROLL_ZOOM_RATE + 1.0f;
 
@@ -430,7 +575,7 @@ void GameStage::update_map(float dt) {
 		phyvec new_position = map_camera.get_position() - input->get_mouse()->distance_dragged() / map_camera.get_scale();
 
 		// Adjust map so that zooming always zooms towards the cursor
-		Framework::vec2 offset = show_map ? WINDOW::SIZE_HALF : GAME::MAP::UI::MINIMAP::RECT.centre();
+		Framework::vec2 offset = game_state.show_map ? WINDOW::SIZE_HALF : GAME::MAP::UI::MINIMAP::RECT.centre();
 		new_position += actual_zoom * (input->get_mouse()->position() - offset) / map_camera.get_scale();
 
 		map_camera.set_position(new_position);
@@ -439,44 +584,12 @@ void GameStage::update_map(float dt) {
 
 
 void GameStage::update_sandbox(float dt) {
-	// Find nearest planet
-	phyflt nearest_planet_squared_distance = PHYFLT_MAX;
-
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
-			phyvec current_rocket_pos_to_rename; // TODO: change, get somewhere else
-			phyflt squared_distance = PhysicsEngine::length_squared(body.centre - current_rocket_pos_to_rename);
-			if (squared_distance < nearest_planet_squared_distance) {
-				nearest_planet = body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
-
-				nearest_planet_squared_distance = squared_distance;
-			}
-		}
-		else if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
-			//Framework::vec2 v = PhysicsEngine::to_fvec(body.centre - sandbox_camera.get_position()) * 1.0f;
-			//sandbox_camera.set_position(sandbox_camera.get_position() + v);
-
-			phyvec v = body.centre; // TODO: not centering???
-			//printf("v: %f, %f\n", v.x, v.y);
-			sandbox_camera.set_position(v);
-		}
-	}
-
-	// TEST
-
-	// temp:
-	//sandbox_camera.set_position(body.centre);
-	//printf("%f,%f\n", body.centre.x, body.centre.y);
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
-			Framework::vec2 v = PhysicsEngine::to_fvec(body.centre - sandbox_camera.get_position()) * 1.0f;
-			sandbox_camera.set_position(sandbox_camera.get_position() + v);
-		}
-	}
+	// Move camera to centre of command module of current_rocket
+	sandbox_camera.set_position(sandbox_temporaries.cmd_mdl_centre);
 
 	// TESTING ONLY
 	// Only allow scrolling/--dragging-- sandbox if we're not in fullscreen map mode and not clicking on the minimap
-	if (!show_map && !Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
+	if (!game_state.show_map && !Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
 		float zoom = input->get_mouse()->scroll_amount() * GAME::SANDBOX::UI::SCROLL_ZOOM_RATE + 1.0f;
 
 		float new_scale = sandbox_camera.get_scale() * zoom;
@@ -520,7 +633,7 @@ void GameStage::update_physics(float dt) {
 
 	
 	// New method: call it lots of times, but don't let the number of repetitions be huge
-	uint32_t speed = GAME::SANDBOX::WARP_SPEEDS[time_warp_index];
+	uint32_t speed = GAME::SANDBOX::WARP_SPEEDS[game_state.time_warp_index];
 	uint32_t multiplier = 1;
 
 	while (speed > 10) {
@@ -539,12 +652,12 @@ void GameStage::update_physics(float dt) {
 }
 
 void GameStage::toggle_map() {
-	show_map = !show_map;
+	game_state.show_map = !game_state.show_map;
 	
 	float zoom_amount = GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
 
 	// Adjust zoom so that minimap fits similar amount on
-	float zoom = show_map ? zoom_amount : 1.0f / zoom_amount;
+	float zoom = game_state.show_map ? zoom_amount : 1.0f / zoom_amount;
 
 	map_camera.set_scale(zoom * map_camera.get_scale());
 }

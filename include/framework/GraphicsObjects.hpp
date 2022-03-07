@@ -23,6 +23,6 @@ namespace Framework {
 
 		std::vector<Button::ButtonImages> button_image_groups;
 
-		std::string asset_path;
+		std::string base_path;
 	};
 }

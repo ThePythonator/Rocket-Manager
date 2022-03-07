@@ -21,6 +21,8 @@ namespace Framework {
 		while (running) {
 			running = main_loop();
 		}
+
+		stage->end();
 		
 		// Allow game to clean up
 		end();

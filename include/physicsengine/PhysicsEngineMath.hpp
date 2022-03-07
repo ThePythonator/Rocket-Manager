@@ -20,12 +20,12 @@ namespace PhysicsEngine {
 
 #ifdef USE_FLT
 #define PHYFLT float
-#define PHYFLT_MAX DBL_MAX
-#define PHYFLT_MIN DBL_MIN
-#else
-#define PHYFLT double
 #define PHYFLT_MAX FLT_MAX
 #define PHYFLT_MIN FLT_MIN
+#else
+#define PHYFLT double
+#define PHYFLT_MAX DBL_MAX
+#define PHYFLT_MIN DBL_MIN
 #endif
 
 		typedef PHYFLT phyflt;

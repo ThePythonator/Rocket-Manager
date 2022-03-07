@@ -4,33 +4,36 @@
 // This is just a test of features and ideas, will be moved to GameStage when ready
 
 
+#include "PhysicsEngine.hpp"
+
 #include "Stages.hpp"
 
 #include "Camera.hpp"
-
-#include "PhysicsEngine.hpp"
-
 #include "Rocket.hpp"
+#include "Settings.hpp"
 
 using namespace PhysicsEngine::phy_t;
 
 class GameStage : public Framework::BaseStage {
 public:
-	//~GameStage();
-
 	void init();
 
 	void start();
+	void end();
 
 	bool update(float dt);
 	void render();
 
 private:
+	void init_temporaries();
+	void load_settings();
+	void save_settings();
+
 	void create_solar_system();
 	void create_components();
 
-	std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket);
-	std::vector<PhysicsEngine::Constraint> create_rocket_constraints(const Rocket& rocket);
+	std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
+	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);
 
 	phyflt find_eccentricity(phyflt aphelion, phyflt perihelion);
 	phyflt find_semimajor_axis(phyflt aphelion, phyflt perihelion);
@@ -44,6 +47,9 @@ private:
 	void render_map();
 	void render_debug();
 	void render_sandbox();
+
+	void update_temporaries(float dt);
+	void update_game_state(float dt);
 
 	void update_map(float dt);
 	void update_sandbox(float dt);
@@ -67,11 +73,22 @@ private:
 	//std::vector<Framework::Image> components; // do I need this, or can it be stored in game_objects???
 
 	// State variables
-	bool paused = true;
-	bool show_map = false;
-	uint8_t time_warp_index = 0;
+	struct {
+		bool paused = true;
+		bool show_map = false;
+		uint8_t time_warp_index = 0;
+	} game_state;
 
-	uint8_t nearest_planet = 0;
+	// Temporaries
+	struct {
+		uint8_t nearest_planet = 0;
+		uint32_t current_rocket = 0;
+		phyvec cmd_mdl_centre, last_cmd_mdl_centre;
+	} sandbox_temporaries;
 
-	float fps = 0.0f; // Used for debug info
+	struct {
+		float fps = 0.0f; // Used for debug info
+	} debug_temporaries;
+
+	Settings settings;
 };

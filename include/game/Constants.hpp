@@ -39,6 +39,8 @@ namespace STRINGS {
 namespace PATHS {
 	extern const uint8_t DEPTH;
 
+	extern const std::string PARENT;
+
 	namespace IMAGES {
 		extern const std::string LOCATION;
 
@@ -48,7 +50,9 @@ namespace PATHS {
 	}
 
 	namespace SAVE_DATA {
-		
+		extern const std::string LOCATION;
+
+		extern const std::string SETTINGS;
 	}
 }
 
@@ -120,6 +124,8 @@ namespace FONTS {
 namespace COLOURS {
 	extern const Framework::Colour BLACK;
 	extern const Framework::Colour WHITE;
+
+	extern const Framework::Colour CURRENT_ROCKET;
 
 	extern const std::vector<Framework::Colour> PLANETS;
 }
@@ -273,7 +279,7 @@ namespace GAME {
 				CATEGORY, // is it a planet or component?
 				GROUP, // components are grouped into rockets
 				TYPE, // what type of object is it (e.g. Fuel Tank, Command Module)
-				OBJECT, // which (exact) object (planet or component) is it?
+				//OBJECT, // which (exact) object (planet or component) is it?
 				
 				TOTAL
 			};

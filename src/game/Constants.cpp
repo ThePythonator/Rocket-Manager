@@ -65,6 +65,9 @@ namespace STRINGS {
 
 namespace PATHS {
 	const uint8_t DEPTH = 4;
+
+	const std::string PARENT = "../";
+
 	namespace IMAGES {
 		const std::string LOCATION = "images/";
 
@@ -72,10 +75,12 @@ namespace PATHS {
 		const std::string MAIN_SPRITESHEET = "demo_spritesheet.png";
 		const std::string FONT_SPRITESHEET = "font.png";
 	}
-}
 
-namespace SAVE_DATA {
+	namespace SAVE_DATA {
+		const std::string LOCATION = "data/";
 
+		const std::string SETTINGS = "settings.json";
+	}
 }
 
 namespace FONTS {
@@ -97,6 +102,8 @@ namespace FONTS {
 namespace COLOURS {
 	const Framework::Colour BLACK{ 0x00, 0x00, 0x00 };
 	const Framework::Colour WHITE{ 0xFF, 0xFF, 0xFF };
+	
+	const Framework::Colour CURRENT_ROCKET{ 0x1C, 0x92, 0xA7 };
 
 	const std::vector<Framework::Colour> PLANETS = {
 		{ 0xe4, 0x9b, 0x35 },

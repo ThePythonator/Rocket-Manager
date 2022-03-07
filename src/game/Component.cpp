@@ -10,9 +10,18 @@ const std::vector<ComponentNode>& Component::get_nodes() const {
 	return _nodes;
 }
 
-ComponentType Component::get_type() const {
+Component::ComponentType Component::get_type() const {
 	return _type;
 }
+
+Framework::vec2 Component::get_position() const {
+	return _position;
+}
+
+void Component::set_position(Framework::vec2 position) {
+	_position = position;
+}
+
 
 
 
