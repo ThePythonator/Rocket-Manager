@@ -20,6 +20,6 @@ namespace Framework {
 		// If the file was not found, returns an empty json object.
 		json read(std::string filepath);
 		// Writes a json object to the file specified
-		void write(std::string filepath, json data);
+		void write(std::string filepath, json data, bool pretty_print = false);
 	}
 }

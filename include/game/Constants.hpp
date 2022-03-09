@@ -129,6 +129,7 @@ namespace COLOURS {
 	extern const Framework::Colour OTHER_ROCKET_ICONS;
 
 	extern const std::vector<Framework::Colour> PLANETS;
+	extern const std::vector<Framework::Colour> ATMOSPHERES;
 }
 
 namespace TIMINGS {
@@ -241,6 +242,10 @@ namespace MENU {
 }
 
 namespace GAME {
+	namespace CONTROLS {
+		extern const float ENGINE_POWER_INCREASE_RATE;
+	}
+
 	namespace MAP {
 		namespace UI {
 			extern const float SCROLL_ZOOM_RATE;
@@ -310,6 +315,7 @@ namespace GAME {
 			extern const std::vector<double> VOLUME_DENSITIES;
 			extern const std::vector<double> PERIHELION_DISTANCES;
 			extern const std::vector<double> APHELION_DISTANCES;
+			extern const std::vector<double> SCALE_HEIGHTS;
 
 			namespace ID {
 				enum ID { // TODO: add moon(s)!
@@ -350,6 +356,11 @@ namespace GAME {
 
 			extern const uint8_t SANDBOX_SCALE;
 			extern const uint8_t SANDBOX_POSITION;
+
+			extern const uint8_t ALTITUDE;
+			extern const uint8_t RELATIVE_VELOCITY;
+
+			extern const uint8_t ENGINE_POWER;
 		}
 	}
 }

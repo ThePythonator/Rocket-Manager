@@ -21,12 +21,12 @@ void GameStage::init() {
 	// Set camera position
 
 	// Just for testing
-	map_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3], 0.0f });
+	map_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3], -GAME::SANDBOX::BODIES::RADII[3] });
 	//map_camera.set_position({});
 	map_camera.set_scale(1e-5f / GAME::SANDBOX::UNIVERSE_SCALE);
 
 	// TODO
-	sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3],  -GAME::SANDBOX::BODIES::RADII[3] });
+	//sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3],  -GAME::SANDBOX::BODIES::RADII[3] });
 	//sandbox_camera.set_position({ 0.0f ,  -GAME::SANDBOX::BODIES::RADII[3] });
 	sandbox_camera.set_scale(5.0f);
 
@@ -44,6 +44,7 @@ void GameStage::start() {
 
 void GameStage::end() {
 	save_settings();
+	test_save_rocket(); // test
 }
 
 bool GameStage::update(float dt) {
@@ -67,20 +68,11 @@ bool GameStage::update(float dt) {
 
 void GameStage::render() {
 	// Render background
-	//graphics_objects->image_ptrs[GRAPHICS_OBJECTS::IMAGES::GAME_BACKGROUND]->render();
 	graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
-
-	// Add atmosphere overlay, depending on height
-	//if (near_current_planet && distance_to_planet_centre < planet_atmosphere_height_from_centre) {
-		//graphics_objects->graphics_ptr->fill(COLOURS::ATMOSPHERES[current_planet], linear(0xFF, 0x00, some_function_which_stays_small_for_a_while(0, planet_atmosphere_height_from_centre));
-	//}
-
-	//render_physics_objects();
 
 	if (!game_state.show_map) render_sandbox();
 
 	render_map();
-	// Note: appears to be very slow here!
 
 	if (settings.show_debug) render_debug();
 }
@@ -89,43 +81,9 @@ void GameStage::render() {
 
 
 void GameStage::init_temporaries() {
-	// Sandbox temporaries
-
-	// Find position of current_rocket's command module
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
-			// Does this component belong to the current rocket?
-			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
-				// Is the component a command module?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::COMMAND_MODULE) {
-					sandbox_temporaries.cmd_mdl_centre = body.centre;
-				}
-			}
-		}
-	}
+	update_temporaries(WINDOW::TARGET_DT);
 
 	sandbox_temporaries.last_cmd_mdl_centre = sandbox_temporaries.cmd_mdl_centre;
-
-	// Find nearest planet
-	phyflt nearest_planet_squared_distance = PHYFLT_MAX;
-
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
-			phyflt squared_distance = PhysicsEngine::length_squared(body.centre - sandbox_temporaries.cmd_mdl_centre);
-
-			if (squared_distance < nearest_planet_squared_distance) {
-				nearest_planet_squared_distance = squared_distance;
-
-				// Set nearest planet
-				sandbox_temporaries.nearest_planet = body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
-			}
-		}
-	}
-
-	// Debug temporaries
-
-	// Calculate fps
-	debug_temporaries.fps = WINDOW::TARGET_FPS;
 }
 
 void GameStage::load_settings() {
@@ -156,6 +114,35 @@ void GameStage::test_save_rocket() {
 
 
 void GameStage::create_solar_system() {
+#if 0
+	int i = 3;
+	phyflt radius = GAME::SANDBOX::BODIES::RADII[i];
+
+	PhysicsEngine::Circle* circle_ptr = new PhysicsEngine::Circle(radius);
+	physics_data.shapes.push_back(circle_ptr);
+
+	phyflt area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[i], radius);
+
+	// Add material_ptr to physics_data since it's not a heap allocated ptr
+	PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.1f, area_density); // todo: get friction and restitution?
+	physics_data.materials.push_back(material_ptr);
+
+	PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, { 0, 0 }); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
+
+	object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
+
+	// Set render ID
+	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = 3;
+
+	// Set category ID
+	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
+
+	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = idk;
+
+	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = i; //?
+
+	physics_manager.add_body(object);
+#else
 	// TODO: create method to load system from object positions
 	phyflt sun_radius = GAME::SANDBOX::BODIES::RADII[GAME::SANDBOX::BODIES::ID::SUN];
 	phyflt sun_area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[GAME::SANDBOX::BODIES::ID::SUN], sun_radius);
@@ -173,7 +160,7 @@ void GameStage::create_solar_system() {
 		phyflt area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[i], radius);
 
 		// Add material_ptr to physics_data since it's not a heap allocated ptr
-		PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.1f, area_density); // todo: get friction and restitution?
+		PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.0f, area_density); // todo: get friction and restitution?
 		physics_data.materials.push_back(material_ptr);
 
 		phyflt aphelion = GAME::SANDBOX::BODIES::APHELION_DISTANCES[i];
@@ -209,16 +196,18 @@ void GameStage::create_solar_system() {
 
 		physics_manager.add_body(object);
 	}
+#endif
 }
 
 void GameStage::create_components() {
-
 
 	// Test component
 	PhysicsEngine::Polygon* poly_ptr = new PhysicsEngine::Polygon(GAME::SANDBOX::COMPONENTS::VERTICES[0]); // just a test
 	physics_data.shapes.push_back(poly_ptr);
 
-	phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
+	//phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
+	//phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
+	phyvec position = physics_manager.get_bodies()[3].centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
 
 	PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::STEEL; // TODO
 	physics_data.materials.push_back(material_ptr);
@@ -268,7 +257,11 @@ void GameStage::create_components() {
 
 	rockets[0] = r;
 
+	r.set_name("Other");
+	rockets[1] = r;
+
 	create_rocket(0, object.centre);
+	//create_rocket(1, object.centre + phyvec{20, 0});
 }
 
 // Creates RigidBodies and Constraints, using the positions stored in the Rocket instance identified by rocket_id, offsetting by the supplied offset
@@ -493,6 +486,9 @@ void GameStage::render_map() {
 }
 
 void GameStage::render_debug() {
+	phyvec relative_velocity = sandbox_temporaries.nearest_planet_velocity - sandbox_temporaries.cmd_mdl_velocity;
+	phyflt relative_speed = PhysicsEngine::length(relative_velocity);
+
 	std::vector<std::string> debug_text{
 		"DEBUG INFORMATION:",
 		"Frames per second: " + Framework::trim_precision(debug_temporaries.fps, GAME::DEBUG::PRECISION::FPS),
@@ -503,9 +499,11 @@ void GameStage::render_debug() {
 		"Map Position: (" + Framework::trim_precision(map_camera.get_position().x, GAME::DEBUG::PRECISION::MAP_POSITION) + ", " + Framework::trim_precision(map_camera.get_position().y, GAME::DEBUG::PRECISION::MAP_POSITION) + ")",
 		"Sandbox Scale: " + Framework::trim_precision(sandbox_camera.get_scale(), GAME::DEBUG::PRECISION::SANDBOX_SCALE) + "x",
 		"Sandbox Position: (" + Framework::trim_precision(sandbox_camera.get_position().x, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ", " + Framework::trim_precision(sandbox_camera.get_position().y, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ")",
-		"Nearest planet: " + STRINGS::GAME::PLANET_NAMES[sandbox_temporaries.nearest_planet]
-		// TODO: altitude
-		// TODO: relative velocity
+		"Nearest planet: " + STRINGS::GAME::PLANET_NAMES[sandbox_temporaries.nearest_planet],
+		"Altitude: " + Framework::trim_precision(sandbox_temporaries.distance_to_nearest_planet - GAME::SANDBOX::BODIES::RADII[sandbox_temporaries.nearest_planet], GAME::DEBUG::PRECISION::ALTITUDE),
+		"Relative velocity: " + Framework::trim_precision(relative_speed, GAME::DEBUG::PRECISION::RELATIVE_VELOCITY),
+		"Direction: " + std::to_string(rocket_controls.direction),
+		"Engine power: " + Framework::trim_precision(rocket_controls.engine_power, GAME::DEBUG::PRECISION::ENGINE_POWER)
 	};
 
 	for (uint8_t i = 0; i < debug_text.size(); i++) {
@@ -514,8 +512,20 @@ void GameStage::render_debug() {
 	}
 }
 
+void GameStage::render_atmosphere() {
+	phyflt planet_radius = GAME::SANDBOX::BODIES::RADII[sandbox_temporaries.nearest_planet];
+	phyflt height_above_surface = PhysicsEngine::length(sandbox_temporaries.nearest_planet_centre - sandbox_temporaries.cmd_mdl_centre) - planet_radius;
+
+	uint8_t alpha = atmosphere_alpha(height_above_surface, GAME::SANDBOX::BODIES::SCALE_HEIGHTS[sandbox_temporaries.nearest_planet]);
+
+	graphics_objects->graphics_ptr->fill(COLOURS::ATMOSPHERES[sandbox_temporaries.nearest_planet], alpha);
+}
+
 void GameStage::render_sandbox() {
 	graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
+
+	// Add atmosphere overlay, depending on height
+	render_atmosphere();
 
 	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
 		switch (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
@@ -553,6 +563,7 @@ void GameStage::update_temporaries(float dt) {
 				// Is the component a command module?
 				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::COMMAND_MODULE) {
 					sandbox_temporaries.cmd_mdl_centre = body.centre;
+					sandbox_temporaries.cmd_mdl_velocity = body.velocity;
 				}
 			}
 		}
@@ -570,9 +581,25 @@ void GameStage::update_temporaries(float dt) {
 
 				// Set nearest planet
 				sandbox_temporaries.nearest_planet = body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
+
+				sandbox_temporaries.nearest_planet_centre = body.centre;
+				sandbox_temporaries.nearest_planet_velocity = body.velocity;
 			}
 		}
 	}
+
+	sandbox_temporaries.distance_to_nearest_planet = std::sqrt(nearest_planet_squared_distance);
+
+	// Controls
+	// Positive is anticlockwise
+	rocket_controls.direction = 0;
+	if (input->is_down(Framework::KeyHandler::Key::LEFT)) rocket_controls.direction++;
+	if (input->is_down(Framework::KeyHandler::Key::RIGHT)) rocket_controls.direction--;
+
+	if (input->is_down(Framework::KeyHandler::Key::UP)) rocket_controls.engine_power += GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+	if (input->is_down(Framework::KeyHandler::Key::DOWN)) rocket_controls.engine_power -= GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+
+	rocket_controls.engine_power = Framework::clamp(rocket_controls.engine_power, 0.0f, 1.0f);
 
 	// Debug temporaries
 
@@ -653,6 +680,32 @@ void GameStage::update_sandbox(float dt) {
 
 		//sandbox_camera.set_position(new_position);
 	}
+
+	// Control rocket
+
+	for (PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+			// Does this component belong to the current rocket?
+			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+				// Is the component an engine?
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::ENGINE) {
+					static const float ENGINE_FORCE = 2e7f;
+					// Add force
+					phyflt force_magnitude = ENGINE_FORCE * rocket_controls.engine_power;
+
+					phyvec force = phyvec{ 0, -force_magnitude }; // Force up
+
+					static const float TURN_AMOUNT = PhysicsEngine::deg_to_rad(15); //radians
+
+					phyflt direction_angle = TURN_AMOUNT * rocket_controls.direction;
+					
+					force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body.angle), force);
+
+					body.apply_force(force);
+				}
+			}
+		}
+	}
 }
 
 
@@ -661,7 +714,6 @@ void GameStage::update_physics(float dt) {
 
 	// Old method: make jumps bigger:
 	/*
-	dt = 0.01696f;
 	printf("dt: %f, %f\n", dt, 1.0f / 60.0f);*/
 
 	// several issues
@@ -688,9 +740,6 @@ void GameStage::update_physics(float dt) {
 	}
 
 	float modified_dt = dt * multiplier;
-
-	//printf("New reps: %u\n", speed);
-	//printf("New fps: %f\n", 1.0f / modified_dt);
 
 	for (uint32_t i = 0; i < speed; i++) {
 		physics_manager.update(modified_dt);

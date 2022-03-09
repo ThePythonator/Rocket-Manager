@@ -13,3 +13,6 @@ std::vector<Framework::Button> create_menu_from_constants(Framework::GraphicsObj
 
 
 //void render_trimmed_circle_to_window(Framework::Graphics* graphics, const Framework::vec2& centre, float radius, const Framework::Colour& colour);
+
+// Scales percent so that return (alpha) value stays close to 255 for a while (when percent is low) before dropping to 0 (when percent is high)
+uint8_t atmosphere_alpha(PhysicsEngine::phyflt height_above_surface, PhysicsEngine::phyflt scale_height);

@@ -48,6 +48,7 @@ private:
 	void render_planet(const PhysicsEngine::RigidBody& planet, const Camera& camera, bool map);
 	void render_component(const PhysicsEngine::RigidBody& component, const Camera& camera, bool map);
 
+	void render_atmosphere();
 	void render_map();
 	void render_debug();
 	void render_sandbox();
@@ -85,9 +86,18 @@ private:
 	// Temporaries
 	struct {
 		uint8_t nearest_planet = 0;
+		phyflt distance_to_nearest_planet = 0.0f;
+		phyvec nearest_planet_centre, nearest_planet_velocity;
+
 		uint32_t current_rocket = 0;
-		phyvec cmd_mdl_centre, last_cmd_mdl_centre;
+		phyvec cmd_mdl_centre, last_cmd_mdl_centre, cmd_mdl_velocity;
 	} sandbox_temporaries;
+
+	struct {
+		// Used for controlling rockets
+		int8_t direction = 0; // For now, just -1, 0, 1 (for left, none, right) turns
+		float engine_power = 0.0f; // From 0 to 1?
+	} rocket_controls;
 
 	struct {
 		float fps = 0.0f; // Used for debug info

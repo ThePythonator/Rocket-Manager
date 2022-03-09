@@ -23,7 +23,7 @@ namespace Framework {
 			return data;
 		}
 
-		void write(std::string filepath, json data) {
+		void write(std::string filepath, json data, bool pretty_print) {
 			if (std::filesystem::create_directories(get_directory_path(filepath))) {
 				printf("Created necessary directories.");
 			}
@@ -31,8 +31,10 @@ namespace Framework {
 			printf("Written to %s\n", filepath.c_str());
 			// Write to the file
 			std::ofstream file(filepath);
+
+			if (pretty_print) file << std::setw(4);
+			
 			file << data << std::endl;
-			//file << std::setw(4) << data << std::endl;
 		}
 	}
 }

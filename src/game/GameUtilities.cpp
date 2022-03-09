@@ -40,3 +40,7 @@ std::vector<Framework::Button> create_menu_from_constants(Framework::GraphicsObj
 //void render_trimmed_circle_to_window(Framework::Graphics* graphics, const Framework::vec2& centre, float radius, const Framework::Colour& colour) {
 //	graphics->render_trimmed_circle(centre, radius, Framework::Rect(Framework::VEC_NULL, WINDOW::SIZE), colour);
 //}
+
+uint8_t atmosphere_alpha(PhysicsEngine::phyflt height_above_surface, PhysicsEngine::phyflt scale_height) {
+	return 0xFF * std::exp(-height_above_surface / scale_height);
+}

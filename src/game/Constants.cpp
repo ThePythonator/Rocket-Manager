@@ -117,6 +117,18 @@ namespace COLOURS {
 		{ 0x00, 0x00, 0xFF },
 		{ 0x00, 0x00, 0xFF }
 	};
+
+	const std::vector<Framework::Colour> ATMOSPHERES = {
+		{ 0xe4, 0x9b, 0x35 }, // todo
+		{ 0x00, 0x00, 0x00 },
+		{ 0xed, 0xd5, 0xa5 }, // todo
+		{ 0x41, 0x9D, 0xD9 },
+		{ 0xFF, 0xFF, 0xFF }, // todo... (maybe later change anyways) fix this and below
+		{ 0xFF, 0xFF, 0xFF },
+		{ 0xFF, 0xFF, 0xFF },
+		{ 0xFF, 0xFF, 0xFF },
+		{ 0xFF, 0xFF, 0xFF }
+	};
 }
 
 namespace TIMINGS {
@@ -171,6 +183,10 @@ namespace MENU {
 }
 
 namespace GAME {
+	namespace CONTROLS {
+		const float ENGINE_POWER_INCREASE_RATE = 1.0f;
+	}
+
 	namespace MAP {
 		namespace UI {
 			const float SCROLL_ZOOM_RATE = 0.2f;
@@ -196,7 +212,7 @@ namespace GAME {
 	}
 
 	namespace SANDBOX {
-		const double UNIVERSE_SCALE = 0.01;
+		const double UNIVERSE_SCALE = 0.01;//0.0001; small world
 
 		const double GRAVITATIONAL_CONSTANT = 6.674e-11 / (UNIVERSE_SCALE * UNIVERSE_SCALE);
 
@@ -229,11 +245,11 @@ namespace GAME {
 
 		namespace DEFAULT_MATERIALS {
 			// No const only because it gets messy when using ptrs to here
-			/*PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 7850 };
+			PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 7850 };
 			PhysicsEngine::Material WOOD{ 0.5f, 0.25f, 0.6f, 710 };
 			PhysicsEngine::Material PLASTIC{ 0.35f, 0.3f, 0.5f, 940 };
-			PhysicsEngine::Material GLASS{ 0.94f, 0.4f, 0.5f, 2500 };*/
-			PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 7850 }; // density 1?
+			PhysicsEngine::Material GLASS{ 0.94f, 0.4f, 0.5f, 2500 };
+			//PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 1000 };
 		}
 
 		namespace BODIES {
@@ -286,6 +302,30 @@ namespace GAME {
 				3006e9 * UNIVERSE_SCALE,
 				4537e9 * UNIVERSE_SCALE
 			};
+
+			//const std::vector<double> SCALE_HEIGHTS = {
+			//	0.0 * UNIVERSE_SCALE,
+			//	0.0 * UNIVERSE_SCALE, // Mercury has no atmosphere
+			//	15.9e3 * UNIVERSE_SCALE,
+			//	8.5e3 * UNIVERSE_SCALE,
+			//	10.8e3 * UNIVERSE_SCALE,
+			//	27e3 * UNIVERSE_SCALE,
+			//	59.5e3 * UNIVERSE_SCALE,
+			//	27.7e3 * UNIVERSE_SCALE,
+			//	19.7e3 * UNIVERSE_SCALE
+			//};
+			// Maybe don't scale? these (below) seem better
+			const std::vector<double> SCALE_HEIGHTS = {
+				0.0, 
+				0.0, // Mercury has no atmosphere
+				15.9e3,
+				8.5e3 ,
+				10.8e3,
+				27e3,
+				59.5e3,
+				27.7e3,
+				19.7e3
+			};
 		}
 
 		namespace COMPONENTS {
@@ -309,8 +349,8 @@ namespace GAME {
 		}
 
 		namespace CONNECTIONS {
-			const float MAX_EXTENSION = 1.5f;
-			const float MODULUS_OF_ELASTICITY = 1000000.0f;
+			const float MAX_EXTENSION = 1.0f;
+			const float MODULUS_OF_ELASTICITY = 1e6f;
 		}
 	}
 
@@ -324,6 +364,11 @@ namespace GAME {
 
 			const uint8_t SANDBOX_SCALE = 2;
 			const uint8_t SANDBOX_POSITION = 0;
+
+			const uint8_t ALTITUDE = 0;
+			const uint8_t RELATIVE_VELOCITY = 0;
+
+			const uint8_t ENGINE_POWER = 1;
 		}
 	}
 }
