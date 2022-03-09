@@ -80,7 +80,7 @@ void GameStage::render() {
 	if (!game_state.show_map) render_sandbox();
 
 	render_map();
-
+	// Note: appears to be very slow here!
 
 	if (settings.show_debug) render_debug();
 }
@@ -150,36 +150,12 @@ void GameStage::save_settings() {
 }
 
 
+void GameStage::test_save_rocket() {
+	Framework::JSONHandler::write(graphics_objects->base_path + PATHS::SAVE_DATA::LOCATION + "test_rocket.json", rockets[0]);
+}
+
+
 void GameStage::create_solar_system() {
-//#define JUST_EARTH
-#ifdef JUST_EARTH
-	uint8_t i = GAME::SANDBOX::BODIES::ID::EARTH;
-
-	phyflt radius = GAME::SANDBOX::BODIES::RADII[i];
-
-	PhysicsEngine::Circle* circle_ptr = new PhysicsEngine::Circle(radius);
-	physics_data.shapes.push_back(circle_ptr);
-
-	phyflt area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[i], radius);
-
-	// Add material_ptr to physics_data since it's not a heap allocated ptr
-	PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.1f, area_density); // todo: get friction and restitution?
-	physics_data.materials.push_back(material_ptr);
-
-	PhysicsEngine::phyvec position = PhysicsEngine::PHYVEC_NULL;
-
-	PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, position); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
-
-	object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
-
-	// Set render ID
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = i;
-
-	// Set category ID
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
-
-	physics_manager.add_body(object);
-#endif
 	// TODO: create method to load system from object positions
 	phyflt sun_radius = GAME::SANDBOX::BODIES::RADII[GAME::SANDBOX::BODIES::ID::SUN];
 	phyflt sun_area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[GAME::SANDBOX::BODIES::ID::SUN], sun_radius);
@@ -227,16 +203,22 @@ void GameStage::create_solar_system() {
 		// Set category ID
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
 
+		//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = idk;
+		
+		//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = i; //?
+
 		physics_manager.add_body(object);
 	}
 }
 
 void GameStage::create_components() {
+
+
 	// Test component
 	PhysicsEngine::Polygon* poly_ptr = new PhysicsEngine::Polygon(GAME::SANDBOX::COMPONENTS::VERTICES[0]); // just a test
 	physics_data.shapes.push_back(poly_ptr);
 
-	phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 10.0f }; // testing
+	phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
 
 	PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::STEEL; // TODO
 	physics_data.materials.push_back(material_ptr);
@@ -255,21 +237,58 @@ void GameStage::create_components() {
 	object.velocity = physics_manager.get_bodies()[3].velocity; // messy, TODO // FIXME
 	//object.velocity = physics_manager.get_bodies()[0].velocity;
 
-	physics_manager.add_body(object);
+	//physics_manager.add_body(object);
+
+
+	// Test rocket
+
+	Rocket r;
+
+	Component c = Component(Component::ComponentType::COMMAND_MODULE, { ComponentNode{0, 0, {0, 1.2}} });
+	c.set_position({ 0, 0 });
+	r.add_component(c);
+
+	c = Component(Component::ComponentType::FUEL_TANK, { ComponentNode{1, 0, {0, 10}}, ComponentNode{1, 1, {0, -10}} });
+	c.set_position({ 0, 11.2 });
+	r.add_component(c);
+
+	c = Component(Component::ComponentType::ENGINE, { ComponentNode{2, 0, {0, -1.5}} });
+	c.set_position({ 0, 23 });
+	r.add_component(c);
+
+	Connection conn{ ComponentNode{0, 0, {0, 1.2}}, ComponentNode{1, 1, {0, -10}} };
+	r.add_connection(conn);
+
+	conn = { ComponentNode{1, 0, {0, 10}}, ComponentNode{2, 0, {0, -1.5}} };
+	r.add_connection(conn);
+
+	r.set_name("Test Rocket");
+
+	r.set_initial_velocity(object.velocity);
+
+	rockets[0] = r;
+
+	create_rocket(0, object.centre);
 }
 
-// Creates RigidBody instances, using the positions stored in the Rocket instance, offsetting by the supplied offset
-std::vector<PhysicsEngine::RigidBody> GameStage::create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset) {
-	std::vector<PhysicsEngine::RigidBody> objects;
+// Creates RigidBodies and Constraints, using the positions stored in the Rocket instance identified by rocket_id, offsetting by the supplied offset
+void GameStage::create_rocket(uint32_t rocket_id, const phyvec& offset) {
 
 	// TODO: load position from file
 	// TODO: load angle from file
 
 	// For now, just work out offsets?
 
+	if (!rockets.count(rocket_id)) {
+		// Rocket doesn't exist, so we can't create it
+		return;
+	}
+
+	const Rocket& rocket = rockets[rocket_id];
+
 	// Create the physics RigidBodies to be added to the engine
 	for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
-		uint32_t rocket_id = p.first;
+		uint32_t component_id = p.first;
 		const Component& component = p.second;
 
 		uint32_t component_type = component.get_type();
@@ -282,34 +301,59 @@ std::vector<PhysicsEngine::RigidBody> GameStage::create_rocket_rigidbodies(const
 		
 		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_position()) + offset);
 
+		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
+
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT; // It's a component
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = rocket_id; // Which rocket is it part of
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = component_type; // What type of component is it
-		//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = 0; // Currently not needed?
+		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = component_id; // Component id is used to uniquely identify a component as part of a specific rocket
 
-		// todo : set velocity??
+		
+		// Set rocket's velocity
+		// If loading from a save, initial_velocity is stored in the save data.
+		// If loading from a rocket file (i.e. player just placed a new rocket in the world), then initial_velocity is set to the launch planet's current velocity.
+		object.velocity = rocket.get_initial_velocity();
 
-		objects.push_back(object);
+		physics_manager.add_body(object);
 	}
 
-	return objects;
-}
 
-std::vector<PhysicsEngine::Constraint*> GameStage::create_rocket_constraints(const Rocket& rocket) {
-	std::vector<PhysicsEngine::Constraint*> constraints;
+	// Create constraints
 
-	for (Connection c : rocket.get_connections()) {
+	for (const Connection& c : rocket.get_connections()) {
 		//c.a.component_id
 
-		//PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, natural_length, modulus_of_elasticity, max_length_factor);
-		//physics_data.constraints.push_back(constraint);
+		PhysicsEngine::RigidBody* a = nullptr;
+		PhysicsEngine::RigidBody* b = nullptr;
 
-		//constraints.push_back(constraint);
+		// Find pointers to the right bodies
+		for (PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+			// Is it a component?
+			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+				// Is it part of this rocket?
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == rocket_id) {
+					// Do the component ids match? If so, set the ptr
+					if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] == c.a.component_id) {
+						a = &body;
+					}
+					else if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] == c.b.component_id) {
+						b = &body;
+					}
+				}
+			}
+		}
+
+		// Check that we actually found the bodies
+		if (a && b) {
+			// Natural length MUST be > 0
+			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, c.a.offset, c.b.offset, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
+			physics_data.constraints.push_back(constraint);
+
+			physics_manager.add_constraint(constraint);
+
+		}
 	}
-
-	return constraints;
 }
-
 
 
 phyflt GameStage::find_eccentricity(phyflt aphelion, phyflt perihelion) {
@@ -354,7 +398,7 @@ void GameStage::render_planet(const PhysicsEngine::RigidBody& planet, const Came
 		if (map) {
 			graphics_objects->graphics_ptr->render_circle(f_position, f_radius, COLOURS::PLANETS[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]]);
 
-			graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::GAME::PLANET_NAMES[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]], f_position, COLOURS::WHITE, FONTS::SCALE::PLANET_NAME_FONT);
+			graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::GAME::PLANET_NAMES[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]], f_position, COLOURS::WHITE, FONTS::SCALE::MAP_OBJECT_FONT);
 		}
 		else {
 			Framework::SDLUtils::SDL_RenderDrawArcInWindow(graphics_objects->graphics_ptr->get_renderer(), f_position, f_radius, WINDOW::SIZE, COLOURS::PLANETS[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]]);
@@ -372,27 +416,25 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 		// Only render icon on map if it's a command module
 		if (component_type == Component::ComponentType::COMMAND_MODULE) {
 
-			phyvec position = map_camera.get_render_position(component.centre);
+			Framework::vec2 text_position = PhysicsEngine::to_fvec(map_camera.get_render_position(component.centre) + phyvec{0, 1 + GAME::MAP::UI::ICONS::COMMAND_MODULE_SIZE / 2});
+
+			Framework::Colour c = rocket_id == sandbox_temporaries.current_rocket ? COLOURS::CURRENT_ROCKET_ICON : COLOURS::OTHER_ROCKET_ICONS;
 			
+			// Rotate and translate icon points
 			std::vector<Framework::vec2> points = convert_poly_vertices_retain_size(GAME::MAP::UI::ICONS::COMMAND_MODULE_VERTICES, component.centre, component.get_rotation_matrix(), map_camera);
 
-			// TODO: change colour if current_rocket
-			graphics_objects->graphics_ptr->render_poly(points, rocket_id == sandbox_temporaries.current_rocket ? COLOURS::CURRENT_ROCKET : COLOURS::WHITE);
+			// Render icon. Use a different colour for the current_rocket's command module.
+			graphics_objects->graphics_ptr->render_poly(points, c);
+
+			// Render rocket name
+			graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(rockets[rocket_id].get_name(), text_position, c, FONTS::SCALE::MAP_OBJECT_FONT, Framework::Font::AnchorPosition::TOP_CENTER);
 		}
 	}
 	else {
-		//Framework::vec2 size = PhysicsEngine::to_fvec(GAME::SANDBOX::COMPONENTS::SIZES[component_type] * sandbox_camera.get_scale()); // to change: render from spritesheet?
-		//printf("%f, %f\n", size.x, size.y);
-		//Framework::Rect render_rect = Framework::Rect(sandbox_camera.get_render_position(PhysicsEngine::to_fvec(component.centre)) - size / 2, size);
-		//Framework::Rect screen_rect = Framework::Rect(Framework::VEC_NULL, WINDOW::SIZE);
-
-		//// Not sure if this check speeds it up or slows it down. TODO: test
-		//if (Framework::colliding(render_rect, screen_rect)) {
-		//	graphics_objects->graphics_ptr->render_rect(render_rect, COLOURS::WHITE); // to improve
-		//}
-
 		// Assume poly
 		PhysicsEngine::Polygon* poly_ptr = static_cast<PhysicsEngine::Polygon*>(component.shape);
+
+		// TODO: Consider rendering only if on screen (using component.bounding_radius?)
 		
 		std::vector<Framework::vec2> vertices = convert_poly_vertices(poly_ptr->vertices, component.centre, component.get_rotation_matrix(), sandbox_camera);
 		
@@ -490,7 +532,11 @@ void GameStage::render_sandbox() {
 		}
 	}
 
-	// todo
+
+	// Testing: render constraints
+	for (PhysicsEngine::Constraint* c : physics_manager.get_constraints()) {
+		graphics_objects->graphics_ptr->render_line(PhysicsEngine::to_fvec(sandbox_camera.get_render_position(c->a->centre + PhysicsEngine::to_world_space(c->offset_a, c->a->get_rotation_matrix()))), PhysicsEngine::to_fvec(sandbox_camera.get_render_position(c->b->centre + PhysicsEngine::to_world_space(c->offset_b, c->b->get_rotation_matrix()))), c->is_broken() ? COLOURS::PLANETS[0] : COLOURS::WHITE);
+	}
 }
 
 
@@ -674,19 +720,6 @@ std::vector<Framework::vec2> GameStage::convert_poly_vertices(std::vector<phyvec
 
 	return new_vertices;
 }
-
-// Allows for simulation of camera when you don't actually have a camera object
-// Or allows for tweaking of specific camera attributes temporarily
-//std::vector<Framework::vec2> GameStage::convert_poly_vertices(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const phyvec& camera_position, phyflt camera_scale) {
-//	std::vector<Framework::vec2> new_vertices;
-//
-//	for (const phyvec& v : vertices) {
-//		phyvec a = centre + PhysicsEngine::to_world_space(v, rotation_matrix);
-//		new_vertices.push_back(PhysicsEngine::to_fvec((a - camera_position) * camera_scale + WINDOW::SIZE_HALF));
-//	}
-//
-//	return new_vertices;
-//}
 
 // Converts icon shapes by rotating and shifting, but keeping spacing of points the same
 std::vector<Framework::vec2> GameStage::convert_poly_vertices_retain_size(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera) {

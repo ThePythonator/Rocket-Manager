@@ -90,7 +90,7 @@ namespace FONTS {
 
 	namespace SCALE {
 		const uint8_t MAIN_FONT = 3;
-		const uint8_t PLANET_NAME_FONT = 1;
+		const uint8_t MAP_OBJECT_FONT = 1;
 		const uint8_t DEBUG_FONT = 1;
 	}
 
@@ -103,7 +103,8 @@ namespace COLOURS {
 	const Framework::Colour BLACK{ 0x00, 0x00, 0x00 };
 	const Framework::Colour WHITE{ 0xFF, 0xFF, 0xFF };
 	
-	const Framework::Colour CURRENT_ROCKET{ 0x1C, 0x92, 0xA7 };
+	const Framework::Colour CURRENT_ROCKET_ICON{ 0xFF, 0xFF, 0xFF };
+	const Framework::Colour OTHER_ROCKET_ICONS{ 0x9C, 0xBB, 0xC1 };
 
 	const std::vector<Framework::Colour> PLANETS = {
 		{ 0xe4, 0x9b, 0x35 },
@@ -187,7 +188,9 @@ namespace GAME {
 
 			namespace ICONS {
 				// Size in pixels
-				const std::vector<PhysicsEngine::phyvec> COMMAND_MODULE_VERTICES = PhysicsEngine::isosceles_vertices({ 8, 8 });
+				const float COMMAND_MODULE_SIZE = 8;
+
+				const std::vector<PhysicsEngine::phyvec> COMMAND_MODULE_VERTICES = PhysicsEngine::isosceles_vertices({ COMMAND_MODULE_SIZE, COMMAND_MODULE_SIZE });
 			}
 		}
 	}
@@ -293,9 +296,9 @@ namespace GAME {
 			//};
 
 			const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES{
-				PhysicsEngine::isosceles_vertices({ 5, 3 }),
+				PhysicsEngine::trapezium_vertices(3, 5, 3),
 				PhysicsEngine::rect_vertices({ 5, 20 }),
-				PhysicsEngine::isosceles_vertices({ 3, 3 })
+				PhysicsEngine::trapezium_vertices(2, 4, 3)
 			};
 
 			const std::vector<PhysicsEngine::Material*> MATERIALS {
@@ -303,6 +306,11 @@ namespace GAME {
 				&DEFAULT_MATERIALS::STEEL,
 				&DEFAULT_MATERIALS::STEEL
 			};
+		}
+
+		namespace CONNECTIONS {
+			const float MAX_EXTENSION = 1.5f;
+			const float MODULUS_OF_ELASTICITY = 1000000.0f;
 		}
 	}
 

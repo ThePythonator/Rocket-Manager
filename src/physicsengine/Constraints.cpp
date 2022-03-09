@@ -1,6 +1,8 @@
 #include "Constraints.hpp"
 
 namespace PhysicsEngine {
+	const phyflt MINIMUM_NATURAL_LENGTH = 0.01;
+
 	// Constraint
 	Constraint::Constraint() {
 
@@ -14,7 +16,8 @@ namespace PhysicsEngine {
 	}
 
 	void Constraint::apply_force() {
-		phyvec force = calculate_force(); // todo: apply torque too
+		phyvec force = calculate_force();
+
 		a->apply_force(force, to_world_space(offset_a, a->get_rotation_matrix()));
 		b->apply_force(-force, to_world_space(offset_b, b->get_rotation_matrix()));
 	}
@@ -25,7 +28,7 @@ namespace PhysicsEngine {
 
 	// Spring
 
-	Spring::Spring(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b, phyflt _natural_length, phyflt _modulus_of_elasticity, phyflt max_length_factor) : Constraint(_a, _b, _offset_a, _offset_b), natural_length(_natural_length), modulus_of_elasticity(_modulus_of_elasticity), max_length(_natural_length * std::max(max_length_factor, 1.0)) {
+	Spring::Spring(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b, phyflt _natural_length, phyflt _modulus_of_elasticity, phyflt max_extension) : Constraint(_a, _b, _offset_a, _offset_b), natural_length(std::max(_natural_length, MINIMUM_NATURAL_LENGTH)), modulus_of_elasticity(_modulus_of_elasticity), max_length(_natural_length + std::max(max_extension, 0.0f)) {
 		
 	}
 
@@ -47,7 +50,11 @@ namespace PhysicsEngine {
 			broken = true;
 			return PHYVEC_NULL;
 		}
-
+		else if (a_to_b_length <= 0.0) {
+			// Can't divide by 0, negative length is impossible, so exit now
+			return PHYVEC_NULL;
+		}
+		
 		phyvec a_to_b_normalised = a_to_b / a_to_b_length;
 		float force_magnitude = modulus_of_elasticity * (a_to_b_length - natural_length) / natural_length;
 
@@ -57,7 +64,7 @@ namespace PhysicsEngine {
 
 	// String
 
-	String::String(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b, phyflt _natural_length, phyflt _modulus_of_elasticity, phyflt max_length_factor) : Spring(_a, _b, _offset_a, _offset_b, _natural_length, _modulus_of_elasticity, max_length_factor) {
+	String::String(RigidBody* _a, RigidBody* _b, phyvec _offset_a, phyvec _offset_b, phyflt _natural_length, phyflt _modulus_of_elasticity, phyflt max_extension) : Spring(_a, _b, _offset_a, _offset_b, _natural_length, _modulus_of_elasticity, max_extension) {
 		
 	}
 

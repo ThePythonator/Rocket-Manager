@@ -4,6 +4,8 @@
 #include "RigidBody.hpp"
 
 namespace PhysicsEngine {
+	extern const phyflt MINIMUM_NATURAL_LENGTH;
+
 	// These constraints are treated as having no mass or volume, and cannot collide with any objects
 	class Constraint {
 	public:
@@ -26,7 +28,7 @@ namespace PhysicsEngine {
 
 	class Spring : public Constraint {
 	public:
-		Spring(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL, phyflt _natural_length = 1.0, phyflt _modulus_of_elasticity = 1.0, phyflt _max_length_factor = 2.0);
+		Spring(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL, phyflt _natural_length = 1.0, phyflt _modulus_of_elasticity = 1.0, phyflt max_extension = 1.0);
 		phyvec calculate_force();
 
 	protected:
@@ -37,7 +39,7 @@ namespace PhysicsEngine {
 
 	class String : public Spring {
 	public:
-		String(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL, phyflt _natural_length = 1.0, phyflt _modulus_of_elasticity = 1.0, phyflt _max_length_factor = 2.0);
+		String(RigidBody* _a, RigidBody* _b, phyvec _offset_a = PHYVEC_NULL, phyvec _offset_b = PHYVEC_NULL, phyflt _natural_length = 1.0, phyflt _modulus_of_elasticity = 1.0, phyflt max_extension = 1.0);
 		phyvec calculate_force();
 	};
 }

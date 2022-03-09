@@ -112,7 +112,7 @@ namespace FONTS {
 
 	namespace SCALE {
 		extern const uint8_t MAIN_FONT;
-		extern const uint8_t PLANET_NAME_FONT;
+		extern const uint8_t MAP_OBJECT_FONT;
 		extern const uint8_t DEBUG_FONT;
 	}
 
@@ -125,7 +125,8 @@ namespace COLOURS {
 	extern const Framework::Colour BLACK;
 	extern const Framework::Colour WHITE;
 
-	extern const Framework::Colour CURRENT_ROCKET;
+	extern const Framework::Colour CURRENT_ROCKET_ICON;
+	extern const Framework::Colour OTHER_ROCKET_ICONS;
 
 	extern const std::vector<Framework::Colour> PLANETS;
 }
@@ -256,6 +257,8 @@ namespace GAME {
 			}
 
 			namespace ICONS {
+				extern const float COMMAND_MODULE_SIZE;
+
 				extern const std::vector<PhysicsEngine::phyvec> COMMAND_MODULE_VERTICES;
 			}
 		}
@@ -279,7 +282,7 @@ namespace GAME {
 				CATEGORY, // is it a planet or component?
 				GROUP, // components are grouped into rockets
 				TYPE, // what type of object is it (e.g. Fuel Tank, Command Module)
-				//OBJECT, // which (exact) object (planet or component) is it?
+				OBJECT, // which object (planet or component) is it (unique among rocket's components)
 				
 				TOTAL
 			};
@@ -330,6 +333,11 @@ namespace GAME {
 			extern const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES;
 
 			extern const std::vector<PhysicsEngine::Material*> MATERIALS;
+		}
+
+		namespace CONNECTIONS {
+			extern const float MAX_EXTENSION;
+			extern const float MODULUS_OF_ELASTICITY;
 		}
 	}
 

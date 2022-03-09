@@ -32,6 +32,8 @@ set(GAME_SOURCES
 	"Component.cpp"
 	"Rocket.cpp"
 
+	"ExtraMaths.cpp"
+
 	"Camera.cpp"
 
 	"Constants.cpp"

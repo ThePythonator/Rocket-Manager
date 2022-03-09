@@ -114,7 +114,7 @@ namespace PhysicsEngine {
 	void PhysicsManager::update_velocity(RigidBody& body, phyflt dt) {
 		body.velocity += body.force * body.inverse_mass * dt;
 		body.angular_velocity += body.torque * body.inverse_moment_of_inertia * dt;
-
+		
 		// Reset forces
 		body.force = PHYVEC_NULL;
 		body.torque = 0.0f;
@@ -147,7 +147,7 @@ namespace PhysicsEngine {
 
 				phyflt dist_squared = length_squared(difference);
 
-				if (dist_squared != 0.0) {
+				if (dist_squared > 0.0) {
 					phyflt force_magnitude = gravitational_force(bodies[i].mass, bodies[j].mass, dist_squared, constants.gravitational_constant);
 
 					phyflt dist = std::sqrt(dist_squared);
@@ -155,6 +155,12 @@ namespace PhysicsEngine {
 					phyvec force = force_magnitude * difference / dist;
 
 					//printf("Gravity: %f\n", force_magnitude / bodies[j].mass);
+					//printf("grav mag: %f\n", force_magnitude);
+
+
+					/*printf("dist: %f\n", dist_squared);
+					printf("c: %f, %f\n", bodies[j].centre.x, bodies[j].centre.y);
+					printf("v: %f, %f\n", bodies[j].velocity.x, bodies[j].velocity.y);*/
 
 					bodies[i].apply_force(force);
 					bodies[j].apply_force(-force);

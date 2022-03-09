@@ -122,4 +122,6 @@ namespace PhysicsEngine {
 	std::vector<phyvec> rect_vertices(const phyvec& size);
 
 	std::vector<phyvec> isosceles_vertices(const phyvec& size);
+	
+	std::vector<phyvec> trapezium_vertices(const phyflt w_top, const phyflt w_base, const phyflt height);
 }

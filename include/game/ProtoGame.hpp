@@ -29,11 +29,15 @@ private:
 	void load_settings();
 	void save_settings();
 
+	void test_save_rocket();
+
 	void create_solar_system();
 	void create_components();
 
-	std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
-	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);
+	void create_rocket(uint32_t rocket_id, const phyvec& offset);
+
+	/*std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
+	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);*/
 
 	phyflt find_eccentricity(phyflt aphelion, phyflt perihelion);
 	phyflt find_semimajor_axis(phyflt aphelion, phyflt perihelion);
@@ -59,7 +63,6 @@ private:
 
 	std::vector<Framework::vec2> convert_poly_vertices(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera);
 	std::vector<Framework::vec2> convert_poly_vertices_retain_size(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera);
-	//std::vector<Framework::vec2> convert_poly_vertices(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const phyvec& camera_position, phyflt camera_scale);
 
 	PhysicsEngine::PhysicsManager physics_manager;
 	PhysicsEngine::PhysicsData physics_data;

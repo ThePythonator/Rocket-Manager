@@ -197,4 +197,19 @@ namespace PhysicsEngine {
 			{ half_width, half_height }
 		};
 	}
+
+
+	// Trapezium, symmetrical along y axis
+	std::vector<phyvec> trapezium_vertices(const phyflt w_top, const phyflt w_base, const phyflt height) {
+		phyflt half_top = w_top / 2;
+		phyflt half_base = w_base / 2;
+		phyflt half_height = height / 2;
+
+		return {
+			{ -half_top, -half_height },
+			{ -half_base, half_height },
+			{ half_base, half_height },
+			{ half_top, -half_height }
+		};
+	}
 }
