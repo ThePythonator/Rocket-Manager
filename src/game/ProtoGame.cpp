@@ -90,17 +90,16 @@ void GameStage::load_settings() {
 	// Set defaults
 	settings = Settings();
 
-	// Read json
-	json j = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::DATA::LOCATION + PATHS::DATA::SETTINGS);
+	try {
+		// Read json
+		json j = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::DATA::LOCATION + PATHS::DATA::SETTINGS);
 
-	if (!j.empty()) {
-		try {
-			// Fill settings struct
-			j.get_to(settings);
-		}
-		catch (const json::out_of_range& e) {
-			// Ignore - we set defaults already so it's not the end of the world
-		}
+		// Fill settings struct
+		j.get_to(settings);
+	}
+	catch (const json::exception& e) {
+		// Ignore - we set defaults already so it's not the end of the world
+		printf("Couldn't find settings file. Error: %s\n", e.what());
 	}
 }
 void GameStage::save_settings() {
@@ -205,62 +204,65 @@ void GameStage::create_components() {
 	//PhysicsEngine::Polygon* poly_ptr = new PhysicsEngine::Polygon(GAME::COMPONENTS::VERTICES[0]); // just a test
 	//physics_data.shapes.push_back(poly_ptr);
 
-	////phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
-	////phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
-	//phyvec position = physics_manager.get_bodies()[3].centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
+	//phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
+	//phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
+	phyvec position = physics_manager.get_bodies()[3].centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
 
-	//PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALSSTEEL; // TODO
+	//PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[; // TODO
 	//physics_data.materials.push_back(material_ptr);
 
-	//PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(poly_ptr, material_ptr, PhysicsEngine::to_phyvec(position));
+	//PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(poly_ptr, material_ptr, position);
 
 	//object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 
 
 	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = Component::ComponentType::COMMAND_MODULE; // test
 
-	//// Set category ID
+	// Set category ID
 	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT;
 
-	//// Keep moving at earth speed
+	// Keep moving at earth speed
 	//object.velocity = physics_manager.get_bodies()[3].velocity; // messy, TODO // FIXME
-	////object.velocity = physics_manager.get_bodies()[0].velocity;
+	//object.velocity = physics_manager.get_bodies()[0].velocity;
 
-	////physics_manager.add_body(object);
+	//physics_manager.add_body(object);
 
 
 	// Test rocket
 
 	Rocket r;
 
-	/*Component c = Component(Component::ComponentType::COMMAND_MODULE, { ComponentNode{0, 0, {0, 1.2}} });
+	Component c = Component(GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE);
 	c.set_position({ 0, 0 });
+	c.set_node_positions(GAME::COMPONENTS::NODE_POSITIONS[c.get_type()]);
 	r.add_component(c);
 
-	c = Component(Component::ComponentType::FUEL_TANK, { ComponentNode{1, 0, {0, 10}}, ComponentNode{1, 1, {0, -10}} });
+	c = Component(GAME::COMPONENTS::COMPONENT_TYPE::FUEL_TANK);
 	c.set_position({ 0, 11.2 });
+	c.set_node_positions(GAME::COMPONENTS::NODE_POSITIONS[c.get_type()]);
 	r.add_component(c);
 
-	c = Component(Component::ComponentType::ENGINE, { ComponentNode{2, 0, {0, -1.5}} });
+	c = Component(GAME::COMPONENTS::COMPONENT_TYPE::ENGINE);
 	c.set_position({ 0, 23 });
+	c.set_node_positions(GAME::COMPONENTS::NODE_POSITIONS[c.get_type()]);
 	r.add_component(c);
 
-	Connection conn{ ComponentNode{0, 0, {0, 1.2}}, ComponentNode{1, 1, {0, -10}} };
+	Connection conn{ ComponentNode{0, 1}, ComponentNode{1, 0} };
 	r.add_connection(conn);
 
-	conn = { ComponentNode{1, 0, {0, 10}}, ComponentNode{2, 0, {0, -1.5}} };
+	conn = { ComponentNode{1, 1}, ComponentNode{2, 0} };
 	r.add_connection(conn);
 
 	r.set_name("Test Rocket");
 
-	r.set_initial_velocity(object.velocity);
+	r.set_initial_velocity(physics_manager.get_bodies()[3].velocity);
 
 	rockets[0] = r;
 
 	r.set_name("Other");
 	rockets[1] = r;
 
-	create_rocket(0, object.centre);*/
+	create_rocket(0, position);
 	//create_rocket(1, object.centre + phyvec{20, 0});
 }
 
@@ -411,7 +413,7 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 		// Draw small triangle representing command module
 
 		// Only render icon on map if it's a command module
-		if (component_type == GAME::COMPONENTS::ComponentType::COMMAND_MODULE) {
+		if (component_type == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
 
 			Framework::vec2 text_position = PhysicsEngine::to_fvec(map_camera.get_render_position(component.centre) + phyvec{0, 1 + GAME::MAP::UI::ICONS::COMMAND_MODULE_SIZE / 2});
 
@@ -565,7 +567,7 @@ void GameStage::update_temporaries(float dt) {
 			// Does this component belong to the current rocket?
 			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
 				// Is the component a command module?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::ComponentType::COMMAND_MODULE) {
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
 					sandbox_temporaries.cmd_mdl_centre = body.centre;
 					sandbox_temporaries.cmd_mdl_velocity = body.velocity;
 				}
@@ -692,7 +694,7 @@ void GameStage::update_sandbox(float dt) {
 			// Does this component belong to the current rocket?
 			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
 				// Is the component an engine?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::ComponentType::ENGINE) {
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::ENGINE) {
 					static const float ENGINE_FORCE = 2e7f;
 					// Add force
 					phyflt force_magnitude = ENGINE_FORCE * rocket_controls.engine_power;

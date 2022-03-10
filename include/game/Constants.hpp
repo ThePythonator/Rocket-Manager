@@ -400,14 +400,16 @@ namespace GAME {
 		extern std::map<uint32_t, std::string> NAMES;
 
 		// Only these are supported right now
-		enum ComponentType {
-			COMMAND_MODULE,
-			FUEL_TANK,
-			ENGINE,
+		namespace COMPONENT_TYPE {
+			enum COMPONENT_TYPE {
+				COMMAND_MODULE,
+				FUEL_TANK,
+				ENGINE,
 
-			TOTAL,
+				TOTAL,
 
-			NONE
-		};
+				NONE
+			};
+		}
 	}
 }

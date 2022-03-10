@@ -159,6 +159,48 @@ namespace PhysicsEngine {
 		return result;
 	}
 
+
+	phyvec find_centroid(const std::vector<phyvec>& vertices) {
+		// Centroid is centre of mass, initially set to 0,0
+		phyvec centroid;
+
+		phyflt area = 0.0f;
+
+		// Split polygon into many triangles
+		for (uint16_t i = 0; i < vertices.size(); i++) {
+			uint16_t next_i = i + 1 < vertices.size() ? i + 1 : 0;
+
+			// Use cross product to calculate area of trapezium
+			phyflt triangle_area = 0.5 * cross(vertices[i], vertices[next_i]);
+
+			// Halve area of trapezium to get area of triangle
+			area += triangle_area;
+
+			// Centroid is weighted average of vertices (one vertex is 0,0)
+			centroid += triangle_area * (vertices[i] + vertices[next_i]);
+		}
+
+		// Need to do the averaging bit now:
+		// Divide by total area, and divide by three for the vertices of each triangle (one vertex is 0,0)
+		centroid /= (area * 3.0f);
+
+		return centroid;
+	}
+
+
+	std::vector<phyvec> translate(const std::vector<phyvec>& vertices, const phyvec& offset) {
+		std::vector<phyvec> new_vertices;
+
+		for (const phyvec& vertex : vertices) {
+			new_vertices.push_back(vertex + offset);
+		}
+
+		return new_vertices;
+	}
+
+
+
+
 	/*float gravitational_force(float mass_a, float mass_b, float distance_squared) {
 		return G * mass_a * mass_b / distance_squared;
 	}*/

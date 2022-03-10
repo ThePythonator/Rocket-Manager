@@ -112,6 +112,12 @@ namespace PhysicsEngine {
 	// Origin_distance could also be thought as the closest point the line perpendicular to the normal passes to the origin
 	ClipResult clip_edge_to_line(const phyvec edge[2], const phyvec& line_normal, phyflt origin_distance);
 
+	// Find centroid of vector of points
+	phyvec find_centroid(const std::vector<phyvec>& vertices);
+
+	// Adds offset to every element in vertices
+	std::vector<phyvec> translate(const std::vector<phyvec>& vertices, const phyvec& offset);
+
 
 	//float gravitational_force(float mass_a, float mass_b, float distance_squared);
 	

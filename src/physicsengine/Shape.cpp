@@ -89,30 +89,7 @@ namespace PhysicsEngine {
 	phyvec Polygon::get_centroid() {
 		// Similar to get_area
 
-		// Centroid is centre of mass, initially set to 0,0
-		phyvec centroid;
-
-		phyflt area = 0.0f;
-
-		// Split polygon into many triangles
-		for (uint16_t i = 0; i < vertices.size(); i++) {
-			uint16_t next_i = i + 1 < vertices.size() ? i + 1 : 0;
-
-			// Use cross product to calculate area of trapezium
-			phyflt triangle_area = 0.5 * cross(vertices[i], vertices[next_i]);
-
-			// Halve area of trapezium to get area of triangle
-			area += triangle_area;
-
-			// Centroid is weighted average of vertices (one vertex is 0,0)
-			centroid += triangle_area * (vertices[i] + vertices[next_i]);
-		}
-
-		// Need to do the averaging bit now:
-		// Divide by total area, and divide by three for the vertices of each triangle (one vertex is 0,0)
-		centroid /= (area * 3.0f);
-
-		return centroid;
+		return find_centroid(vertices);
 	}
 
 	void Polygon::calculate_face_normals() {

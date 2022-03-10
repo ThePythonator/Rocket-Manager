@@ -53,30 +53,9 @@ void Game::load_data() {
 	};
 
 
-	// TESTING
-	//json test;
-
-	//auto old = std::vector<std::vector<phyvec>>{
-	//		PhysicsEngine::trapezium_vertices(3, 5, 3),
-	//		PhysicsEngine::rect_vertices({ 5, 20 }),
-	//		PhysicsEngine::trapezium_vertices(2, 4, 3)
-	//};
-
-	////test["vertices"] = old;
-	//test["vertex"] = phyvec{ 0, 5 };
-	////test["materials"] = GAME::SANDBOX::COMPONENTS::MATERIALS;
-
-	//std::cout << test.at("vertex") << std::endl;
-
-	////Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION + "todo.json", test, true);
-	////test = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION + "todo.json");
-	////std::vector<std::vector<phyvec>> vs;
-	//phyvec t;
-	//test.at("vertex").get_to(t);
-
-
 	// Load component data: find all json files in component directory and try parsing them
 	printf("Finding component files in %s...\n", (PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION).c_str());
+
 	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION)) {
 		std::filesystem::path path = entry.path();
 
@@ -96,10 +75,13 @@ void Game::load_data() {
 			std::vector<phyvec> nodes = j.at("nodes").get<std::vector<phyvec>>();
 			std::string name = j.value("name", "unnamed_component");
 
+			// Shift so that centroid is centre
+			phyvec centroid = PhysicsEngine::find_centroid(vertices);
+
 			// Store as runtime constants
 			GAME::COMPONENTS::MATERIALS[i] = material;
-			GAME::COMPONENTS::VERTICES[i] = vertices;
-			GAME::COMPONENTS::NODE_POSITIONS[i] = nodes;
+			GAME::COMPONENTS::VERTICES[i] = PhysicsEngine::translate(vertices, -centroid);
+			GAME::COMPONENTS::NODE_POSITIONS[i] = PhysicsEngine::translate(nodes, -centroid);
 
 			GAME::COMPONENTS::NAMES[i] = name;
 
