@@ -30,6 +30,7 @@ namespace Framework {
 	class Rect {
 	public:
 		Rect(vec2 _position = VEC_NULL, vec2 _size = VEC_NULL);
+		Rect(vec2 _position, int _size);
 		Rect(float x, float y, float width = 0.0f, float height = 0.0f);
 		Rect(int x, int y, int width = 0, int height = 0);
 

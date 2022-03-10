@@ -53,6 +53,11 @@ namespace Framework {
 		render_poly({rect.topleft(), rect.topright(), rect.bottomright(), rect.bottomleft()}, colour);
 	}
 
+	void Graphics::render_filled_rect(const Rect& rect, const Colour& colour) {
+		set_colour(colour);
+		SDLUtils::SDL_RenderFillRect(renderer, rect);
+	}
+
 	void Graphics::render_circle(const vec2& centre, float radius, const Colour& colour) {
 		set_colour(colour);
 		SDLUtils::SDL_RenderDrawCircle(renderer, static_cast<int>(centre.x), static_cast<int>(centre.y), static_cast<int>(radius));

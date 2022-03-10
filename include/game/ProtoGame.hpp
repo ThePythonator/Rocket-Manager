@@ -11,6 +11,7 @@
 #include "Camera.hpp"
 #include "Rocket.hpp"
 #include "Settings.hpp"
+#include "StarField.hpp"
 
 using namespace PhysicsEngine::phy_t;
 
@@ -104,4 +105,6 @@ private:
 	} debug_temporaries;
 
 	Settings settings;
+
+	StarField star_field;
 };

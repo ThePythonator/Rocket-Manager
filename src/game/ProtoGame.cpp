@@ -18,6 +18,9 @@ void GameStage::init() {
 	constants.gravitational_constant = GAME::SANDBOX::GRAVITATIONAL_CONSTANT;
 	physics_manager.set_constants(constants);
 
+	// Create star field
+	star_field = StarField(graphics_objects->graphics_ptr, WINDOW::SIZE);
+
 	// Set camera position
 
 	// Just for testing
@@ -530,6 +533,9 @@ void GameStage::render_atmosphere() {
 void GameStage::render_sandbox() {
 	graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
 
+	// Draw stars
+	star_field.render();
+
 	// Add atmosphere overlay, depending on height
 	render_atmosphere();
 
@@ -596,17 +602,6 @@ void GameStage::update_temporaries(float dt) {
 
 	sandbox_temporaries.distance_to_nearest_planet = std::sqrt(nearest_planet_squared_distance);
 
-	// Controls
-	// Positive is anticlockwise
-	rocket_controls.direction = 0;
-	if (input->is_down(Framework::KeyHandler::Key::LEFT)) rocket_controls.direction++;
-	if (input->is_down(Framework::KeyHandler::Key::RIGHT)) rocket_controls.direction--;
-
-	if (input->is_down(Framework::KeyHandler::Key::UP)) rocket_controls.engine_power += GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
-	if (input->is_down(Framework::KeyHandler::Key::DOWN)) rocket_controls.engine_power -= GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
-
-	rocket_controls.engine_power = Framework::clamp(rocket_controls.engine_power, 0.0f, 1.0f);
-
 	// Debug temporaries
 
 	// Calculate fps
@@ -624,6 +619,19 @@ void GameStage::update_game_state(float dt) {
 	if (input->just_down(Framework::KeyHandler::Key::SPACE)) game_state.paused = !game_state.paused;
 
 	if (input->just_down(Framework::KeyHandler::Key::M)) toggle_map();
+
+
+
+	// Controls
+	// Positive is anticlockwise
+	rocket_controls.direction = 0;
+	if (input->is_down(Framework::KeyHandler::Key::LEFT)) rocket_controls.direction++;
+	if (input->is_down(Framework::KeyHandler::Key::RIGHT)) rocket_controls.direction--;
+
+	if (input->is_down(Framework::KeyHandler::Key::UP)) rocket_controls.engine_power += GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+	if (input->is_down(Framework::KeyHandler::Key::DOWN)) rocket_controls.engine_power -= GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+
+	rocket_controls.engine_power = Framework::clamp(rocket_controls.engine_power, 0.0f, 1.0f);
 }
 
 
@@ -665,6 +673,9 @@ void GameStage::update_map(float dt) {
 void GameStage::update_sandbox(float dt) {
 	// Move camera to centre of command module of current_rocket
 	sandbox_camera.set_position(sandbox_temporaries.cmd_mdl_centre);
+
+	// Move stars
+	star_field.move(PhysicsEngine::to_fvec(sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre));
 
 	// TESTING ONLY
 	// Only allow scrolling/--dragging-- sandbox if we're not in fullscreen map mode and not clicking on the minimap

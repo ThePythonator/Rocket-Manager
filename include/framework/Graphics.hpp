@@ -18,6 +18,7 @@ namespace Framework {
 		void render_poly(const std::vector<vec2> points, const Colour& colour);
 		void render_poly(const std::vector<vec2> points, const vec2& offset, const Colour& colour);
 		void render_rect(const Rect& rect, const Colour& colour);
+		void render_filled_rect(const Rect& rect, const Colour& colour);
 		void render_circle(const vec2& centre, float radius, const Colour& colour);
 
 		//void render_trimmed_circle(const vec2& centre, float radius, const Rect& trim_rect, const Colour& colour);

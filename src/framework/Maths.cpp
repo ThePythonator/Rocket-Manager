@@ -15,6 +15,11 @@ namespace Framework {
 		size = _size;
 	}
 
+	Rect::Rect(vec2 _position, int _size) {
+		position = _position;
+		size = Vec(_size, _size);
+	}
+
 	Rect::Rect(float x, float y, float width, float height) {
 		position = vec2{ x, y };
 		size = vec2{ width, height };
