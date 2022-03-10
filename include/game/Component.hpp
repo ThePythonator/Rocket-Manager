@@ -4,9 +4,6 @@
 
 struct ComponentNode {
 	uint32_t component_id, node_id;
-
-	// Offset from centroid of component
-	phyvec offset;
 };
 
 struct Connection {
@@ -28,35 +25,24 @@ struct Connection {
 
 class Component {
 public:
-
-	// Note: the order of this matters since it's used in Constants.hpp/cpp
-	// Really there shouldn't be two separate things which both need to be the same, but I can't think of a better way of doing this right now.
-	enum ComponentType {
-		COMMAND_MODULE,
-		FUEL_TANK,
-		ENGINE,
-
-		TOTAL,
-		NONE
-	};
-
 	Component();
-	Component(ComponentType type, std::vector<ComponentNode> nodes);//uint32_t component_id, 
+	Component(uint32_t type);
 
-	const std::vector<ComponentNode>& get_nodes() const;
-	void set_nodes(std::vector<ComponentNode> nodes); // TODO: maybe change to use just node positions
+	// Node positions are the offsets from the centre (not centroid) of the component
+	const std::vector<phyvec>& get_node_positions() const;
+	void set_node_positions(std::vector<phyvec> node_positions);
 
-	ComponentType get_type() const;
-	void set_type(ComponentType type);
+	uint32_t get_type() const;
+	void set_type(uint32_t type);
 
 	phyvec get_position() const;
 	void set_position(phyvec position);
 
 private:
 	//uint32_t _component_id = 0;
-	ComponentType _type = ComponentType::NONE;
+	uint32_t _type = 0;
 
-	std::vector<ComponentNode> _nodes;
+	std::vector<phyvec> _node_positions;
 
 	phyvec _position;
 };

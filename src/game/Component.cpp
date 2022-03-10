@@ -3,22 +3,22 @@
 Component::Component() {
 
 }
-Component::Component(ComponentType type, std::vector<ComponentNode> nodes) : _type(type), _nodes(nodes) {//uint32_t component_id, //_component_id(component_id),
+Component::Component(uint32_t type) : _type(type) {
 
 }
-const std::vector<ComponentNode>& Component::get_nodes() const {
-	return _nodes;
+const std::vector<phyvec>& Component::get_node_positions() const {
+	return _node_positions;
 }
 
-void Component::set_nodes(std::vector<ComponentNode> nodes) {
-	_nodes = nodes;
+void Component::set_node_positions(std::vector<phyvec> node_positions) {
+	_node_positions = node_positions;
 }
 
-void Component::set_type(ComponentType type) {
+void Component::set_type(uint32_t type) {
 	_type = type;
 }
 
-Component::ComponentType Component::get_type() const {
+uint32_t Component::get_type() const {
 	return _type;
 }
 
@@ -81,14 +81,12 @@ uint32_t ComponentManager::get_next_component_index() const {
 void to_json(json& j, const ComponentNode& n) {
 	j = json{
 		{"component_id", n.component_id},
-		{"node_id", n.node_id},
-		{"offset", n.offset}
+		{"node_id", n.node_id}
 	};
 }
 void from_json(const json& j, ComponentNode& n) {
 	j.at("component_id").get_to(n.component_id);
 	j.at("node_id").get_to(n.node_id);
-	j.at("offset").get_to(n.offset);
 }
 
 void to_json(json& j, const Connection& c) {
@@ -105,12 +103,12 @@ void from_json(const json& j, Connection& c) {
 void to_json(json& j, const Component& c) {
 	j = json{
 		{"type", c.get_type()},
-		{"nodes", c.get_nodes()},
+		{"node_positions", c.get_node_positions()},
 		{"position", c.get_position()}
 	};
 }
 void from_json(const json& j, Component& c) {
-	c.set_type(static_cast<Component::ComponentType>(j.at("type").get<uint32_t>()));
-	c.set_nodes(j.at("nodes").get<std::vector<ComponentNode>>());
+	c.set_type(j.at("type").get<uint32_t>());
+	c.set_node_positions(j.at("node_positions").get<std::vector<phyvec>>());
 	c.set_position(j.at("position").get<phyvec>());
 }

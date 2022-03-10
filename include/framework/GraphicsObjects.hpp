@@ -22,7 +22,5 @@ namespace Framework {
 		std::vector<BaseTransition*> transition_ptrs;
 
 		std::vector<Button::ButtonImages> button_image_groups;
-
-		std::string base_path;
 	};
 }

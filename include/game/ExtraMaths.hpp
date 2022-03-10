@@ -23,7 +23,8 @@ namespace linalg {
 	template<class T>
 	void to_json(json& j, const linalg::vec<T, 2>& v) {
 		j = json{
-			{v.x, v.y}
+			v.x,
+			v.y
 		};
 	}
 

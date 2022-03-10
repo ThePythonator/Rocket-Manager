@@ -13,11 +13,10 @@ void Game::end() {
 }
 
 void Game::load_data() {
-	std::string ASSETS_PATH = Framework::SDLUtils::find_assets_path(PATHS::IMAGES::LOCATION + PATHS::IMAGES::MAIN_SPRITESHEET, PATHS::DEPTH);
-	std::string BASE_PATH = ASSETS_PATH + PATHS::PARENT;
-	std::string IMAGES_PATH = ASSETS_PATH + PATHS::IMAGES::LOCATION;
+	PATHS::BASE_PATH = Framework::SDLUtils::find_assets_path(PATHS::IMAGES::LOCATION + PATHS::IMAGES::MAIN_SPRITESHEET, PATHS::DEPTH);
 
-	graphics_objects.base_path = BASE_PATH;
+	// Base path is two above images path
+	std::string IMAGES_PATH = PATHS::BASE_PATH + PATHS::IMAGES::LOCATION;
 
 	// Load logo image
 	graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::LOGO] = Framework::create_image(graphics_objects.graphics_ptr, IMAGES_PATH + PATHS::IMAGES::LOGO, Framework::Image::Flags::SDL_TEXTURE);
@@ -52,6 +51,64 @@ void Game::load_data() {
 		graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_HOVERED],
 		graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_SELECTED]
 	};
+
+
+	// TESTING
+	//json test;
+
+	//auto old = std::vector<std::vector<phyvec>>{
+	//		PhysicsEngine::trapezium_vertices(3, 5, 3),
+	//		PhysicsEngine::rect_vertices({ 5, 20 }),
+	//		PhysicsEngine::trapezium_vertices(2, 4, 3)
+	//};
+
+	////test["vertices"] = old;
+	//test["vertex"] = phyvec{ 0, 5 };
+	////test["materials"] = GAME::SANDBOX::COMPONENTS::MATERIALS;
+
+	//std::cout << test.at("vertex") << std::endl;
+
+	////Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION + "todo.json", test, true);
+	////test = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION + "todo.json");
+	////std::vector<std::vector<phyvec>> vs;
+	//phyvec t;
+	//test.at("vertex").get_to(t);
+
+
+	// Load component data: find all json files in component directory and try parsing them
+	printf("Finding component files in %s...\n", (PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION).c_str());
+	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION)) {
+		std::filesystem::path path = entry.path();
+
+		// If not .json, skip
+		if (path.extension().string() != PATHS::COMPONENTS::FILE_EXTENSION) continue;
+
+		std::string filepath = path.string();
+
+		try {
+			// Read file
+			json j = Framework::JSONHandler::read(filepath);
+
+			// Get values
+			uint32_t i = j.at("id").get<uint32_t>();
+			uint32_t material = j.value<uint32_t, 0>("material", 0);
+			std::vector<phyvec> vertices = j.at("vertices").get<std::vector<phyvec>>();
+			std::vector<phyvec> nodes = j.at("nodes").get<std::vector<phyvec>>();
+			std::string name = j.value("name", "unnamed_component");
+
+			// Store as runtime constants
+			GAME::COMPONENTS::MATERIALS[i] = material;
+			GAME::COMPONENTS::VERTICES[i] = vertices;
+			GAME::COMPONENTS::NODE_POSITIONS[i] = nodes;
+
+			GAME::COMPONENTS::NAMES[i] = name;
+
+			printf("Loaded component: %s\n", name.c_str());
+		}
+		catch (const json::exception& e) {
+			printf("Failed to load component. Error: %s\n", e.what());
+		}
+	}
 }
 
 void Game::clear_data() {

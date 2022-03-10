@@ -41,6 +41,9 @@ namespace PATHS {
 
 	extern const std::string PARENT;
 
+	// Set at runtime
+	extern std::string BASE_PATH;
+
 	namespace IMAGES {
 		extern const std::string LOCATION;
 
@@ -49,10 +52,24 @@ namespace PATHS {
 		extern const std::string FONT_SPRITESHEET;
 	}
 
-	namespace SAVE_DATA {
+	namespace DATA {
 		extern const std::string LOCATION;
 
 		extern const std::string SETTINGS;
+	}
+
+	namespace SANDBOX_SAVES {
+		extern const std::string LOCATION;
+	}
+
+	namespace COMPONENTS {
+		extern const std::string LOCATION;
+		
+		extern const std::string FILE_EXTENSION;
+	}
+
+	namespace ROCKET_TEMPLATES {
+		extern const std::string LOCATION;
 	}
 }
 
@@ -304,10 +321,18 @@ namespace GAME {
 
 		namespace DEFAULT_MATERIALS {
 			// No const only because it gets messy when using ptrs to here
-			extern PhysicsEngine::Material STEEL;
-			/*extern PhysicsEngine::Material WOOD;
-			extern PhysicsEngine::Material PLASTIC;
-			extern PhysicsEngine::Material GLASS;*/
+			extern std::vector<PhysicsEngine::Material> MATERIALS;
+
+			namespace TYPES {
+				enum TYPES {
+					STEEL,
+					WOOD,
+					PLASTIC,
+					GLASS,
+
+					TOTAL
+				};
+			}
 		}
 
 		namespace BODIES {
@@ -334,12 +359,12 @@ namespace GAME {
 			}
 		}
 
-		namespace COMPONENTS {
-			//extern const std::vector<PhysicsEngine::phyvec> SIZES;
-			extern const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES;
+		//namespace COMPONENTS {
+		//	//extern const std::vector<PhysicsEngine::phyvec> SIZES;
+		//	extern const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES;
 
-			extern const std::vector<PhysicsEngine::Material*> MATERIALS;
-		}
+		//	extern const std::vector<uint32_t> MATERIALS;
+		//}
 
 		namespace CONNECTIONS {
 			extern const float MAX_EXTENSION;
@@ -362,5 +387,27 @@ namespace GAME {
 
 			extern const uint8_t ENGINE_POWER;
 		}
+	}
+
+	// These are loaded in at runtime
+	namespace COMPONENTS {
+		//extern const std::vector<PhysicsEngine::phyvec> SIZES;
+		extern std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> VERTICES;
+		extern std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> NODE_POSITIONS;
+
+		extern std::map<uint32_t, uint32_t> MATERIALS;
+
+		extern std::map<uint32_t, std::string> NAMES;
+
+		// Only these are supported right now
+		enum ComponentType {
+			COMMAND_MODULE,
+			FUEL_TANK,
+			ENGINE,
+
+			TOTAL,
+
+			NONE
+		};
 	}
 }

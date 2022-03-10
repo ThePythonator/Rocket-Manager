@@ -48,11 +48,11 @@ namespace Framework::SDLUtils {
 	}
 
 	std::string find_assets_path(std::string test_file, uint8_t depth) {
-		printf("Attempting to find assets folder...\n");
+		printf("Attempting to find base folder...\n");
 
 		std::string base_path = SDL_GetBasePath();
 
-		SDL_Surface* test_surface = IMG_Load(("assets/" + test_file).c_str());
+		SDL_Surface* test_surface = IMG_Load(test_file.c_str());
 
 		if (test_surface != NULL) {
 			base_path = "";
@@ -60,7 +60,9 @@ namespace Framework::SDLUtils {
 
 		uint8_t count = 0;
 		while (test_surface == NULL && count < depth) {
-			test_surface = IMG_Load((base_path + "assets/" + test_file).c_str());
+			printf("path: %s\n", (base_path + test_file).c_str());
+
+			test_surface = IMG_Load((base_path + test_file).c_str());
 
 			if (test_surface == NULL) {
 				base_path += "../";
@@ -70,18 +72,18 @@ namespace Framework::SDLUtils {
 		}
 
 		if (test_surface == NULL) {
-			printf("Could not find assets folder!\n");
-			return "assets/";
+			printf("Could not find assbaseets folder!\n");
+			return "";
 		}
 
 		SDL_FreeSurface(test_surface);
 		SDL_ClearError();
 
-		std::string message = "Found assets folder: " + base_path + "assets/\n\n";
+		std::string message = "Found base folder: " + base_path + "\n\n";
 
 		printf("%s", message.c_str());
 
-		return base_path + "assets/";
+		return base_path;
 	}
 
 	void SDL_SetRenderDrawColor(SDL_Renderer* renderer, const Colour& colour) {

@@ -91,7 +91,7 @@ void GameStage::load_settings() {
 	settings = Settings();
 
 	// Read json
-	json j = Framework::JSONHandler::read(graphics_objects->base_path + PATHS::SAVE_DATA::LOCATION + PATHS::SAVE_DATA::SETTINGS);
+	json j = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::DATA::LOCATION + PATHS::DATA::SETTINGS);
 
 	if (!j.empty()) {
 		try {
@@ -104,12 +104,12 @@ void GameStage::load_settings() {
 	}
 }
 void GameStage::save_settings() {
-	Framework::JSONHandler::write(graphics_objects->base_path + PATHS::SAVE_DATA::LOCATION + PATHS::SAVE_DATA::SETTINGS, settings);
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::DATA::LOCATION + PATHS::DATA::SETTINGS, settings);
 }
 
 
 void GameStage::test_save_rocket() {
-	Framework::JSONHandler::write(graphics_objects->base_path + PATHS::SAVE_DATA::LOCATION + "test_rocket.json", rockets[0]);
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + "test_rocket.json", rockets[0]);
 }
 
 
@@ -202,38 +202,38 @@ void GameStage::create_solar_system() {
 void GameStage::create_components() {
 
 	// Test component
-	PhysicsEngine::Polygon* poly_ptr = new PhysicsEngine::Polygon(GAME::SANDBOX::COMPONENTS::VERTICES[0]); // just a test
-	physics_data.shapes.push_back(poly_ptr);
+	//PhysicsEngine::Polygon* poly_ptr = new PhysicsEngine::Polygon(GAME::COMPONENTS::VERTICES[0]); // just a test
+	//physics_data.shapes.push_back(poly_ptr);
 
-	//phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
-	//phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
-	phyvec position = physics_manager.get_bodies()[3].centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
+	////phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
+	////phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
+	//phyvec position = physics_manager.get_bodies()[3].centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
 
-	PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::STEEL; // TODO
-	physics_data.materials.push_back(material_ptr);
+	//PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALSSTEEL; // TODO
+	//physics_data.materials.push_back(material_ptr);
 
-	PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(poly_ptr, material_ptr, PhysicsEngine::to_phyvec(position));
+	//PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(poly_ptr, material_ptr, PhysicsEngine::to_phyvec(position));
 
-	object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
+	//object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 
 
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = Component::ComponentType::COMMAND_MODULE; // test
+	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = Component::ComponentType::COMMAND_MODULE; // test
 
-	// Set category ID
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT;
+	//// Set category ID
+	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT;
 
-	// Keep moving at earth speed
-	object.velocity = physics_manager.get_bodies()[3].velocity; // messy, TODO // FIXME
-	//object.velocity = physics_manager.get_bodies()[0].velocity;
+	//// Keep moving at earth speed
+	//object.velocity = physics_manager.get_bodies()[3].velocity; // messy, TODO // FIXME
+	////object.velocity = physics_manager.get_bodies()[0].velocity;
 
-	//physics_manager.add_body(object);
+	////physics_manager.add_body(object);
 
 
 	// Test rocket
 
 	Rocket r;
 
-	Component c = Component(Component::ComponentType::COMMAND_MODULE, { ComponentNode{0, 0, {0, 1.2}} });
+	/*Component c = Component(Component::ComponentType::COMMAND_MODULE, { ComponentNode{0, 0, {0, 1.2}} });
 	c.set_position({ 0, 0 });
 	r.add_component(c);
 
@@ -260,7 +260,7 @@ void GameStage::create_components() {
 	r.set_name("Other");
 	rockets[1] = r;
 
-	create_rocket(0, object.centre);
+	create_rocket(0, object.centre);*/
 	//create_rocket(1, object.centre + phyvec{20, 0});
 }
 
@@ -286,11 +286,11 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& offset) {
 
 		uint32_t component_type = component.get_type();
 
-		PhysicsEngine::Shape* shape_ptr = new PhysicsEngine::Polygon(GAME::SANDBOX::COMPONENTS::VERTICES[component_type]);
+		PhysicsEngine::Shape* shape_ptr = new PhysicsEngine::Polygon(GAME::COMPONENTS::VERTICES[component_type]);
 		physics_data.shapes.push_back(shape_ptr);
 
 		// Don't add material_ptr to physics_data since it's not a heap allocated ptr
-		PhysicsEngine::Material* material_ptr = GAME::SANDBOX::COMPONENTS::MATERIALS[component_type];
+		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
 		
 		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_position()) + offset);
 
@@ -339,7 +339,11 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& offset) {
 		// Check that we actually found the bodies
 		if (a && b) {
 			// Natural length MUST be > 0
-			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, c.a.offset, c.b.offset, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
+			std::map<uint32_t, Component> components = rockets[rocket_id].get_components();
+			phyvec offset_a = components[c.a.component_id].get_node_positions()[c.a.node_id];
+			phyvec offset_b = components[c.b.component_id].get_node_positions()[c.b.node_id];
+
+			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
 			physics_data.constraints.push_back(constraint);
 
 			physics_manager.add_constraint(constraint);
@@ -407,7 +411,7 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 		// Draw small triangle representing command module
 
 		// Only render icon on map if it's a command module
-		if (component_type == Component::ComponentType::COMMAND_MODULE) {
+		if (component_type == GAME::COMPONENTS::ComponentType::COMMAND_MODULE) {
 
 			Framework::vec2 text_position = PhysicsEngine::to_fvec(map_camera.get_render_position(component.centre) + phyvec{0, 1 + GAME::MAP::UI::ICONS::COMMAND_MODULE_SIZE / 2});
 
@@ -561,7 +565,7 @@ void GameStage::update_temporaries(float dt) {
 			// Does this component belong to the current rocket?
 			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
 				// Is the component a command module?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::COMMAND_MODULE) {
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::ComponentType::COMMAND_MODULE) {
 					sandbox_temporaries.cmd_mdl_centre = body.centre;
 					sandbox_temporaries.cmd_mdl_velocity = body.velocity;
 				}
@@ -688,7 +692,7 @@ void GameStage::update_sandbox(float dt) {
 			// Does this component belong to the current rocket?
 			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
 				// Is the component an engine?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == Component::ComponentType::ENGINE) {
+				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::ComponentType::ENGINE) {
 					static const float ENGINE_FORCE = 2e7f;
 					// Add force
 					phyflt force_magnitude = ENGINE_FORCE * rocket_controls.engine_power;

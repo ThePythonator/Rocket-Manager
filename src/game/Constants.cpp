@@ -68,18 +68,35 @@ namespace PATHS {
 
 	const std::string PARENT = "../";
 
+	// Set at runtime
+	std::string BASE_PATH;
+
 	namespace IMAGES {
-		const std::string LOCATION = "images/";
+		const std::string LOCATION = "assets/images/";
 
 		const std::string LOGO = "logo.png";
 		const std::string MAIN_SPRITESHEET = "demo_spritesheet.png";
 		const std::string FONT_SPRITESHEET = "font.png";
 	}
 
-	namespace SAVE_DATA {
+	namespace DATA {
 		const std::string LOCATION = "data/";
 
 		const std::string SETTINGS = "settings.json";
+	}
+
+	namespace SANDBOX_SAVES {
+		const std::string LOCATION = "data/saves/";
+	}
+
+	namespace COMPONENTS {
+		const std::string LOCATION = "assets/components/";
+
+		const std::string FILE_EXTENSION = ".json";
+	}
+
+	namespace ROCKET_TEMPLATES {
+		const std::string LOCATION = "data/templates/";
 	}
 }
 
@@ -245,11 +262,12 @@ namespace GAME {
 
 		namespace DEFAULT_MATERIALS {
 			// No const only because it gets messy when using ptrs to here
-			PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 7850 };
-			PhysicsEngine::Material WOOD{ 0.5f, 0.25f, 0.6f, 710 };
-			PhysicsEngine::Material PLASTIC{ 0.35f, 0.3f, 0.5f, 940 };
-			PhysicsEngine::Material GLASS{ 0.94f, 0.4f, 0.5f, 2500 };
-			//PhysicsEngine::Material STEEL{ 0.74f, 0.57f, 0.7f, 1000 };
+			std::vector<PhysicsEngine::Material> MATERIALS {
+				{ 0.74f, 0.57f, 0.7f, 7850 },
+				{ 0.5f, 0.25f, 0.6f, 710 },
+				{ 0.35f, 0.3f, 0.5f, 940 },
+				{ 0.94f, 0.4f, 0.5f, 2500 }
+			};
 		}
 
 		namespace BODIES {
@@ -328,25 +346,25 @@ namespace GAME {
 			};
 		}
 
-		namespace COMPONENTS {
-			//const std::vector<PhysicsEngine::phyvec> SIZES {
-			//	{ 5, 3 },	// CommandModule
-			//	{ 5, 20 },	// FuelTank
-			//	{ 3, 3 }	// Engine
-			//};
+		//namespace COMPONENTS {
+		//	//const std::vector<PhysicsEngine::phyvec> SIZES {
+		//	//	{ 5, 3 },	// CommandModule
+		//	//	{ 5, 20 },	// FuelTank
+		//	//	{ 3, 3 }	// Engine
+		//	//};
 
-			const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES{
-				PhysicsEngine::trapezium_vertices(3, 5, 3),
-				PhysicsEngine::rect_vertices({ 5, 20 }),
-				PhysicsEngine::trapezium_vertices(2, 4, 3)
-			};
+		//	const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES{
+		//		PhysicsEngine::trapezium_vertices(3, 5, 3),
+		//		PhysicsEngine::rect_vertices({ 5, 20 }),
+		//		PhysicsEngine::trapezium_vertices(2, 4, 3)
+		//	};
 
-			const std::vector<PhysicsEngine::Material*> MATERIALS {
-				&DEFAULT_MATERIALS::STEEL,
-				&DEFAULT_MATERIALS::STEEL,
-				&DEFAULT_MATERIALS::STEEL
-			};
-		}
+		//	const std::vector<uint32_t> MATERIALS {
+		//		DEFAULT_MATERIALS::TYPES::STEEL,
+		//		DEFAULT_MATERIALS::TYPES::STEEL,
+		//		DEFAULT_MATERIALS::TYPES::STEEL
+		//	};
+		//}
 
 		namespace CONNECTIONS {
 			const float MAX_EXTENSION = 1.0f;
@@ -370,5 +388,15 @@ namespace GAME {
 
 			const uint8_t ENGINE_POWER = 1;
 		}
+	}
+
+	// Loaded at runtime
+	namespace COMPONENTS {
+		std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> VERTICES;
+		std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> NODE_POSITIONS;
+
+		std::map<uint32_t, uint32_t> MATERIALS;
+
+		std::map<uint32_t, std::string> NAMES;
 	}
 }
