@@ -25,7 +25,7 @@ namespace Framework {
 
 		void write(std::string filepath, json data, bool pretty_print) {
 			if (std::filesystem::create_directories(get_directory_path(filepath))) {
-				printf("Created necessary directories.");
+				printf("Created necessary directories.\n");
 			}
 
 			printf("Written to %s\n", filepath.c_str());

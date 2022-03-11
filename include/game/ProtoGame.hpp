@@ -10,6 +10,7 @@
 
 #include "Camera.hpp"
 #include "Rocket.hpp"
+#include "Planet.hpp"
 #include "Settings.hpp"
 #include "StarField.hpp"
 
@@ -27,15 +28,19 @@ public:
 
 private:
 	void init_temporaries();
+
 	void load_settings();
 	void save_settings();
 
-	void test_save_rocket();
+	void load_sandbox(std::string filename);
+	void save_sandbox(std::string filename);
 
 	void create_solar_system();
-	void create_components();
+	void create_planets(const std::vector<Planet>& planets);
 
-	void create_rocket(uint32_t rocket_id, const phyvec& position);
+	void create_components();
+	void create_rocket(const Rocket& rocket);
+	void create_rocket(const Rocket& rocket, uint32_t rocket_id);
 
 	/*std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
 	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);*/
@@ -65,6 +70,8 @@ private:
 
 	std::vector<Framework::vec2> convert_poly_vertices(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera);
 	std::vector<Framework::vec2> convert_poly_vertices_retain_size(std::vector<phyvec> vertices, const phyvec& centre, const phymat& rotation_matrix, const Camera& camera);
+
+	uint32_t get_next_rocket_index();
 
 	PhysicsEngine::PhysicsManager physics_manager;
 	PhysicsEngine::PhysicsData physics_data;

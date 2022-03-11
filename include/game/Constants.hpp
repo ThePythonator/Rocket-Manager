@@ -303,8 +303,8 @@ namespace GAME {
 			enum RIGID_BODY_IDS {
 				CATEGORY, // is it a planet or component?
 				GROUP, // components are grouped into rockets
-				TYPE, // what type of object is it (e.g. Fuel Tank, Command Module)
-				OBJECT, // which object (planet or component) is it (unique among rocket's components)
+				TYPE, // what type of object is it (e.g. Fuel Tank, Command Module), or what planet it is
+				OBJECT, // which object (planet or component) is it (unique among rocket's components/planet types)
 				
 				TOTAL
 			};

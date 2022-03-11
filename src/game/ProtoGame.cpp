@@ -34,20 +34,22 @@ void GameStage::init() {
 	sandbox_camera.set_scale(5.0f);
 
 	// Create Solar System
+#if 0
 	create_solar_system();
 
 	create_components(); // todo: load from save
-
+#endif
 	init_temporaries();
 }
 
 void GameStage::start() {
 	load_settings();
+	load_sandbox("sandbox_save_test.json"); // TODO: get location to read from
 }
 
 void GameStage::end() {
 	save_settings();
-	test_save_rocket(); // test
+	save_sandbox("sandbox_save_test.json"); // TODO: get location to save to
 }
 
 bool GameStage::update(float dt) {
@@ -110,8 +112,49 @@ void GameStage::save_settings() {
 }
 
 
-void GameStage::test_save_rocket() {
-	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + "test_rocket.json", rockets[0]);
+void GameStage::load_sandbox(std::string filename) {
+	json data = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename);
+
+	// Get planets
+	std::vector<Planet> planets;
+	data.at("planets").get_to(planets);
+
+	std::map<uint32_t, Rocket> loaded_rockets;
+	data.at("rockets").get_to(loaded_rockets);
+
+	for (const std::pair<uint32_t, Rocket>& r : loaded_rockets) {
+		create_rocket(r.second, r.first);
+	}
+
+	create_planets(planets);
+}
+
+void GameStage::save_sandbox(std::string filename) {
+	std::vector<Planet> planets;
+
+	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		switch (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
+		case GAME::SANDBOX::CATEGORIES::PLANET:
+			planets.push_back({body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE], body.centre, body.velocity});
+			break;
+
+		case GAME::SANDBOX::CATEGORIES::COMPONENT:
+			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
+				rockets[body.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT]].set_initial_data({body.centre, body.velocity, body.angle});
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	json data = json{
+		{"planets", planets},
+		{"rockets", rockets}
+	};
+
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename, data);
 }
 
 
@@ -180,13 +223,13 @@ void GameStage::create_solar_system() {
 
 		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 		
-		phyflt speed = find_velocity(sun_mass, PhysicsEngine::length(position), semimajor_axis);
+		phyflt speed = find_velocity(sun_mass, PhysicsEngine::length(me_to_sun), semimajor_axis);
 		
 		if (sun_position != position) {
 			object.velocity = speed * velocity_direction;
 		}
 
-		// Set render ID
+		// Set planet ID
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = i;
 
 		// Set category ID
@@ -199,6 +242,50 @@ void GameStage::create_solar_system() {
 		physics_manager.add_body(object);
 	}
 #endif
+}
+
+
+void GameStage::create_planets(const std::vector<Planet>& planets) {
+	// Find planet which is sun:
+	phyvec sun_position;
+	phyflt sun_radius = GAME::SANDBOX::BODIES::RADII[GAME::SANDBOX::BODIES::ID::SUN];
+	phyflt sun_area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[GAME::SANDBOX::BODIES::ID::SUN], sun_radius);
+	phyflt sun_area = PhysicsEngine::PI * sun_radius * sun_radius;
+	phyflt sun_mass = sun_area * sun_area_density;
+	for (const Planet& planet : planets) {
+		if (planet.id == GAME::SANDBOX::BODIES::ID::SUN) {
+			// Get stats
+			sun_position = planet.position;
+		}
+	}
+
+
+	for (const Planet& planet : planets) {
+		phyflt radius = GAME::SANDBOX::BODIES::RADII[planet.id];
+
+		PhysicsEngine::Circle* circle_ptr = new PhysicsEngine::Circle(radius);
+		physics_data.shapes.push_back(circle_ptr);
+
+		phyflt area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[planet.id], radius);
+
+		// Add material_ptr to physics_data since it's not a heap allocated ptr
+		PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.0f, area_density); // todo: get friction and restitution?
+		physics_data.materials.push_back(material_ptr);
+
+		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, planet.position);
+
+		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
+
+		object.velocity = planet.velocity;
+
+		// Set planet ID
+		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = planet.id;
+
+		// Set category ID
+		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
+
+		physics_manager.add_body(object);
+	}
 }
 
 void GameStage::create_components() {
@@ -255,31 +342,30 @@ void GameStage::create_components() {
 
 	r.set_name("Test Rocket");
 
-	r.set_initial_velocity(physics_manager.get_bodies()[3].velocity);
+	r.set_initial_data({ position, physics_manager.get_bodies()[3].velocity, 0.0f });
 
-	rockets[0] = r;
+	//r.set_name("Other");
 
-	r.set_name("Other");
-	rockets[1] = r;
+	r.set_is_template(false);
 
-	create_rocket(0, position);
+	create_rocket(r);
 	//create_rocket(1, object.centre + phyvec{20, 0});
 }
 
 // Creates RigidBodies and Constraints, using the positions stored in the Rocket instance identified by rocket_id, offsetting by the supplied offset
-void GameStage::create_rocket(uint32_t rocket_id, const phyvec& position) {
+void GameStage::create_rocket(const Rocket& rocket) {
+	uint32_t rocket_id = get_next_rocket_index();
 
-	// TODO: load position from file
-	// TODO: load angle from file
+	// Add rocket to rockets
+	rockets[rocket_id] = rocket;
 
-	// For now, just work out offsets?
+	// Create rocket
+	create_rocket(rocket, rocket_id);
+}
 
-	if (!rockets.count(rocket_id)) {
-		// Rocket doesn't exist, so we can't create it
-		return;
-	}
 
-	const Rocket& rocket = rockets[rocket_id];
+void GameStage::create_rocket(const Rocket& rocket, uint32_t rocket_id) {
+	Rocket::InitialData initial_data = rocket.get_initial_data();
 
 	// Create the physics RigidBodies to be added to the engine
 	for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
@@ -293,8 +379,9 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& position) {
 
 		// Don't add material_ptr to physics_data since it's not a heap allocated ptr
 		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
-		
-		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_offset()) + position);
+
+		// TODO: change so that angle isn't necessarily just same as CMD MODULE?
+		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_offset()) + initial_data.position, initial_data.angle);
 
 		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
 
@@ -303,11 +390,10 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& position) {
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = component_type; // What type of component is it
 		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = component_id; // Component id is used to uniquely identify a component as part of a specific rocket
 
-		
 		// Set rocket's velocity
 		// If loading from a save, initial_velocity is stored in the save data.
 		// If loading from a rocket file (i.e. player just placed a new rocket in the world), then initial_velocity is set to the launch planet's current velocity.
-		object.velocity = rocket.get_initial_velocity();
+		object.velocity = initial_data.velocity;
 
 		physics_manager.add_body(object);
 	}
@@ -316,8 +402,6 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& position) {
 	// Create constraints
 
 	for (const Connection& c : rocket.get_connections()) {
-		//c.a.component_id
-
 		PhysicsEngine::RigidBody* a = nullptr;
 		PhysicsEngine::RigidBody* b = nullptr;
 
@@ -345,10 +429,6 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& position) {
 
 			phyvec offset_a = GAME::COMPONENTS::NODE_POSITIONS[components[c.a.component_id].get_type()][c.a.node_id];
 			phyvec offset_b = GAME::COMPONENTS::NODE_POSITIONS[components[c.b.component_id].get_type()][c.b.node_id];
-
-			// old
-			//phyvec offset_a = components[c.a.component_id].get_node_positions()[c.a.node_id];
-			//phyvec offset_b = components[c.b.component_id].get_node_positions()[c.b.node_id];
 
 			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
 			physics_data.constraints.push_back(constraint);
@@ -799,4 +879,13 @@ std::vector<Framework::vec2> GameStage::convert_poly_vertices_retain_size(std::v
 	}
 
 	return new_vertices;
+}
+
+uint32_t GameStage::get_next_rocket_index() {
+	// Get next free index in rockets
+	uint32_t i = 0;
+	while (rockets.count(i)) {
+		i++;
+	}
+	return i;
 }

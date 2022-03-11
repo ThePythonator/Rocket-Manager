@@ -12,19 +12,11 @@ std::string Rocket::get_name() const {
 	return _name;
 }
 
-
-void Rocket::set_initial_velocity(phyvec initial_velocity) {
-	_initial_velocity = initial_velocity;
+void Rocket::set_initial_data(InitialData initial_data) {
+	_initial_data = initial_data;
 }
-phyvec Rocket::get_initial_velocity() const {
-	return _initial_velocity;
-}
-
-void Rocket::set_initial_angle(phyflt initial_angle) {
-	_initial_angle = initial_angle;
-}
-phyflt Rocket::get_initial_angle() const {
-	return _initial_angle;
+Rocket::InitialData Rocket::get_initial_data() const {
+	return _initial_data;
 }
 
 void Rocket::set_is_template(bool is_template) {
@@ -47,9 +39,8 @@ void to_json(json& j, const Rocket& r) {
 	};
 
 	if (!r.get_is_template()) {
-		// Also add velocity
-		j.push_back({"velocity", r.get_initial_velocity()});
-		j.push_back({"angle", r.get_initial_angle()});
+		// Also add initial data
+		j["initial_data"] = r.get_initial_data();
 	}
 }
 
@@ -61,8 +52,20 @@ void from_json(const json& j, Rocket& r) {
 	r.set_connections(j.at("connections").get<std::vector<Connection>>());
 
 	if (!r.get_is_template()) {
-		// Also get velocity
-		r.set_initial_velocity(j.at("velocity").get<phyvec>());
-		r.set_initial_angle(j.value("angle", phyflt(0.0f)));
+		// Also get initial data
+		r.set_initial_data(j.at("initial_data").get<Rocket::InitialData>());
 	}
+}
+
+void to_json(json& j, const Rocket::InitialData& d) {
+	j = json{
+		{"position", d.position},
+		{"velocity", d.velocity},
+		{"angle", d.angle}
+	};
+}
+void from_json(const json& j, Rocket::InitialData& d) {
+	d.position = j.at("position").get<phyvec>();
+	d.velocity = j.at("velocity").get<phyvec>();
+	d.angle = j.at("angle").get<phyflt>();
 }
