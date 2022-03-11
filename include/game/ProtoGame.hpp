@@ -35,7 +35,7 @@ private:
 	void create_solar_system();
 	void create_components();
 
-	void create_rocket(uint32_t rocket_id, const phyvec& offset);
+	void create_rocket(uint32_t rocket_id, const phyvec& position);
 
 	/*std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
 	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);*/

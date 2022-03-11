@@ -236,18 +236,15 @@ void GameStage::create_components() {
 	Rocket r;
 
 	Component c = Component(GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE);
-	c.set_position({ 0, 0 });
-	c.set_node_positions(GAME::COMPONENTS::NODE_POSITIONS[c.get_type()]);
+	c.set_offset({ 0, 0 });
 	r.add_component(c);
 
 	c = Component(GAME::COMPONENTS::COMPONENT_TYPE::FUEL_TANK);
-	c.set_position({ 0, 11.2 });
-	c.set_node_positions(GAME::COMPONENTS::NODE_POSITIONS[c.get_type()]);
+	c.set_offset({ 0, 11.2 });
 	r.add_component(c);
 
 	c = Component(GAME::COMPONENTS::COMPONENT_TYPE::ENGINE);
-	c.set_position({ 0, 23 });
-	c.set_node_positions(GAME::COMPONENTS::NODE_POSITIONS[c.get_type()]);
+	c.set_offset({ 0, 23 });
 	r.add_component(c);
 
 	Connection conn{ ComponentNode{0, 1}, ComponentNode{1, 0} };
@@ -270,7 +267,7 @@ void GameStage::create_components() {
 }
 
 // Creates RigidBodies and Constraints, using the positions stored in the Rocket instance identified by rocket_id, offsetting by the supplied offset
-void GameStage::create_rocket(uint32_t rocket_id, const phyvec& offset) {
+void GameStage::create_rocket(uint32_t rocket_id, const phyvec& position) {
 
 	// TODO: load position from file
 	// TODO: load angle from file
@@ -297,7 +294,7 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& offset) {
 		// Don't add material_ptr to physics_data since it's not a heap allocated ptr
 		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
 		
-		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_position()) + offset);
+		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_offset()) + position);
 
 		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
 
@@ -345,8 +342,13 @@ void GameStage::create_rocket(uint32_t rocket_id, const phyvec& offset) {
 		if (a && b) {
 			// Natural length MUST be > 0
 			std::map<uint32_t, Component> components = rockets[rocket_id].get_components();
-			phyvec offset_a = components[c.a.component_id].get_node_positions()[c.a.node_id];
-			phyvec offset_b = components[c.b.component_id].get_node_positions()[c.b.node_id];
+
+			phyvec offset_a = GAME::COMPONENTS::NODE_POSITIONS[components[c.a.component_id].get_type()][c.a.node_id];
+			phyvec offset_b = GAME::COMPONENTS::NODE_POSITIONS[components[c.b.component_id].get_type()][c.b.node_id];
+
+			// old
+			//phyvec offset_a = components[c.a.component_id].get_node_positions()[c.a.node_id];
+			//phyvec offset_b = components[c.b.component_id].get_node_positions()[c.b.node_id];
 
 			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
 			physics_data.constraints.push_back(constraint);

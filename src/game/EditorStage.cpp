@@ -37,7 +37,7 @@ void EditorStage::render_component(const std::pair<uint32_t, Component>& c) {
 	std::vector<Framework::vec2> vertices;
 
 	for (const phyvec& v : GAME::COMPONENTS::VERTICES[component_id]) {
-		vertices.push_back(PhysicsEngine::to_fvec(camera.get_render_position(component.get_position())));
+		vertices.push_back(PhysicsEngine::to_fvec(camera.get_render_position(component.get_offset())));
 	}
 
 	graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);

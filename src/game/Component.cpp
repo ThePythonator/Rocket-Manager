@@ -6,13 +6,6 @@ Component::Component() {
 Component::Component(uint32_t type) : _type(type) {
 
 }
-const std::vector<phyvec>& Component::get_node_positions() const {
-	return _node_positions;
-}
-
-void Component::set_node_positions(std::vector<phyvec> node_positions) {
-	_node_positions = node_positions;
-}
 
 void Component::set_type(uint32_t type) {
 	_type = type;
@@ -22,12 +15,12 @@ uint32_t Component::get_type() const {
 	return _type;
 }
 
-phyvec Component::get_position() const {
-	return _position;
+phyvec Component::get_offset() const {
+	return _offset;
 }
 
-void Component::set_position(phyvec position) {
-	_position = position;
+void Component::set_offset(phyvec offset) {
+	_offset = offset;
 }
 
 
@@ -103,12 +96,10 @@ void from_json(const json& j, Connection& c) {
 void to_json(json& j, const Component& c) {
 	j = json{
 		{"type", c.get_type()},
-		{"node_positions", c.get_node_positions()},
-		{"position", c.get_position()}
+		{"offset", c.get_offset()}
 	};
 }
 void from_json(const json& j, Component& c) {
 	c.set_type(j.at("type").get<uint32_t>());
-	c.set_node_positions(j.at("node_positions").get<std::vector<phyvec>>());
-	c.set_position(j.at("position").get<phyvec>());
+	c.set_offset(j.at("offset").get<phyvec>());
 }

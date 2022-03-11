@@ -21,7 +21,7 @@ void StarField::set_constants(const StarFieldConstants& constants) {
 void StarField::render() {
 	for (const Star& star : _stars) {
 		// Render star
-		_graphics->render_filled_rect(Framework::Rect(star.position - star.size, star.size), star.colour);
+		_graphics->render_filled_rect(Framework::Rect(star.position, star.size), star.colour);
 	}
 }
 
@@ -34,17 +34,17 @@ void StarField::move(Framework::vec2 distance) {
 
 		// Has it gone off screen? If so, make new one at other side
 		Framework::vec2 new_position = star.position;
-		if (star.position.x < 0) {
+		if (star.position.x + star.size < 0) {
 			new_position.x = _size.x;
 		}
 		else if (star.position.x > _size.x) {
-			new_position.x = 0;
+			new_position.x = -star.size;
 		}
-		if (star.position.y < 0) {
+		if (star.position.y + star.size < 0) {
 			new_position.y = _size.y;
 		}
 		else if (star.position.y > _size.y) {
-			new_position.y = 0;
+			new_position.y = -star.size;
 		}
 
 		star.position = new_position;

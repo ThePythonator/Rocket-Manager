@@ -28,23 +28,16 @@ public:
 	Component();
 	Component(uint32_t type);
 
-	// Node positions are the offsets from the centre (not centroid) of the component
-	const std::vector<phyvec>& get_node_positions() const;
-	void set_node_positions(std::vector<phyvec> node_positions);
-
 	uint32_t get_type() const;
 	void set_type(uint32_t type);
 
-	phyvec get_position() const;
-	void set_position(phyvec position);
+	phyvec get_offset() const;
+	void set_offset(phyvec offset);
 
 private:
 	//uint32_t _component_id = 0;
 	uint32_t _type = 0;
-
-	std::vector<phyvec> _node_positions;
-
-	phyvec _position;
+	phyvec _offset;
 };
 
 

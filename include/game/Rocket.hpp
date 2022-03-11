@@ -12,6 +12,9 @@ public:
 	void set_initial_velocity(phyvec initial_velocity);
 	phyvec get_initial_velocity() const;
 
+	void set_initial_angle(phyflt initial_angle);
+	phyflt get_initial_angle() const;
+
 	void set_is_template(bool is_template);
 	bool get_is_template() const;
 
@@ -19,6 +22,7 @@ private:
 	std::string _name;
 
 	phyvec _initial_velocity;
+	phyflt _initial_angle = 0.0f;
 
 	bool _is_template = true;
 };
