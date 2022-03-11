@@ -119,11 +119,11 @@ void GameStage::load_sandbox(std::string filename) {
 	std::vector<Planet> planets;
 	data.at("planets").get_to(planets);
 
-	std::map<uint32_t, Rocket> loaded_rockets;
-	data.at("rockets").get_to(loaded_rockets);
+	//std::map<uint32_t, Rocket> rockets;
+	//data.at("rockets").get_to(rockets);
 
-	for (const std::pair<uint32_t, Rocket>& r : loaded_rockets) {
-		create_rocket(r.second, r.first);
+	for (const std::pair<uint32_t, Rocket>& r : data.at("rockets").get<std::map<uint32_t, Rocket>>()) {
+		create_rocket(r.second);
 	}
 
 	create_planets(planets);
@@ -157,7 +157,7 @@ void GameStage::save_sandbox(std::string filename) {
 	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename, data);
 }
 
-
+// TEST? or setup?
 void GameStage::create_solar_system() {
 #if 0
 	int i = 3;
@@ -288,6 +288,7 @@ void GameStage::create_planets(const std::vector<Planet>& planets) {
 	}
 }
 
+// TEST
 void GameStage::create_components() {
 
 	// Test component
@@ -359,12 +360,15 @@ void GameStage::create_rocket(const Rocket& rocket) {
 	// Add rocket to rockets
 	rockets[rocket_id] = rocket;
 
-	// Create rocket
-	create_rocket(rocket, rocket_id);
-}
+//	// Create rocket
+//	create_rocket(rocket_id);
+//}
+//
+//
+//void GameStage::create_rocket(uint32_t rocket_id) {
+//	const Rocket& rocket = rockets[rocket_id];
 
 
-void GameStage::create_rocket(const Rocket& rocket, uint32_t rocket_id) {
 	Rocket::InitialData initial_data = rocket.get_initial_data();
 
 	// Create the physics RigidBodies to be added to the engine
@@ -381,7 +385,7 @@ void GameStage::create_rocket(const Rocket& rocket, uint32_t rocket_id) {
 		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
 
 		// TODO: change so that angle isn't necessarily just same as CMD MODULE?
-		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::to_phyvec(component.get_offset()) + initial_data.position, initial_data.angle);
+		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset()) + initial_data.position, initial_data.angle);
 
 		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
 
@@ -434,7 +438,6 @@ void GameStage::create_rocket(const Rocket& rocket, uint32_t rocket_id) {
 			physics_data.constraints.push_back(constraint);
 
 			physics_manager.add_constraint(constraint);
-
 		}
 	}
 }

@@ -40,7 +40,7 @@ private:
 
 	void create_components();
 	void create_rocket(const Rocket& rocket);
-	void create_rocket(const Rocket& rocket, uint32_t rocket_id);
+	//void create_rocket(uint32_t rocket_id);
 
 	/*std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
 	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);*/
