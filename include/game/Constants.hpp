@@ -26,6 +26,8 @@ namespace STRINGS {
 	namespace BUTTONS {
 		extern const std::vector<std::string> TITLE;
 		extern const std::vector<std::string> PLAY_OPTIONS;
+		extern const std::vector<std::string> SAVE_SELECT;
+		extern const std::vector<std::string> NEW_SAVE;
 		extern const std::vector<std::string> SETTINGS;
 		extern const std::vector<std::string> CREDITS;
 		extern const std::vector<std::string> PAUSED;
@@ -34,6 +36,9 @@ namespace STRINGS {
 	namespace GAME {
 		extern const std::vector<std::string> PLANET_NAMES;
 	}
+
+	extern const std::vector<std::string> RANDOM_SAVE_ADJECTIVES;
+	extern const std::vector<std::string> RANDOM_SAVE_NOUNS;
 }
 
 namespace PATHS {
@@ -226,6 +231,21 @@ namespace BUTTONS {
 		};
 	}
 
+	namespace SAVE_SELECT {
+		enum SAVE_SELECT {
+			TOTAL
+		};
+	}
+
+	namespace NEW_SAVE {
+		enum SAVE_SELECT {
+			NAME,
+			CREATE,
+
+			TOTAL
+		};
+	}
+
 	namespace SETTINGS {
 		enum SETTINGS {
 			GAME,
@@ -278,6 +298,8 @@ namespace GAME {
 			extern const float MAXIMUM_ZOOM;
 			extern const float MINIMUM_ZOOM;
 
+			extern const float DEFAULT_CAMERA_SCALE;
+
 			namespace MINIMAP {
 				extern const float SIZE;
 				extern const float PADDING;
@@ -306,6 +328,8 @@ namespace GAME {
 			extern const float SCROLL_ZOOM_RATE;
 			extern const float MAXIMUM_ZOOM;
 			extern const float MINIMUM_ZOOM;
+
+			extern const float DEFAULT_CAMERA_SCALE;
 		}
 
 		namespace RIGID_BODY_IDS {
@@ -349,6 +373,8 @@ namespace GAME {
 			extern const std::vector<double> VOLUME_DENSITIES;
 			extern const std::vector<double> PERIAPSIS_DISTANCES;
 			extern const std::vector<double> APOAPSIS_DISTANCES;
+
+			extern const double SCALE_HEIGHT_SCALE;
 			extern const std::vector<double> SCALE_HEIGHTS;
 
 			extern const std::vector<uint32_t> PARENT_BODIES; // Used to identify what planet/moon orbits around what

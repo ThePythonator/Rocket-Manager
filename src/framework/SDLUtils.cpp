@@ -232,8 +232,10 @@ namespace Framework::SDLUtils {
 	void SDL_RenderDrawArc(SDL_Renderer* renderer, const vec2& centre, float radius1, float radius2, float angle_start, float angle_stop, const Colour& colour) {
 		// Modified from https://github.com/pygame/pygame/blob/main/src_c/draw.c
 
+		SDL_SetRenderDrawColor(renderer, colour);
+
 		// Angle step (radians)
-		float aStep = 0.0f;  
+		float a_step = 0.0f;
 		// Current angle (radians)
 		float a = 0.0f;
 
@@ -249,31 +251,31 @@ namespace Framework::SDLUtils {
 		// Angle step in rad
 		if (radius1 < radius2) {
 			if (radius1 < 1.0e-4f) {
-				aStep = 1.0f;
+				a_step = 1.0f;
 			}
 			else {
-				aStep = std::asin(2.0f / radius1);
+				a_step = std::asin(2.0f / radius1);
 			}
 		}
 		else {
 			if (radius2 < 1.0e-4f) {
-				aStep = 1.0f;
+				a_step = 1.0f;
 			}
 			else {
-				aStep = std::asin(2.0f / radius2);
+				a_step = std::asin(2.0f / radius2);
 			}
 		}
 
-		//aStep = std::max(aStep, 0.05f);
+		//a_step = std::max(a_step, 1e-7);
 
 		last.x = x + std::cos(angle_start) * radius1;
 		last.y = y - std::sin(angle_start) * radius2;
 
-		for (a = angle_start + aStep; a < aStep + angle_stop; a += aStep) {
-			next.x = x + std::cos(std::min(a, angle_stop)) * radius1;
-			next.y = y - std::sin(std::min(a, angle_stop)) * radius2;
+		for (a = angle_start + a_step; a < a_step + angle_stop; a += a_step) {
+			next.x = x + std::cos(a) * radius1;
+			next.y = y - std::sin(a) * radius2;
 
-			SDL_RenderDrawLine(renderer, last, next, colour);
+			SDL_RenderDrawLine(renderer, last, next);
 			
 			last = next;
 		}

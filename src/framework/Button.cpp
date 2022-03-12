@@ -89,6 +89,13 @@ namespace Framework {
 		_render_rect.position = position;
 	}
 
+	std::string Button::get_text() {
+		return _text.get_text();
+	}
+	void Button::set_text(std::string text) {
+		_text.set_text(text);
+	}
+
 	uint8_t Button::get_id() const {
 		return _id;
 	}

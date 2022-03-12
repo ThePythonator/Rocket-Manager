@@ -1,6 +1,6 @@
 #include "GameUtilities.hpp"
 
-std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour, float top_button_y) {
+std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour, float top_button_y, uint8_t offset_i) {
 	std::vector<Framework::Button> buttons;
 
 	float total_height = button_size.y * button_titles.size();
@@ -8,7 +8,7 @@ std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button
 
 	for (uint8_t i = 0; i < button_titles.size(); i++) {
 		Framework::Text text = Framework::Text(font, button_titles[i], text_colour);
-		Framework::Button button = Framework::Button(Framework::Rect(position, button_size), button_images, text, i);
+		Framework::Button button = Framework::Button(Framework::Rect(position, button_size), button_images, text, i + offset_i);
 
 		buttons.push_back(button);
 
@@ -16,6 +16,11 @@ std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button
 	}
 
 	return buttons;
+}
+
+
+std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour, float top_button_y) {
+	return create_menu_buttons(button_area, button_size, button_images, button_titles, font, text_colour, top_button_y, 0);
 }
 
 std::vector<Framework::Button> create_menu_buttons_centralised(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour) {
@@ -71,4 +76,9 @@ std::string get_filename(std::string path) {
 
 std::string trim_extension(std::string filename) {
 	return filename.substr(0, filename.find_last_of('.'));
+}
+
+
+std::string random_save_name() {
+	return STRINGS::RANDOM_SAVE_ADJECTIVES[std::rand() % STRINGS::RANDOM_SAVE_ADJECTIVES.size()] + " " + STRINGS::RANDOM_SAVE_NOUNS[std::rand() % STRINGS::RANDOM_SAVE_NOUNS.size()];
 }

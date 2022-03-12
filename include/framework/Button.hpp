@@ -39,6 +39,9 @@ namespace Framework {
 
 		void set_position(vec2 position);
 
+		std::string get_text();
+		void set_text(std::string text);
+
 		uint8_t get_id() const;
 
 		vec2 initial_position() const;

@@ -18,7 +18,7 @@ namespace Framework {
 				file >> data;
 			}
 			catch (const parse_error& error) {
-				printf("Couldn't find file!\n");
+				printf("Couldn't read file! Error: %s\n", error.what());
 			}
 			return data;
 		}

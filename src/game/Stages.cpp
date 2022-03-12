@@ -227,7 +227,9 @@ bool PlayOptionsStage::update(float dt) {
 				break;
 
 			case BUTTONS::PLAY_OPTIONS::CREATE:
-				transition->close();
+				// Stop button from seeming to be pressed/hovered:
+				button.reset_state();
+				finish(new NewSaveStage(this), false);
 				break;
 
 			case BUTTONS::PLAY_OPTIONS::BACK:
@@ -291,8 +293,7 @@ void SaveSelectStage::init() {
 	}
 
 	// Create buttons for selecting save file
-	buttons = create_menu_buttons(MENU::OVERLAY_RECT, BUTTONS::WIDE_SIZE, graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], save_names, graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], COLOURS::WHITE, MENU::OVERLAY_RECT.position.y);
-
+	buttons = create_menu_buttons(MENU::OVERLAY_RECT, BUTTONS::WIDE_SIZE, graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], save_names, graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], COLOURS::WHITE, MENU::OVERLAY_RECT.position.y, BUTTONS::SAVE_SELECT::TOTAL);
 
 	// Create transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
@@ -322,7 +323,9 @@ bool SaveSelectStage::update(float dt) {
 	}
 
 	if (transition->is_closed()) {
-		// Next stage!
+		// delete play_options_stage ptr??
+
+		// Start sandbox!
 		finish(new GameStage(save_names[button_selected]));
 	}
 
@@ -334,8 +337,6 @@ void SaveSelectStage::render() {
 	play_options_stage->render();
 
 	// Menu overlay
-	//graphics_objects->graphics_ptr->fill(COLOURS::BLACK, MENU::OVERLAY_BACKGROUND_ALPHA);
-
 	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::WHITE, 0x60);
 	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
 	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
@@ -345,6 +346,100 @@ void SaveSelectStage::render() {
 	for (const Framework::Button& button : buttons) button.render();
 
 	transition->render();
+}
+
+// NewSaveStage
+
+NewSaveStage::NewSaveStage() { }
+NewSaveStage::NewSaveStage(PlayOptionsStage* _play_options_stage) : play_options_stage(_play_options_stage) { }
+
+void NewSaveStage::init() {
+	// Find valid save files:
+	std::vector<std::string> filepaths = find_files_with_extension(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION, PATHS::SANDBOX_SAVES::EXTENSION);
+
+	for (std::string path : filepaths) {
+		save_names.push_back(trim_extension(get_filename(path)));
+	}
+	
+	// Create button to cycle random names
+	Framework::Text text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::BUTTONS::NEW_SAVE[BUTTONS::NEW_SAVE::NAME], COLOURS::WHITE);
+	Framework::Button button = Framework::Button(Framework::Rect(MENU::OVERLAY_RECT.topleft(), BUTTONS::WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::NEW_SAVE::NAME);
+	button.set_text(get_new_button_name());
+	buttons.push_back(button);
+
+	// Create 'create' button
+	text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::BUTTONS::NEW_SAVE[BUTTONS::NEW_SAVE::CREATE], COLOURS::WHITE);
+	button = Framework::Button(Framework::Rect(MENU::OVERLAY_RECT.bottomleft() - Framework::vec2{ 0.0f, BUTTONS::WIDE_SIZE.y }, BUTTONS::WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::NEW_SAVE::CREATE);
+	buttons.push_back(button);
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void NewSaveStage::start() {
+	transition->set_open();
+}
+
+bool NewSaveStage::update(float dt) {
+	transition->update(dt);
+
+	// If user clicked outside menu overlay, then go back
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT) && !Framework::colliding(MENU::OVERLAY_RECT, input->get_mouse()->position())) {
+		finish(play_options_stage);
+	}
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			if (button_selected == BUTTONS::NEW_SAVE::NAME) {
+				button.set_text(get_new_button_name());
+			}
+			else if (button_selected == BUTTONS::NEW_SAVE::CREATE) {
+				transition->close();
+			}
+		}
+	}
+
+	if (transition->is_closed()) {
+		// Next stage!
+		finish(new GameStage(buttons[BUTTONS::NEW_SAVE::NAME].get_text()));
+	}
+
+	return true;
+}
+
+void NewSaveStage::render() {
+	// Render play options stage
+	play_options_stage->render();
+
+	// Menu overlay
+	//graphics_objects->graphics_ptr->fill(COLOURS::BLACK, MENU::OVERLAY_BACKGROUND_ALPHA);
+
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::WHITE, 0x60);
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
+	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
+
+	Framework::vec2 button_height = { 0.0f, BUTTONS::WIDE_SIZE.y };
+	graphics_objects->graphics_ptr->render_line(MENU::OVERLAY_RECT.bottomleft() - button_height, MENU::OVERLAY_RECT.bottomright() - button_height, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
+}
+
+std::string NewSaveStage::get_new_button_name() {
+	// Randomise for now
+	std::string name = random_save_name();
+	while (std::count(save_names.begin(), save_names.end(), name)) {
+		name = random_save_name();
+	}
+	return name;
 }
 
 // SettingsStage

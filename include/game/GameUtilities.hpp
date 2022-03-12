@@ -6,6 +6,9 @@
 
 #include "Constants.hpp"
 
+std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour, float top_button_y, uint8_t offset_i);
+
+
 std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour, float top_button_y);
 std::vector<Framework::Button> create_menu_buttons_centralised(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour);
 
@@ -24,3 +27,5 @@ std::vector<std::string> find_files_with_extension(const std::string& directory,
 
 std::string get_filename(std::string path);
 std::string trim_extension(std::string filename);
+
+std::string random_save_name();

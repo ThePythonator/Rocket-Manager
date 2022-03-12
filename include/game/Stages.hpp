@@ -81,6 +81,26 @@ private:
 	std::vector<std::string> save_names;
 };
 
+class NewSaveStage : public Framework::BaseStage {
+public:
+	NewSaveStage();
+	NewSaveStage(PlayOptionsStage* _play_options_stage);
+
+	void init();
+
+	void start();
+
+	bool update(float dt);
+	void render();
+
+private:
+	std::string get_new_button_name();
+
+	PlayOptionsStage* play_options_stage = nullptr;
+
+	std::vector<std::string> save_names;
+};
+
 class SettingsStage : public Framework::BaseStage {
 public:
 	SettingsStage();

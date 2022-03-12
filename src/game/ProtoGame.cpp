@@ -21,23 +21,9 @@ void GameStage::init() {
 	// Create star field
 	star_field = StarField(graphics_objects->graphics_ptr, WINDOW::SIZE);
 
-	// Set camera position
-
-	// Just for testing
-	//map_camera.set_position({});
-	map_camera.set_scale(1e-5f / GAME::SANDBOX::UNIVERSE_SCALE);
-
-	// TODO
-	//sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APOAPSIS_DISTANCES[3],  -GAME::SANDBOX::BODIES::RADII[3] });
-	//sandbox_camera.set_position({ 0.0f ,  -GAME::SANDBOX::BODIES::RADII[3] });
-	sandbox_camera.set_scale(5.0f);
-
-	// Create Solar System
-#if 0
-	create_solar_system();
-
-	create_components(); // todo: load from save
-#endif
+	// Set camera scales
+	map_camera.set_scale(GAME::MAP::UI::DEFAULT_CAMERA_SCALE);
+	sandbox_camera.set_scale(GAME::SANDBOX::UI::DEFAULT_CAMERA_SCALE);
 }
 
 void GameStage::start() {
@@ -286,7 +272,7 @@ void GameStage::create_components() {
 
 	//phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
 	//phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
-	phyvec position = physics_manager.get_bodies()[3]->centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 24.8f };
+	phyvec position = physics_manager.get_bodies()[3]->centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 24.5f };
 
 	//PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[; // TODO
 	//physics_data.materials.push_back(material_ptr);
@@ -328,6 +314,9 @@ void GameStage::create_components() {
 	r.add_connection(conn);
 
 	conn = { ComponentNode{1, 1}, ComponentNode{2, 0} };
+	r.add_connection(conn);
+
+	conn = { ComponentNode{1, 2}, ComponentNode{2, 1} };
 	r.add_connection(conn);
 
 	r.set_name("Test Rocket");
@@ -621,11 +610,12 @@ void GameStage::render_sandbox() {
 		}
 	}
 
-
+#if 0
 	// Testing: render constraints
-	/*for (PhysicsEngine::Constraint* c : physics_manager.get_constraints()) {
+	for (PhysicsEngine::Constraint* c : physics_manager.get_constraints()) {
 		graphics_objects->graphics_ptr->render_line(PhysicsEngine::to_fvec(sandbox_camera.get_render_position(c->a->centre + PhysicsEngine::to_world_space(c->offset_a, c->a->get_rotation_matrix()))), PhysicsEngine::to_fvec(sandbox_camera.get_render_position(c->b->centre + PhysicsEngine::to_world_space(c->offset_b, c->b->get_rotation_matrix()))), c->is_broken() ? COLOURS::PLANETS[0] : COLOURS::WHITE);
-	}*/
+	}
+#endif
 }
 
 

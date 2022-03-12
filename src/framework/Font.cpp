@@ -216,4 +216,7 @@ namespace Framework {
 	void Text::set_text(std::string text) {
 		_text = text;
 	}
+	std::string Text::get_text() {
+		return _text;
+	}
 }

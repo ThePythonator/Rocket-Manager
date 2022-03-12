@@ -71,7 +71,9 @@ void Game::load_data() {
 			// Store as runtime constants
 			GAME::COMPONENTS::MATERIALS[i] = material;
 			GAME::COMPONENTS::VERTICES[i] = PhysicsEngine::translate(vertices, -centroid);
+			printf("node: %f, %f\n", nodes[1].x, nodes[1].y);
 			GAME::COMPONENTS::NODE_POSITIONS[i] = PhysicsEngine::translate(nodes, -centroid);
+			printf("node': %f, %f\n", nodes[1].x, nodes[1].y);
 
 			GAME::COMPONENTS::NAMES[i] = name;
 

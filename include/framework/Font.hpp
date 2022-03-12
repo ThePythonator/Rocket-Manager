@@ -73,6 +73,7 @@ namespace Framework {
 		void render(vec2 position, Colour colour, Font::AnchorPosition anchor_position) const;
 		
 		void set_text(std::string text);
+		std::string get_text();
 
 	private:
 		Font* _font_ptr = nullptr;

@@ -29,6 +29,14 @@ namespace STRINGS {
 			"Back"
 		};
 
+		const std::vector<std::string> SAVE_SELECT {
+		};
+
+		const std::vector<std::string> NEW_SAVE {
+			"Save Name",
+			"Create"
+		};
+
 		const std::vector<std::string> SETTINGS {
 			"Game",
 			"Graphics",
@@ -65,6 +73,52 @@ namespace STRINGS {
 			"Moon"
 		};
 	}
+
+	const std::vector<std::string> RANDOM_SAVE_ADJECTIVES {
+		"Broken",
+		"Vast",
+		"Amazing",
+		"Brilliant",
+		"Purple",
+		"Super",
+		"Cosmic",
+		"Strange",
+		"Quirky",
+		"Unusual",
+		"Round",
+		"Metallic",
+		"Dysfunctional",
+		"Corrupted",
+		"Curious",
+		"Effective",
+		"Awesome"
+	};
+
+	const std::vector<std::string> RANDOM_SAVE_NOUNS {
+		"System",
+		"Station",
+		"Universe",
+		"Galaxy",
+		"Supernova",
+		"Star",
+		"Giant",
+		"Rocket",
+		"Planet",
+		"Moon",
+		"Byte",
+		"Computer",
+		"Cluster",
+		"Code",
+		"Drone",
+		"Alloy",
+		"Storage",
+		"Satellite",
+		"Mineral",
+		"Metal",
+		"Robot",
+		"Explosion",
+		"Colony"
+	};
 }
 
 namespace PATHS {
@@ -232,6 +286,8 @@ namespace GAME {
 			const float MAXIMUM_ZOOM = 5e-5f / SANDBOX::UNIVERSE_SCALE;
 			const float MINIMUM_ZOOM = 1e-11f / SANDBOX::UNIVERSE_SCALE;
 
+			const float DEFAULT_CAMERA_SCALE = 1e-5f / GAME::SANDBOX::UNIVERSE_SCALE;
+
 			namespace MINIMAP {
 				const float SIZE = WINDOW::SIZE.y * 0.25f;
 				const float PADDING = WINDOW::SIZE.y * 0.01f;
@@ -251,7 +307,8 @@ namespace GAME {
 	}
 
 	namespace SANDBOX {
-		const double UNIVERSE_SCALE = 1;//0.01;//0.0001; small world
+		// WARNING: if setting UNIVERSE_SCALE to something like 1, then rendering circles crashes due to floating point inaccuracies
+		const double UNIVERSE_SCALE = 0.01;//0.0001; small world
 
 		const double GRAVITATIONAL_CONSTANT = 6.674e-11 / (UNIVERSE_SCALE * UNIVERSE_SCALE);
 
@@ -275,6 +332,8 @@ namespace GAME {
 			const float MINIMUM_ZOOM = 1e-1f;
 			//const float MAXIMUM_ZOOM = 1e0f / SANDBOX::UNIVERSE_SCALE;
 			//const float MINIMUM_ZOOM = 1e-2f / SANDBOX::UNIVERSE_SCALE;
+
+			const float DEFAULT_CAMERA_SCALE = 5.0f;
 		}
 
 
@@ -359,18 +418,20 @@ namespace GAME {
 				4054e5 * UNIVERSE_SCALE
 			};
 
+			const double SCALE_HEIGHT_SCALE = 3.0f;
+
 			// Maybe don't scale by UNIVERSE_SCALE??
 			const std::vector<double> SCALE_HEIGHTS = {
 				// Planets
 				0.0, 
 				0.0, // Mercury has no atmosphere
-				15.9e3,
-				8.5e3 ,
-				10.8e3,
-				27e3,
-				59.5e3,
-				27.7e3,
-				19.7e3,
+				15.9e3 * SCALE_HEIGHT_SCALE,
+				8.5e3  * SCALE_HEIGHT_SCALE,
+				10.8e3 * SCALE_HEIGHT_SCALE,
+				27e3   * SCALE_HEIGHT_SCALE,
+				59.5e3 * SCALE_HEIGHT_SCALE,
+				27.7e3 * SCALE_HEIGHT_SCALE,
+				19.7e3 * SCALE_HEIGHT_SCALE,
 
 				// Moons
 				0.0 // Moon has no atmosphere
@@ -397,7 +458,7 @@ namespace GAME {
 
 		namespace CONNECTIONS {
 			const float MAX_EXTENSION = 1.0f;
-			const float MODULUS_OF_ELASTICITY = 1e6f;
+			const float MODULUS_OF_ELASTICITY = 2e5f;
 		}
 	}
 

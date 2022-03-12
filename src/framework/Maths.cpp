@@ -128,4 +128,8 @@ namespace Framework {
 	std::string trim_precision(float num, uint8_t precision) {
 		return trim_precision(std::to_string(num), precision);
 	}
+
+	std::string trim_precision(double num, uint8_t precision) {
+		return trim_precision(std::to_string(num), precision);
+	}
 }
