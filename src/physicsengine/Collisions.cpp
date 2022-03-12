@@ -26,16 +26,16 @@ namespace PhysicsEngine {
 	//
 	//	polygon to polygon	:	unknown (todo)
 
-	CollisionInformation circle_to_circle(RigidBody& a, RigidBody& b) {
+	CollisionInformation circle_to_circle(RigidBody* a, RigidBody* b) {
 		// This will be used to store the collision data
 		CollisionInformation collision_information;
 
 		// We need to access the radius, so we need to cast to Circle
-		Circle* circle_a = static_cast<Circle*>(a.shape);
-		Circle* circle_b = static_cast<Circle*>(b.shape);
+		Circle* circle_a = static_cast<Circle*>(a->shape);
+		Circle* circle_b = static_cast<Circle*>(b->shape);
 
 		// Calculate initial data needed
-		phyvec normal = b.centre - a.centre;
+		phyvec normal = b->centre - a->centre;
 		phyflt squared_distance = length_squared(normal);
 		phyflt radii_sum = circle_a->radius + circle_b->radius;
 		phyflt squared_radii_sum = radii_sum * radii_sum;
@@ -57,7 +57,7 @@ namespace PhysicsEngine {
 			phyvec collision_normal = PHYVEC_NULL;
 
 			// As default, set contact point to centre of circle
-			phyvec contact_point = a.centre;
+			phyvec contact_point = a->centre;
 
 			// If distance is 0, we can't divide by it
 			if (distance > 0.0) {
@@ -82,19 +82,19 @@ namespace PhysicsEngine {
 		return collision_information;
 	}
 
-	CollisionInformation circle_to_polygon(RigidBody& a, RigidBody& b) {
+	CollisionInformation circle_to_polygon(RigidBody* a, RigidBody* b) {
 		// This will be used to store the collision data
 		CollisionInformation collision_information;
 
 		// We need to access the radius and face normals, so we need to cast to Circle and Polygon respectively
-		Circle* circle_a = static_cast<Circle*>(a.shape);
-		Polygon* polygon_b = static_cast<Polygon*>(b.shape);
+		Circle* circle_a = static_cast<Circle*>(a->shape);
+		Polygon* polygon_b = static_cast<Polygon*>(b->shape);
 
 		// Convert circle's centre to the model space of the polygon
-		phyvec circle_a_converted_centre = to_model_space(a.centre, b.centre, b.get_rotation_matrix());
-		//printf("rot mat: row1: %f, %f, row2: %f, %f\n", b.get_rotation_matrix().x.x, b.get_rotation_matrix().x.y, b.get_rotation_matrix().y.x, b.get_rotation_matrix().y.y);
-		/*printf("circle centre: %f, %f\n", a.centre.x, a.centre.y);
-		printf("polygon centre: %f, %f\n", b.centre.x, b.centre.y);
+		phyvec circle_a_converted_centre = to_model_space(a->centre, b->centre, b->get_rotation_matrix());
+		//printf("rot mat: row1: %f, %f, row2: %f, %f\n", b->get_rotation_matrix().x.x, b->get_rotation_matrix().x.y, b->get_rotation_matrix().y.x, b->get_rotation_matrix().y.y);
+		/*printf("circle centre: %f, %f\n", a->centre.x, a->centre.y);
+		printf("polygon centre: %f, %f\n", b->centre.x, b->centre.y);
 		printf("converted centre: %f, %f\n", circle_a_converted_centre.x, circle_a_converted_centre.y);*/
 		// ISSUE: FOR SOME REASON, CIRCLE'S CENTRE SEEMS TO DRIFT OFF OF WHERE IT SHOULD BE (maybe fixed)
 		
@@ -155,11 +155,11 @@ namespace PhysicsEngine {
 				phyflt penetration_distance = circle_a->radius - std::sqrt(distance_to_vertex);
 
 				// Contact point is vertex (not sure why though)
-				collision_information.contact_data[0] = ContactData{ to_world_space(polygon_b->vertices[closest_face], b.centre, b.get_rotation_matrix()), penetration_distance };
+				collision_information.contact_data[0] = ContactData{ to_world_space(polygon_b->vertices[closest_face], b->centre, b->get_rotation_matrix()), penetration_distance };
 
 				// Normal is from circle to vertex, but we need to rotate it to world space (see face region comments for more details)
 				// Because we're using vector from vertex to circle, we need to flip the normal at the end
-				collision_information.collision_normal = -normalise(to_world_space(vertex_to_circle_centre, b.get_rotation_matrix()));
+				collision_information.collision_normal = -normalise(to_world_space(vertex_to_circle_centre, b->get_rotation_matrix()));
 			}
 		}
 		else if (dot(next_vertex_to_circle_centre, -face_vector) < 0.0) {
@@ -180,11 +180,11 @@ namespace PhysicsEngine {
 				phyflt penetration_distance = circle_a->radius - std::sqrt(distance_to_vertex);
 
 				// Contact point is vertex (not sure why though)
-				collision_information.contact_data[0] = ContactData{ to_world_space(polygon_b->vertices[next_face], b.centre, b.get_rotation_matrix()), penetration_distance };
+				collision_information.contact_data[0] = ContactData{ to_world_space(polygon_b->vertices[next_face], b->centre, b->get_rotation_matrix()), penetration_distance };
 
 				// Normal is from circle to vertex, but we need to rotate it to world space (see face region comments for more details)
 				// Because we're using vector from vertex to circle, we need to flip the normal at the end
-				collision_information.collision_normal = -normalise(to_world_space(next_vertex_to_circle_centre, b.get_rotation_matrix()));
+				collision_information.collision_normal = -normalise(to_world_space(next_vertex_to_circle_centre, b->get_rotation_matrix()));
 			}
 		}
 		else {
@@ -195,19 +195,19 @@ namespace PhysicsEngine {
 
 			// Face normal is opposite direction to collision_normal, so convert face normal to world space and flip direction
 			// Since we just want to rotate the normal, not translate it, we just need to multiply it by the rotation matrix
-			collision_information.collision_normal = -to_world_space(polygon_b->face_normals[closest_face], b.get_rotation_matrix());
+			collision_information.collision_normal = -to_world_space(polygon_b->face_normals[closest_face], b->get_rotation_matrix());
 
 			// Penetration is just radius - perpendicular distance to face
 			phyflt penetration_distance = circle_a->radius - separation;
 
 			// Contact point is on edge of circle
-			collision_information.contact_data[0] = ContactData{ a.centre + collision_information.collision_normal * circle_a->radius, penetration_distance };
+			collision_information.contact_data[0] = ContactData{ a->centre + collision_information.collision_normal * circle_a->radius, penetration_distance };
 		}
 
 		return collision_information;
 	}
 
-	CollisionInformation polygon_to_circle(RigidBody& a, RigidBody& b) {
+	CollisionInformation polygon_to_circle(RigidBody* a, RigidBody* b) {
 		// Just swap parameters around and use existing method
 		CollisionInformation collision_information = circle_to_polygon(b, a);
 
@@ -217,13 +217,13 @@ namespace PhysicsEngine {
 		return collision_information;
 	}
 
-	CollisionInformation polygon_to_polygon(RigidBody& a, RigidBody& b) {
+	CollisionInformation polygon_to_polygon(RigidBody* a, RigidBody* b) {
 		// This will be used to store the collision data
 		CollisionInformation collision_information;
 
 		// We need to access the radius and face normals, so we need to cast to Circle and Polygon respectively
-		Polygon* polygon_a = static_cast<Polygon*>(a.shape);
-		Polygon* polygon_b = static_cast<Polygon*>(b.shape);
+		Polygon* polygon_a = static_cast<Polygon*>(a->shape);
+		Polygon* polygon_b = static_cast<Polygon*>(b->shape);
 
 		// Find axis of least penetration from A to B, and then B to A
 
@@ -237,18 +237,18 @@ namespace PhysicsEngine {
 		for (uint16_t i = 0; i < polygon_a->face_normals.size(); i++) {
 			// Need to rotate face normal into B's model space - note that only requires rotation since we don't want to translate the vector
 			// First rotate into world space
-			phyvec normal = to_world_space(polygon_a->face_normals[i], a.get_rotation_matrix());
+			phyvec normal = to_world_space(polygon_a->face_normals[i], a->get_rotation_matrix());
 			// Now rotate into B's model space
-			normal = to_model_space(normal, b.get_rotation_matrix());
+			normal = to_model_space(normal, b->get_rotation_matrix());
 
 			// Calculate B's furthest vertex along negative normal
 			phyvec support_point = find_support_point(-normal, polygon_b->vertices);
 
 			// Get perpendicular distance from support point to face, using dot product
 			// First we need to convert vertex of A to world space:
-			phyvec vertex = to_world_space(polygon_a->vertices[i], a.centre, a.get_rotation_matrix());
+			phyvec vertex = to_world_space(polygon_a->vertices[i], a->centre, a->get_rotation_matrix());
 			// Now convert to B's model space:
-			vertex = to_model_space(vertex, b.centre, b.get_rotation_matrix());
+			vertex = to_model_space(vertex, b->centre, b->get_rotation_matrix());
 
 			// Project vector from vertex to support point along normal to get distance:
 			phyflt distance = dot(normal, support_point - vertex);
@@ -272,18 +272,18 @@ namespace PhysicsEngine {
 		for (uint16_t i = 0; i < polygon_b->face_normals.size(); i++) {
 			// Need to rotate face normal into A's model space - note that only requires rotation since we don't want to translate the vector
 			// First rotate into world space
-			phyvec normal = to_world_space(polygon_b->face_normals[i], b.get_rotation_matrix());
+			phyvec normal = to_world_space(polygon_b->face_normals[i], b->get_rotation_matrix());
 			// Now rotate into A's model space
-			normal = to_model_space(normal, a.get_rotation_matrix());
+			normal = to_model_space(normal, a->get_rotation_matrix());
 			
 			// Calculate A's furthest vertex along negative normal
 			phyvec support_point = find_support_point(-normal, polygon_a->vertices);
 
 			// Get perpendicular distance from support point to face, using dot product
 			// First we need to convert vertex of B to world space:
-			phyvec vertex = to_world_space(polygon_b->vertices[i], b.centre, b.get_rotation_matrix());
+			phyvec vertex = to_world_space(polygon_b->vertices[i], b->centre, b->get_rotation_matrix());
 			// Now convert to A's model space:
-			vertex = to_model_space(vertex, a.centre, a.get_rotation_matrix());
+			vertex = to_model_space(vertex, a->centre, a->get_rotation_matrix());
 
 			// Project vector from vertex to support point along normal to get distance:
 			phyflt distance = dot(normal, support_point - vertex);
@@ -307,8 +307,8 @@ namespace PhysicsEngine {
 		Polygon* reference_polygon = polygon_a;
 		Polygon* incident_polygon = polygon_b;
 
-		RigidBody* reference_body = &a;
-		RigidBody* incident_body = &b;
+		RigidBody* reference_body = a;
+		RigidBody* incident_body = b;
 
 		// Used to invert normal if we swapped A and B
 		bool flipped = false;
@@ -321,8 +321,8 @@ namespace PhysicsEngine {
 			reference_polygon = polygon_b;
 			incident_polygon = polygon_a;
 
-			reference_body = &b;
-			incident_body = &a;
+			reference_body = b;
+			incident_body = a;
 
 			flipped = true;
 		}

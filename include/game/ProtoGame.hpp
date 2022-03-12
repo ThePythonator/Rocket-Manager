@@ -51,8 +51,8 @@ private:
 	phyflt volume_to_area_density(phyflt volume_density, phyflt radius);
 
 	//void render_physics_objects();
-	void render_planet(const PhysicsEngine::RigidBody& planet, const Camera& camera, bool map);
-	void render_component(const PhysicsEngine::RigidBody& component, const Camera& camera, bool map);
+	void render_planet(PhysicsEngine::RigidBody* planet, const Camera& camera, bool map);
+	void render_component(PhysicsEngine::RigidBody* component, const Camera& camera, bool map);
 
 	void render_atmosphere();
 	void render_map();

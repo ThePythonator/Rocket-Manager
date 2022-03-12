@@ -18,14 +18,14 @@ namespace PhysicsEngine {
 	};
 
 	// Function signature for collision detection functions
-	typedef CollisionInformation(*CollisionDetectionFunction)(RigidBody& a, RigidBody& b);
+	typedef CollisionInformation(*CollisionDetectionFunction)(RigidBody* a, RigidBody* b);
 
 	// Jump table
 	extern CollisionDetectionFunction collision_detection_functions[static_cast<int>(Shape::ShapeType::SHAPE_COUNT)][static_cast<int>(Shape::ShapeType::SHAPE_COUNT)];
 
 	// Collision detection functions
-	CollisionInformation circle_to_circle(RigidBody& a, RigidBody& b);
-	CollisionInformation circle_to_polygon(RigidBody& a, RigidBody& b);
-	CollisionInformation polygon_to_circle(RigidBody& a, RigidBody& b);
-	CollisionInformation polygon_to_polygon(RigidBody& a, RigidBody& b);
+	CollisionInformation circle_to_circle(RigidBody* a, RigidBody* b);
+	CollisionInformation circle_to_polygon(RigidBody* a, RigidBody* b);
+	CollisionInformation polygon_to_circle(RigidBody* a, RigidBody* b);
+	CollisionInformation polygon_to_polygon(RigidBody* a, RigidBody* b);
 }

@@ -12,6 +12,7 @@ namespace PhysicsEngine {
 		~PhysicsData();
 
 		std::vector<Shape*> shapes;
+		std::vector<RigidBody*> bodies;
 		std::vector<Constraint*> constraints;
 		std::vector<Material*> materials;
 	};
@@ -37,18 +38,18 @@ namespace PhysicsEngine {
 		void step(phyflt dt);
 
 		// Returns the index of the item in the vector
-		uint16_t add_body(RigidBody body);
+		uint16_t add_body(RigidBody* body);
 		uint16_t add_constraint(Constraint* constraint);
 		//void clear_bodies();
 
-		std::vector<RigidBody>& get_bodies();
+		std::vector<RigidBody*>& get_bodies();
 		std::vector<Constraint*>& get_constraints();
 
 	private:
-		void update_velocity(RigidBody& body, phyflt dt);
-		void update_position(RigidBody& body, phyflt dt);
+		void update_velocity(RigidBody* body, phyflt dt);
+		void update_position(RigidBody* body, phyflt dt);
 
-		void add_impulse(RigidBody& body, const phyvec& impulse, const phyvec& vector_to_contact);
+		void add_impulse(RigidBody* body, const phyvec& impulse, const phyvec& vector_to_contact);
 
 		void update_forces();
 		void update_constraints();
@@ -56,8 +57,8 @@ namespace PhysicsEngine {
 		void update_positions(phyflt dt);
 		void handle_collisions(phyflt dt);
 
-		CollisionInformation detect_collision(RigidBody& a, RigidBody& b);
-		void resolve_collision(RigidBody& a, RigidBody& b, const CollisionInformation& collision_information, phyflt dt);
+		CollisionInformation detect_collision(RigidBody* a, RigidBody* b);
+		void resolve_collision(RigidBody* a, RigidBody* b, const CollisionInformation& collision_information, phyflt dt);
 
 		struct CollisionPacket {
 			CollisionInformation collision_information;
@@ -65,7 +66,7 @@ namespace PhysicsEngine {
 			uint16_t index_a, index_b;
 		};
 
-		std::vector<RigidBody> bodies;
+		std::vector<RigidBody*> bodies;
 		std::vector<Constraint*> constraints;
 
 		Constants constants;

@@ -39,12 +39,13 @@ void GameStage::init() {
 
 	create_components(); // todo: load from save
 #endif
-	init_temporaries();
 }
 
 void GameStage::start() {
 	load_settings();
 	load_sandbox("sandbox_save_test.json"); // TODO: get location to read from
+
+	init_temporaries();
 }
 
 void GameStage::end() {
@@ -104,7 +105,7 @@ void GameStage::load_settings() {
 	}
 	catch (const json::exception& e) {
 		// Ignore - we set defaults already so it's not the end of the world
-		printf("Couldn't find settings file. Error: %s\n", e.what());
+		printf("Couldn't load settings file. Error: %s\n", e.what());
 	}
 }
 void GameStage::save_settings() {
@@ -113,34 +114,38 @@ void GameStage::save_settings() {
 
 
 void GameStage::load_sandbox(std::string filename) {
-	json data = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename);
+	try {
+		json data = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename);
 
-	// Get planets
-	std::vector<Planet> planets;
-	data.at("planets").get_to(planets);
+		// Get planets
+		std::vector<Planet> planets;
+		data.at("planets").get_to(planets);
 
-	//std::map<uint32_t, Rocket> rockets;
-	//data.at("rockets").get_to(rockets);
+		// Get rockets
+		for (const std::pair<uint32_t, Rocket>& r : data.at("rockets").get<std::map<uint32_t, Rocket>>()) {
+			create_rocket(r.second);
+		}
 
-	for (const std::pair<uint32_t, Rocket>& r : data.at("rockets").get<std::map<uint32_t, Rocket>>()) {
-		create_rocket(r.second);
+		create_planets(planets);
 	}
-
-	create_planets(planets);
+	catch (const json::exception& e) {
+		// Ignore - we set defaults already so it's not the end of the world
+		printf("Couldn't load save file: %s. Error: %s\n", filename.c_str(), e.what());
+	}
 }
 
 void GameStage::save_sandbox(std::string filename) {
 	std::vector<Planet> planets;
 
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		switch (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		switch (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
 		case GAME::SANDBOX::CATEGORIES::PLANET:
-			planets.push_back({body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE], body.centre, body.velocity});
+			planets.push_back({body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE], body->centre, body->velocity});
 			break;
 
 		case GAME::SANDBOX::CATEGORIES::COMPONENT:
-			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
-				rockets[body.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT]].set_initial_data({body.centre, body.velocity, body.angle});
+			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
+				rockets[body->ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT]].set_initial_data({body->centre, body->velocity, body->angle});
 			}
 			break;
 
@@ -219,27 +224,28 @@ void GameStage::create_solar_system() {
 		// Todo: get correct direction
 		PhysicsEngine::phyvec velocity_direction = PhysicsEngine::normalise(PhysicsEngine::perpendicular_acw(me_to_sun));
 
-		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, position); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
+		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(circle_ptr, material_ptr, position); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
+		physics_data.bodies.push_back(object_ptr);
 
-		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
+		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 		
 		phyflt speed = find_velocity(sun_mass, PhysicsEngine::length(me_to_sun), semimajor_axis);
 		
 		if (sun_position != position) {
-			object.velocity = speed * velocity_direction;
+			object_ptr->velocity = speed * velocity_direction;
 		}
 
 		// Set planet ID
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = i;
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = i;
 
 		// Set category ID
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
 
-		//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = idk;
+		//object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = idk;
 		
-		//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = i; //?
+		//object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = i; //?
 
-		physics_manager.add_body(object);
+		physics_manager.add_body(object_ptr);
 	}
 #endif
 }
@@ -272,19 +278,20 @@ void GameStage::create_planets(const std::vector<Planet>& planets) {
 		PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.0f, area_density); // todo: get friction and restitution?
 		physics_data.materials.push_back(material_ptr);
 
-		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, planet.position);
+		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(circle_ptr, material_ptr, planet.position);
+		physics_data.bodies.push_back(object_ptr);
 
-		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
+		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 
-		object.velocity = planet.velocity;
+		object_ptr->velocity = planet.velocity;
 
 		// Set planet ID
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = planet.id;
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = planet.id;
 
 		// Set category ID
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
 
-		physics_manager.add_body(object);
+		physics_manager.add_body(object_ptr);
 	}
 }
 
@@ -297,7 +304,7 @@ void GameStage::create_components() {
 
 	//phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
 	//phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
-	phyvec position = physics_manager.get_bodies()[3].centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
+	phyvec position = physics_manager.get_bodies()[3]->centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
 
 	//PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[; // TODO
 	//physics_data.materials.push_back(material_ptr);
@@ -343,7 +350,7 @@ void GameStage::create_components() {
 
 	r.set_name("Test Rocket");
 
-	r.set_initial_data({ position, physics_manager.get_bodies()[3].velocity, 0.0f });
+	r.set_initial_data({ position, physics_manager.get_bodies()[3]->velocity, 0.0f });
 
 	//r.set_name("Other");
 
@@ -385,21 +392,22 @@ void GameStage::create_rocket(const Rocket& rocket) {
 		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
 
 		// TODO: change so that angle isn't necessarily just same as CMD MODULE?
-		PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset()) + initial_data.position, initial_data.angle);
+		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset()) + initial_data.position, initial_data.angle);
+		physics_data.bodies.push_back(object_ptr);
 
-		object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
+		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
 
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT; // It's a component
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = rocket_id; // Which rocket is it part of
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = component_type; // What type of component is it
-		object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = component_id; // Component id is used to uniquely identify a component as part of a specific rocket
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::COMPONENT; // It's a component
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = rocket_id; // Which rocket is it part of
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = component_type; // What type of component is it
+		object_ptr->ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = component_id; // Component id is used to uniquely identify a component as part of a specific rocket
 
 		// Set rocket's velocity
 		// If loading from a save, initial_velocity is stored in the save data.
 		// If loading from a rocket file (i.e. player just placed a new rocket in the world), then initial_velocity is set to the launch planet's current velocity.
-		object.velocity = initial_data.velocity;
+		object_ptr->velocity = initial_data.velocity;
 
-		physics_manager.add_body(object);
+		physics_manager.add_body(object_ptr);
 	}
 
 
@@ -410,17 +418,17 @@ void GameStage::create_rocket(const Rocket& rocket) {
 		PhysicsEngine::RigidBody* b = nullptr;
 
 		// Find pointers to the right bodies
-		for (PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
+		for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
 			// Is it a component?
-			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
 				// Is it part of this rocket?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == rocket_id) {
+				if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == rocket_id) {
 					// Do the component ids match? If so, set the ptr
-					if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] == c.a.component_id) {
-						a = &body;
+					if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] == c.a.component_id) {
+						a = body;
 					}
-					else if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] == c.b.component_id) {
-						b = &body;
+					else if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] == c.b.component_id) {
+						b = body;
 					}
 				}
 			}
@@ -437,7 +445,7 @@ void GameStage::create_rocket(const Rocket& rocket) {
 			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
 			physics_data.constraints.push_back(constraint);
 
-			physics_manager.add_constraint(constraint);
+			physics_manager.add_constraint(constraint); // NOTE: ISSUE WITH THIS?? constraints seem to do right force, but objects don't move under their infludence
 		}
 	}
 }
@@ -464,11 +472,11 @@ phyflt GameStage::volume_to_area_density(phyflt volume_density, phyflt radius) {
 //	// todo?
 //}
 
-void GameStage::render_planet(const PhysicsEngine::RigidBody& planet, const Camera& camera, bool map) {
-	PhysicsEngine::Circle* circle_ptr = static_cast<PhysicsEngine::Circle*>(planet.shape);
+void GameStage::render_planet(PhysicsEngine::RigidBody* planet, const Camera& camera, bool map) {
+	PhysicsEngine::Circle* circle_ptr = static_cast<PhysicsEngine::Circle*>(planet->shape);
 	// For now assume circle
 	phyflt radius = circle_ptr->radius * camera.get_scale();
-	phyvec position = camera.get_render_position(planet.centre);
+	phyvec position = camera.get_render_position(planet->centre);
 
 	float f_radius = PhysicsEngine::to_float(radius);
 	Framework::vec2 f_position = PhysicsEngine::to_fvec(position);
@@ -483,19 +491,19 @@ void GameStage::render_planet(const PhysicsEngine::RigidBody& planet, const Came
 		
 		// If map is set, draw normal circle, otherwise draw arc in window
 		if (map) {
-			graphics_objects->graphics_ptr->render_circle(f_position, f_radius, COLOURS::PLANETS[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]]);
+			graphics_objects->graphics_ptr->render_circle(f_position, f_radius, COLOURS::PLANETS[planet->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]]);
 
-			graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::GAME::PLANET_NAMES[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]], f_position, COLOURS::WHITE, FONTS::SCALE::MAP_OBJECT_FONT);
+			graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::GAME::PLANET_NAMES[planet->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]], f_position, COLOURS::WHITE, FONTS::SCALE::MAP_OBJECT_FONT);
 		}
 		else {
-			Framework::SDLUtils::SDL_RenderDrawArcInWindow(graphics_objects->graphics_ptr->get_renderer(), f_position, f_radius, WINDOW::SIZE, COLOURS::PLANETS[planet.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]]);
+			Framework::SDLUtils::SDL_RenderDrawArcInWindow(graphics_objects->graphics_ptr->get_renderer(), f_position, f_radius, WINDOW::SIZE, COLOURS::PLANETS[planet->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE]]);
 		}
 	}
 }
 
-void GameStage::render_component(const PhysicsEngine::RigidBody& component, const Camera& camera, bool map) {
-	uint32_t rocket_id = component.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP];
-	uint32_t component_type = component.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
+void GameStage::render_component(PhysicsEngine::RigidBody* component, const Camera& camera, bool map) {
+	uint32_t rocket_id = component->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP];
+	uint32_t component_type = component->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
 
 	if (map) {
 		// Draw small triangle representing command module
@@ -503,12 +511,12 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 		// Only render icon on map if it's a command module
 		if (component_type == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
 
-			Framework::vec2 text_position = PhysicsEngine::to_fvec(map_camera.get_render_position(component.centre) + phyvec{0, 1 + GAME::MAP::UI::ICONS::COMMAND_MODULE_SIZE / 2});
+			Framework::vec2 text_position = PhysicsEngine::to_fvec(map_camera.get_render_position(component->centre) + phyvec{0, 1 + GAME::MAP::UI::ICONS::COMMAND_MODULE_SIZE / 2});
 
 			Framework::Colour c = rocket_id == sandbox_temporaries.current_rocket ? COLOURS::CURRENT_ROCKET_ICON : COLOURS::OTHER_ROCKET_ICONS;
 			
 			// Rotate and translate icon points
-			std::vector<Framework::vec2> points = convert_poly_vertices_retain_size(GAME::MAP::UI::ICONS::COMMAND_MODULE_VERTICES, component.centre, component.get_rotation_matrix(), map_camera);
+			std::vector<Framework::vec2> points = convert_poly_vertices_retain_size(GAME::MAP::UI::ICONS::COMMAND_MODULE_VERTICES, component->centre, component->get_rotation_matrix(), map_camera);
 
 			// Render icon. Use a different colour for the current_rocket's command module.
 			graphics_objects->graphics_ptr->render_poly(points, c);
@@ -519,11 +527,11 @@ void GameStage::render_component(const PhysicsEngine::RigidBody& component, cons
 	}
 	else {
 		// Assume poly
-		PhysicsEngine::Polygon* poly_ptr = static_cast<PhysicsEngine::Polygon*>(component.shape);
+		PhysicsEngine::Polygon* poly_ptr = static_cast<PhysicsEngine::Polygon*>(component->shape);
 
 		// TODO: Consider rendering only if on screen (using component.bounding_radius?)
 		
-		std::vector<Framework::vec2> vertices = convert_poly_vertices(poly_ptr->vertices, component.centre, component.get_rotation_matrix(), sandbox_camera);
+		std::vector<Framework::vec2> vertices = convert_poly_vertices(poly_ptr->vertices, component->centre, component->get_rotation_matrix(), sandbox_camera);
 		
 		graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);
 	}
@@ -544,8 +552,8 @@ void GameStage::render_map() {
 	// TODO: render planets first, then components!!! (also filled in triangle rather than outline?)
 	// TODO: render rocket name with command module icon?
 
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		switch (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		switch (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
 		case GAME::SANDBOX::CATEGORIES::PLANET:
 			render_planet(body, map_camera, true);
 			break;
@@ -624,8 +632,8 @@ void GameStage::render_sandbox() {
 	// Add atmosphere overlay, depending on height
 	render_atmosphere();
 
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		switch (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		switch (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
 		case GAME::SANDBOX::CATEGORIES::PLANET:
 			render_planet(body, sandbox_camera, false);
 			break;
@@ -653,14 +661,14 @@ void GameStage::update_temporaries(float dt) {
 	sandbox_temporaries.last_cmd_mdl_centre = sandbox_temporaries.cmd_mdl_centre;
 	
 	// Find position of current_rocket's command module
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
 			// Does this component belong to the current rocket?
-			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
 				// Is the component a command module?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
-					sandbox_temporaries.cmd_mdl_centre = body.centre;
-					sandbox_temporaries.cmd_mdl_velocity = body.velocity;
+				if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) {
+					sandbox_temporaries.cmd_mdl_centre = body->centre;
+					sandbox_temporaries.cmd_mdl_velocity = body->velocity;
 				}
 			}
 		}
@@ -669,18 +677,18 @@ void GameStage::update_temporaries(float dt) {
 	// Find nearest planet
 	phyflt nearest_planet_squared_distance = PHYFLT_MAX;
 
-	for (const PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
-			phyflt squared_distance = PhysicsEngine::length_squared(body.centre - sandbox_temporaries.cmd_mdl_centre);
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
+			phyflt squared_distance = PhysicsEngine::length_squared(body->centre - sandbox_temporaries.cmd_mdl_centre);
 
 			if (squared_distance < nearest_planet_squared_distance) {
 				nearest_planet_squared_distance = squared_distance;
 
 				// Set nearest planet
-				sandbox_temporaries.nearest_planet = body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
+				sandbox_temporaries.nearest_planet = body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE];
 
-				sandbox_temporaries.nearest_planet_centre = body.centre;
-				sandbox_temporaries.nearest_planet_velocity = body.velocity;
+				sandbox_temporaries.nearest_planet_centre = body->centre;
+				sandbox_temporaries.nearest_planet_velocity = body->velocity;
 			}
 		}
 	}
@@ -729,18 +737,18 @@ void GameStage::update_map(float dt) {
 
 	// Only allow scrolling/dragging map if we're in fullscreen map mode, or if the mouse is over the minimap
 	if (game_state.show_map || Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
-		float maximum_zoom = GAME::MAP::UI::MAXIMUM_ZOOM;
+		phyflt maximum_zoom = GAME::MAP::UI::MAXIMUM_ZOOM;
 		if (!game_state.show_map) maximum_zoom /= GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
 
-		float minimum_zoom = GAME::MAP::UI::MINIMUM_ZOOM;
+		phyflt minimum_zoom = GAME::MAP::UI::MINIMUM_ZOOM;
 		if (!game_state.show_map) minimum_zoom /= GAME::MAP::UI::MINIMAP::EXTRA_ZOOM;
 
-		float zoom = input->get_mouse()->scroll_amount() * GAME::MAP::UI::SCROLL_ZOOM_RATE + 1.0f;
+		phyflt zoom = input->get_mouse()->scroll_amount() * GAME::MAP::UI::SCROLL_ZOOM_RATE + 1.0f;
 
-		float new_scale = map_camera.get_scale() * zoom;
-		float clamped_new_scale = Framework::clamp(new_scale, minimum_zoom, maximum_zoom);
+		phyflt new_scale = map_camera.get_scale() * zoom;
+		phyflt clamped_new_scale = Framework::clamp(new_scale, minimum_zoom, maximum_zoom);
 
-		float actual_zoom = clamped_new_scale / map_camera.get_scale() - 1.0f;
+		phyflt actual_zoom = clamped_new_scale / map_camera.get_scale() - 1.0f;
 
 		map_camera.set_scale(clamped_new_scale);
 
@@ -765,10 +773,10 @@ void GameStage::update_sandbox(float dt) {
 	// TESTING ONLY
 	// Only allow scrolling/--dragging-- sandbox if we're not in fullscreen map mode and not clicking on the minimap
 	if (!game_state.show_map && !Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
-		float zoom = input->get_mouse()->scroll_amount() * GAME::SANDBOX::UI::SCROLL_ZOOM_RATE + 1.0f;
+		phyflt zoom = input->get_mouse()->scroll_amount() * GAME::SANDBOX::UI::SCROLL_ZOOM_RATE + 1.0f;
 
-		float new_scale = sandbox_camera.get_scale() * zoom;
-		float clamped_new_scale = Framework::clamp(new_scale, GAME::SANDBOX::UI::MINIMUM_ZOOM, GAME::SANDBOX::UI::MAXIMUM_ZOOM);
+		phyflt new_scale = sandbox_camera.get_scale() * zoom;
+		phyflt clamped_new_scale = Framework::clamp(new_scale, GAME::SANDBOX::UI::MINIMUM_ZOOM, GAME::SANDBOX::UI::MAXIMUM_ZOOM);
 
 		//float actual_zoom = clamped_new_scale / sandbox_camera.get_scale() - 1.0f;
 
@@ -785,25 +793,25 @@ void GameStage::update_sandbox(float dt) {
 
 	// Control rocket
 
-	for (PhysicsEngine::RigidBody& body : physics_manager.get_bodies()) {
-		if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
 			// Does this component belong to the current rocket?
-			if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
 				// Is the component an engine?
-				if (body.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::ENGINE) {
-					static const float ENGINE_FORCE = 2e7f;
+				if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::ENGINE) {
+					static const phyflt ENGINE_FORCE = 2e7f;
 					// Add force
 					phyflt force_magnitude = ENGINE_FORCE * rocket_controls.engine_power;
 
 					phyvec force = phyvec{ 0, -force_magnitude }; // Force up
 
-					static const float TURN_AMOUNT = PhysicsEngine::deg_to_rad(15); //radians
+					static const phyflt TURN_AMOUNT = PhysicsEngine::deg_to_rad(15); //radians
 
 					phyflt direction_angle = TURN_AMOUNT * rocket_controls.direction;
 					
-					force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body.angle), force);
+					force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body->angle), force);
 
-					body.apply_force(force);
+					body->apply_force(force);
 				}
 			}
 		}

@@ -12,6 +12,11 @@ namespace PhysicsEngine {
 		}
 		shapes.clear();
 
+		for (RigidBody* body : bodies) {
+			delete body;
+		}
+		bodies.clear();
+
 		for (Constraint* constraint : constraints) {
 			delete constraint;
 		}
@@ -47,7 +52,7 @@ namespace PhysicsEngine {
 		// i.e. independent of number of calls to update
 	}
 
-	uint16_t PhysicsManager::add_body(RigidBody body) {
+	uint16_t PhysicsManager::add_body(RigidBody* body) {
 		bodies.push_back(body);
 		return bodies.size() - 1;
 	}
@@ -57,7 +62,7 @@ namespace PhysicsEngine {
 		return constraints.size() - 1;
 	}
 
-	std::vector<RigidBody>& PhysicsManager::get_bodies() {
+	std::vector<RigidBody*>& PhysicsManager::get_bodies() {
 		return bodies;
 	}
 
@@ -111,30 +116,30 @@ namespace PhysicsEngine {
 	}
 
 
-	void PhysicsManager::update_velocity(RigidBody& body, phyflt dt) {
-		body.velocity += body.force * body.inverse_mass * dt;
-		body.angular_velocity += body.torque * body.inverse_moment_of_inertia * dt;
+	void PhysicsManager::update_velocity(RigidBody* body, phyflt dt) {
+		body->velocity += body->force * body->inverse_mass * dt;
+		body->angular_velocity += body->torque * body->inverse_moment_of_inertia * dt;
 		
 		// Reset forces
-		body.force = PHYVEC_NULL;
-		body.torque = 0.0f;
+		body->force = PHYVEC_NULL;
+		body->torque = 0.0f;
 	}
 
-	void PhysicsManager::update_position(RigidBody& body, phyflt dt) {
+	void PhysicsManager::update_position(RigidBody* body, phyflt dt) {
 		// Update object's position
-		body.centre += body.velocity * dt;
-		body.angle += body.angular_velocity * dt;
+		body->centre += body->velocity * dt;
+		body->angle += body->angular_velocity * dt;
 	}
 
-	void PhysicsManager::add_impulse(RigidBody& body, const phyvec& impulse, const phyvec& vector_to_contact) {
-		body.velocity += impulse * body.inverse_mass;
-		body.angular_velocity += cross(vector_to_contact, impulse) * body.inverse_moment_of_inertia;
+	void PhysicsManager::add_impulse(RigidBody* body, const phyvec& impulse, const phyvec& vector_to_contact) {
+		body->velocity += impulse * body->inverse_mass;
+		body->angular_velocity += cross(vector_to_contact, impulse) * body->inverse_moment_of_inertia;
 	}
 
 
 	void PhysicsManager::update_forces() {
 		// Could maybe allow user to specify own update function?
-		for (RigidBody& body : bodies) {
+		for (RigidBody* body : bodies) {
 
 			// Note: torque should also be affected by changes in force
 		}
@@ -143,12 +148,12 @@ namespace PhysicsEngine {
 		for (uint16_t i = 0; i < bodies.size(); i++) {
 			for (uint16_t j = i + 1; j < bodies.size(); j++) {
 
-				phyvec difference = bodies[j].centre - bodies[i].centre;
+				phyvec difference = bodies[j]->centre - bodies[i]->centre;
 
 				phyflt dist_squared = length_squared(difference);
 
 				if (dist_squared > 0.0) {
-					phyflt force_magnitude = gravitational_force(bodies[i].mass, bodies[j].mass, dist_squared, constants.gravitational_constant);
+					phyflt force_magnitude = gravitational_force(bodies[i]->mass, bodies[j]->mass, dist_squared, constants.gravitational_constant);
 
 					phyflt dist = std::sqrt(dist_squared);
 
@@ -162,8 +167,8 @@ namespace PhysicsEngine {
 					printf("c: %f, %f\n", bodies[j].centre.x, bodies[j].centre.y);
 					printf("v: %f, %f\n", bodies[j].velocity.x, bodies[j].velocity.y);*/
 
-					bodies[i].apply_force(force);
-					bodies[j].apply_force(-force);
+					bodies[i]->apply_force(force);
+					bodies[j]->apply_force(-force);
 				}
 			}
 		}
@@ -178,14 +183,14 @@ namespace PhysicsEngine {
 
 	void PhysicsManager::update_velocities(phyflt dt) {
 		// Updates velocities from forces applied to object
-		for (RigidBody& body : bodies) {
+		for (RigidBody* body : bodies) {
 			update_velocity(body, dt);
 		}
 	}
 
 	void PhysicsManager::update_positions(phyflt dt) {
 		// Updates positions from current velocities
-		for (RigidBody& body : bodies) {
+		for (RigidBody* body : bodies) {
 			update_position(body, dt);
 		}
 	}
@@ -201,15 +206,15 @@ namespace PhysicsEngine {
 
 				// Only check for collisions if they have a layer in common
 
-				RigidBody& a = bodies[i];
-				RigidBody& b = bodies[j];
+				RigidBody* a = bodies[i];
+				RigidBody* b = bodies[j];
 
-				if (a.get_layers() & b.get_layers()) {
+				if (a->get_layers() & b->get_layers()) {
 
 					// Only check for collision if both bounding circles collide
 					// Note: this is redundant if you're using only/mostly circles, because it may result in phyflt-checking when collisions do occur
 
-					if (intersects(a.centre, a.bounding_radius, b.centre, b.bounding_radius)) {
+					if (intersects(a->centre, a->bounding_radius, b->centre, b->bounding_radius)) {
 						// Check for collision between objects
 						CollisionInformation collision_information = detect_collision(a, b);
 
@@ -231,37 +236,37 @@ namespace PhysicsEngine {
 		}
 	}
 
-	CollisionInformation PhysicsManager::detect_collision(RigidBody& a, RigidBody& b) {
+	CollisionInformation PhysicsManager::detect_collision(RigidBody* a, RigidBody* b) {
 		// Lookup from jump table based on object types
-		return collision_detection_functions[static_cast<int>(a.shape->get_type())][static_cast<int>(b.shape->get_type())](a, b);
+		return collision_detection_functions[static_cast<int>(a->shape->get_type())][static_cast<int>(b->shape->get_type())](a, b);
 	}
 
-	void PhysicsManager::resolve_collision(RigidBody& a, RigidBody& b, const CollisionInformation& collision_information, phyflt dt) {
+	void PhysicsManager::resolve_collision(RigidBody* a, RigidBody* b, const CollisionInformation& collision_information, phyflt dt) {
 		// If both objects have infinite mass, we can't move them
-		if (a.inverse_mass == 0.0 && b.inverse_mass == 0.0) {
+		if (a->inverse_mass == 0.0 && b->inverse_mass == 0.0) {
 			return;
 		}
 
 		// Calculate basic weighted average between the restitutions of the materials
 		// Linear interpolation (25% along)
-		phyflt restitution = a.material->restitution < b.material->restitution ? 3.0 * a.material->restitution + b.material->restitution : a.material->restitution + 3.0 * b.material->restitution;
+		phyflt restitution = a->material->restitution < b->material->restitution ? 3.0 * a->material->restitution + b->material->restitution : a->material->restitution + 3.0 * b->material->restitution;
 		restitution /= 4.0;
 
 
 		// Calculate averages for friction coefficients
-		phyflt static_friction_coefficient = 0.5 * (a.material->static_friction + b.material->static_friction);
-		phyflt dynamic_friction_coefficient = 0.5 * (a.material->dynamic_friction + b.material->dynamic_friction);
+		phyflt static_friction_coefficient = 0.5 * (a->material->static_friction + b->material->static_friction);
+		phyflt dynamic_friction_coefficient = 0.5 * (a->material->dynamic_friction + b->material->dynamic_friction);
 
 		// For each contact point
 		for (uint8_t i = 0; i < collision_information.contact_count; i++) {
 			// Calculate distance from each centre of mass to contact point
-			phyvec centre_a_to_contact = collision_information.contact_data[i].contact_point - a.centre;
-			phyvec centre_b_to_contact = collision_information.contact_data[i].contact_point - b.centre;
+			phyvec centre_a_to_contact = collision_information.contact_data[i].contact_point - a->centre;
+			phyvec centre_b_to_contact = collision_information.contact_data[i].contact_point - b->centre;
 
 			// Calculate relative velocity (from A to B)
 			// Uses (sort of) pre-collision velocity (because velocity is updated, then position)
-			phyvec relative_velocity = (b.velocity + cross(b.angular_velocity, centre_b_to_contact)) - (a.velocity + cross(a.angular_velocity, centre_a_to_contact));
-			//phyvec relative_velocity = b.velocity - a.velocity;
+			phyvec relative_velocity = (b->velocity + cross(b->angular_velocity, centre_b_to_contact)) - (a->velocity + cross(a->angular_velocity, centre_a_to_contact));
+			//phyvec relative_velocity = b->velocity - a->velocity;
 
 			// Project relative velocity onto normal
 			phyflt relative_velocity_along_normal = dot(relative_velocity, collision_information.collision_normal);
@@ -275,7 +280,7 @@ namespace PhysicsEngine {
 			phyflt cross_a = cross(centre_a_to_contact, collision_information.collision_normal);
 			phyflt cross_b = cross(centre_b_to_contact, collision_information.collision_normal);
 
-			phyflt denominator = a.inverse_mass + b.inverse_mass + a.inverse_moment_of_inertia * cross_a * cross_a + b.inverse_moment_of_inertia * cross_b * cross_b;
+			phyflt denominator = a->inverse_mass + b->inverse_mass + a->inverse_moment_of_inertia * cross_a * cross_a + b->inverse_moment_of_inertia * cross_b * cross_b;
 
 			// Calculate magnitude of impulse along normal
 			phyflt impulse_magnitude = -(1.0 + restitution) * relative_velocity_along_normal;
@@ -311,7 +316,7 @@ namespace PhysicsEngine {
 
 			// Note: unclear whether friction should be based off relative velocity before collision, or after resolving...
 			// I'm going to use relative velocity from before
-			//relative_velocity = (b.velocity + cross(b.angular_velocity, centre_b_to_contact)) - (a.velocity + cross(a.angular_velocity, centre_a_to_contact));
+			//relative_velocity = (b->velocity + cross(b->angular_velocity, centre_b_to_contact)) - (a->velocity + cross(a->angular_velocity, centre_a_to_contact));
 
 			phyflt relative_velocity_along_tangent = dot(relative_velocity, tangent);
 
@@ -355,8 +360,8 @@ namespace PhysicsEngine {
 				// If static friction is more than net force, only counter the net force
 				// We don't have dt :(
 				// This method requires update_forces being done before handle_collisions!!!
-				friction_magnitude_a = std::min(static_friction_magnitude, dot(a.force, tangent) * dt);
-				friction_magnitude_b = std::min(static_friction_magnitude, dot(b.force, tangent) * dt);
+				friction_magnitude_a = std::min(static_friction_magnitude, dot(a->force, tangent) * dt);
+				friction_magnitude_b = std::min(static_friction_magnitude, dot(b->force, tangent) * dt);
 			}
 			else {
 				friction_magnitude_a = friction_magnitude_b = dynamic_friction_coefficient * impulse_magnitude;

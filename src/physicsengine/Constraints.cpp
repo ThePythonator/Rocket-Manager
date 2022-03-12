@@ -43,7 +43,7 @@ namespace PhysicsEngine {
 
 		// T = mx/L
 		phyvec a_to_b = (b->centre + to_world_space(offset_b, b->get_rotation_matrix())) - (a->centre + to_world_space(offset_a, a->get_rotation_matrix()));
-		float a_to_b_length = length(a_to_b);
+		phyflt a_to_b_length = length(a_to_b);
 
 		if (a_to_b_length > max_length) {
 			// Exceeded max length, so broken (no longer provides a force, and flag set so it can be removed)
@@ -54,9 +54,9 @@ namespace PhysicsEngine {
 			// Can't divide by 0, negative length is impossible, so exit now
 			return PHYVEC_NULL;
 		}
-		
+
 		phyvec a_to_b_normalised = a_to_b / a_to_b_length;
-		float force_magnitude = modulus_of_elasticity * (a_to_b_length - natural_length) / natural_length;
+		phyflt force_magnitude = modulus_of_elasticity * (a_to_b_length - natural_length) / natural_length;
 
 		// Force is in same direction as a_to_b for A, opposite for B (applied by PhysicsManager)
 		return force_magnitude * a_to_b_normalised;

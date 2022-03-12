@@ -5,7 +5,7 @@
 #include "File.hpp"
 
 struct Planet {
-	uint32_t id;
+	uint32_t id = 0;
 	phyvec position, velocity;
 };
 

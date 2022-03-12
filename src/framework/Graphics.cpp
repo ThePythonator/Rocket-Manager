@@ -28,6 +28,7 @@ namespace Framework {
 
 	void Graphics::render_line(const vec2& start, const vec2& end, const Colour& colour) {
 		set_colour(colour);
+		//printf("s: %f, %f, e: %f, %f\n", start.x, start.y, end.x, end.y);
 		SDLUtils::SDL_RenderDrawLine(renderer, start, end);
 	}
 
