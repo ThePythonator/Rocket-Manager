@@ -122,6 +122,12 @@ namespace Framework::SDLUtils {
 	}
 
 
+	void SDL_RenderDrawRect(SDL_Renderer* renderer, const Rect& rect) {
+		SDL_Rect sdl_rect = SDLUtils::get_sdl_rect(rect);
+		SDL_RenderDrawRect(renderer, &sdl_rect);
+	}
+
+
 	void SDL_RenderDrawLine(SDL_Renderer* renderer, const vec2& start, const vec2& end) {
 		SDL_RenderDrawLine(renderer, static_cast<int>(start.x), static_cast<int>(start.y), static_cast<int>(end.x), static_cast<int>(end.y));
 	}

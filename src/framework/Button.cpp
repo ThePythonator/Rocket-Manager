@@ -100,4 +100,10 @@ namespace Framework {
 	vec2 Button::position() const {
 		return _render_rect.position;
 	}
+
+	// Reset state if button needs to no longer be pressed, or appear as if it is no longer being pressed/hovered
+	void Button::reset_state() {
+		_state = ButtonState::STILL_UP;
+		_mouse_over = false;
+	}
 }

@@ -18,6 +18,9 @@ using namespace PhysicsEngine::phy_t;
 
 class GameStage : public Framework::BaseStage {
 public:
+	GameStage();
+	GameStage(std::string _save_name);
+
 	void init();
 
 	void start();
@@ -32,8 +35,8 @@ private:
 	void load_settings();
 	void save_settings();
 
-	void load_sandbox(std::string filename);
-	void save_sandbox(std::string filename);
+	void load_sandbox();
+	void save_sandbox();
 
 	void create_solar_system();
 	void create_planets(const std::vector<Planet>& planets);
@@ -114,4 +117,6 @@ private:
 	Settings settings;
 
 	StarField star_field;
+
+	std::string save_name;
 };

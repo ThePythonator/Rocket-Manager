@@ -2,13 +2,13 @@
 
 // GameStage
 
-//GameStage::~GameStage() {
-//	// Tidy up
-//	for (Framework::BaseSprite* planet : planets) {
-//		delete planet;
-//	}
-//	planets.clear();
-//}
+
+GameStage::GameStage() {
+
+}
+GameStage::GameStage(std::string _save_name) {
+	save_name = _save_name;
+}
 
 void GameStage::init() {
 	map_camera = Camera(WINDOW::SIZE);
@@ -42,14 +42,14 @@ void GameStage::init() {
 
 void GameStage::start() {
 	load_settings();
-	load_sandbox("sandbox_save_test.json"); // TODO: get location to read from
+	load_sandbox();
 
 	init_temporaries();
 }
 
 void GameStage::end() {
 	save_settings();
-	save_sandbox("sandbox_save_test.json"); // TODO: get location to save to
+	save_sandbox();
 }
 
 bool GameStage::update(float dt) {
@@ -115,9 +115,9 @@ void GameStage::save_settings() {
 }
 
 
-void GameStage::load_sandbox(std::string filename) {
+void GameStage::load_sandbox() {
 	try {
-		json data = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename);
+		json data = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + save_name + PATHS::SANDBOX_SAVES::EXTENSION);
 
 		// Get planets
 		std::vector<Planet> planets;
@@ -132,11 +132,11 @@ void GameStage::load_sandbox(std::string filename) {
 	}
 	catch (const json::exception& e) {
 		// Ignore - we set defaults already so it's not the end of the world
-		printf("Couldn't load save file: %s. Error: %s\n", filename.c_str(), e.what());
+		printf("Couldn't load save file: %s. Error: %s\n", save_name.c_str(), e.what());
 	}
 }
 
-void GameStage::save_sandbox(std::string filename) {
+void GameStage::save_sandbox() {
 	std::vector<Planet> planets;
 
 	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
@@ -161,7 +161,7 @@ void GameStage::save_sandbox(std::string filename) {
 		{"rockets", rockets}
 	};
 
-	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + filename, data);
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + save_name + PATHS::SANDBOX_SAVES::LOCATION, data);
 }
 
 // TEST? or setup?

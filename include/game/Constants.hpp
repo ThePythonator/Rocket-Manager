@@ -60,16 +60,20 @@ namespace PATHS {
 
 	namespace SANDBOX_SAVES {
 		extern const std::string LOCATION;
+
+		extern const std::string EXTENSION;
 	}
 
 	namespace COMPONENTS {
 		extern const std::string LOCATION;
 		
-		extern const std::string FILE_EXTENSION;
+		extern const std::string EXTENSION;
 	}
 
 	namespace ROCKET_TEMPLATES {
 		extern const std::string LOCATION;
+
+		extern const std::string EXTENSION;
 	}
 }
 
@@ -194,6 +198,7 @@ namespace CURVES {
 
 namespace BUTTONS {
 	extern const Framework::vec2 SIZE;
+	extern const Framework::vec2 WIDE_SIZE;
 	
 	extern const uint8_t SELECTED_ALPHA;
 
@@ -254,8 +259,12 @@ namespace BUTTONS {
 namespace MENU {
 	extern const Framework::Rect BACKGROUND_RECT;
 	extern const Framework::Rect SUBMENU_BACKGROUND_RECT;
+	extern const Framework::Rect OVERLAY_RECT;
 
 	extern const uint8_t BACKGROUND_ALPHA;
+	extern const uint8_t OVERLAY_ALPHA;
+	extern const uint8_t BORDER_ALPHA;
+	//extern const uint8_t OVERLAY_BACKGROUND_ALPHA;
 }
 
 namespace GAME {

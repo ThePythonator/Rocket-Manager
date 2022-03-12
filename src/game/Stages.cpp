@@ -147,7 +147,7 @@ void TitleStage::render() {
 	if (!_submenu) transition->render();
 }
 
-Framework::vec2 TitleStage::get_submenu_root_position() {
+Framework::vec2 TitleStage::get_submenu_parent_position() {
 	return buttons[button_selected].position();
 }
 
@@ -198,7 +198,7 @@ PlayOptionsStage::PlayOptionsStage(TitleStage* _title_stage) : title_stage(_titl
 
 void PlayOptionsStage::init() {
 	// Create buttons
-	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::PLAY_OPTIONS, title_stage->get_submenu_root_position().y);
+	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::PLAY_OPTIONS, title_stage->get_submenu_parent_position().y);
 
 	// Create transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
@@ -221,6 +221,11 @@ bool PlayOptionsStage::update(float dt) {
 			// Next stage!
 			switch (button_selected) {
 			case BUTTONS::PLAY_OPTIONS::PLAY:
+				// Stop button from seeming to be pressed/hovered:
+				button.reset_state();
+				finish(new SaveSelectStage(this), false);
+				break;
+
 			case BUTTONS::PLAY_OPTIONS::CREATE:
 				transition->close();
 				break;
@@ -241,7 +246,7 @@ bool PlayOptionsStage::update(float dt) {
 		case BUTTONS::PLAY_OPTIONS::PLAY:
 			// TODO: delete title_stage???
 
-			finish(new GameStage()); // TEMP: remove later?
+			//finish(new GameStage()); // TEMP: remove later?
 			break;
 
 		default:
@@ -272,6 +277,76 @@ void PlayOptionsStage::render() {
 	transition->render();
 }
 
+// SaveSelectStage
+
+SaveSelectStage::SaveSelectStage() { }
+SaveSelectStage::SaveSelectStage(PlayOptionsStage* _play_options_stage) : play_options_stage(_play_options_stage) { }
+
+void SaveSelectStage::init() {
+	// Find valid save files:
+	std::vector<std::string> filepaths = find_files_with_extension(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION, PATHS::SANDBOX_SAVES::EXTENSION);
+
+	for (std::string path : filepaths) {
+		save_names.push_back(trim_extension(get_filename(path)));
+	}
+
+	// Create buttons for selecting save file
+	buttons = create_menu_buttons(MENU::OVERLAY_RECT, BUTTONS::WIDE_SIZE, graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], save_names, graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], COLOURS::WHITE, MENU::OVERLAY_RECT.position.y);
+
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void SaveSelectStage::start() {
+	transition->set_open();
+}
+
+bool SaveSelectStage::update(float dt) {
+	transition->update(dt);
+
+	// If user clicked outside menu overlay, then go back
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT) && !Framework::colliding(MENU::OVERLAY_RECT, input->get_mouse()->position())) {
+		finish(play_options_stage);
+	}
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			transition->close();
+		}
+	}
+
+	if (transition->is_closed()) {
+		// Next stage!
+		finish(new GameStage(save_names[button_selected]));
+	}
+
+	return true;
+}
+
+void SaveSelectStage::render() {
+	// Render play options stage
+	play_options_stage->render();
+
+	// Menu overlay
+	//graphics_objects->graphics_ptr->fill(COLOURS::BLACK, MENU::OVERLAY_BACKGROUND_ALPHA);
+
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::WHITE, 0x60);
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
+	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
+}
+
 // SettingsStage
 
 SettingsStage::SettingsStage() { }
@@ -279,7 +354,7 @@ SettingsStage::SettingsStage(TitleStage* _title_stage) : title_stage(_title_stag
 
 void SettingsStage::init() {
 	// Create buttons
-	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::SETTINGS, title_stage->get_submenu_root_position().y);
+	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::SETTINGS, title_stage->get_submenu_parent_position().y);
 
 	// Create transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
@@ -346,7 +421,7 @@ CreditsStage::CreditsStage(TitleStage* _title_stage) : title_stage(_title_stage)
 
 void CreditsStage::init() {
 	// Create buttons
-	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::CREDITS, title_stage->get_submenu_root_position().y);
+	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::CREDITS, title_stage->get_submenu_parent_position().y);
 
 	// Create transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);

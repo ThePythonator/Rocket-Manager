@@ -27,6 +27,9 @@ namespace Framework::SDLUtils {
 	void SDL_RenderFillRect(SDL_Renderer* renderer, const Rect& rect);
 	void SDL_RenderFillRect(SDL_Renderer* renderer, const Rect& rect, const Colour& colour);
 
+	void SDL_RenderDrawRect(SDL_Renderer* renderer, const Rect& rect);
+	//void SDL_RenderDrawRect(SDL_Renderer* renderer, const Rect& rect, const Colour& colour);
+
 	void SDL_RenderDrawLine(SDL_Renderer* renderer, const vec2& start, const vec2& end);
 	void SDL_RenderDrawLine(SDL_Renderer* renderer, const vec2& start, const vec2& end, const Colour& colour);
 

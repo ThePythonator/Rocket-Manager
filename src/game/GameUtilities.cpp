@@ -44,3 +44,31 @@ std::vector<Framework::Button> create_menu_from_constants(Framework::GraphicsObj
 uint8_t atmosphere_alpha(PhysicsEngine::phyflt height_above_surface, PhysicsEngine::phyflt scale_height) {
 	return 0xFF * std::exp(-height_above_surface / scale_height);
 }
+
+std::vector<std::string> find_files_with_extension(const std::string& directory, const std::string& extension) {
+	std::vector<std::string> filepaths;
+
+	// Load component data: find all json files in component directory and try parsing them
+	printf("Finding %s files in %s...\n", extension.c_str(), directory.c_str());
+
+	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory)) {
+		std::filesystem::path path = entry.path();
+
+		// If not .json, skip
+		if (path.extension().string() != extension) continue;
+
+		std::string filepath = path.string();
+
+		filepaths.push_back(filepath);
+	}
+
+	return filepaths;
+}
+
+std::string get_filename(std::string path) {
+	return path.substr(path.find_last_of('\\/') + 1);
+}
+
+std::string trim_extension(std::string filename) {
+	return filename.substr(0, filename.find_last_of('.'));
+}

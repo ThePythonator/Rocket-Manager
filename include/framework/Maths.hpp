@@ -47,6 +47,9 @@ namespace Framework {
 
 	extern const Rect RECT_NULL;
 
+	Rect centred_rect(vec2 centre, vec2 size);
+	Rect centred_rect(float centre_x, float centre_y, float width, float height);
+
 	bool colliding(Rect a, vec2 b);
 	bool colliding(Rect a, Rect b);
 

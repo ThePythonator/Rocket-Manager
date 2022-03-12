@@ -56,6 +56,14 @@ namespace Framework {
 			   b.position.y + b.size.y >= a.position.y && b.position.y <= a.position.y + a.size.y;
 	}
 
+
+	Rect centred_rect(vec2 centre, vec2 size) {
+		return Rect(centre - size / 2, size);
+	}
+	Rect centred_rect(float centre_x, float centre_y, float width, float height) {
+		return centred_rect({ centre_x, centre_y }, { width, height });
+	}
+
 	vec2 Vec(float x, float y) {
 		return vec2{ x, y };
 	}

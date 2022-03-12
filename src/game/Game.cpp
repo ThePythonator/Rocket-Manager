@@ -52,18 +52,8 @@ void Game::load_data() {
 		graphics_objects.image_ptrs[GRAPHICS_OBJECTS::IMAGES::BUTTON_SELECTED]
 	};
 
-
 	// Load component data: find all json files in component directory and try parsing them
-	printf("Finding component files in %s...\n", (PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION).c_str());
-
-	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION)) {
-		std::filesystem::path path = entry.path();
-
-		// If not .json, skip
-		if (path.extension().string() != PATHS::COMPONENTS::FILE_EXTENSION) continue;
-
-		std::string filepath = path.string();
-
+	for (const std::string& filepath : find_files_with_extension(PATHS::BASE_PATH + PATHS::COMPONENTS::LOCATION, PATHS::COMPONENTS::EXTENSION)) {
 		try {
 			// Read file
 			json j = Framework::JSONHandler::read(filepath);

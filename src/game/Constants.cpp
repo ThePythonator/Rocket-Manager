@@ -87,16 +87,20 @@ namespace PATHS {
 
 	namespace SANDBOX_SAVES {
 		const std::string LOCATION = "data/saves/";
+
+		const std::string EXTENSION = ".json";
 	}
 
 	namespace COMPONENTS {
 		const std::string LOCATION = "assets/components/";
 
-		const std::string FILE_EXTENSION = ".json";
+		const std::string EXTENSION = ".json";
 	}
 
 	namespace ROCKET_TEMPLATES {
 		const std::string LOCATION = "data/templates/";
+
+		const std::string EXTENSION = ".json";
 	}
 }
 
@@ -187,6 +191,8 @@ namespace SCALES {
 namespace BUTTONS {
 	const Framework::vec2 SIZE = Framework::Vec(192, 56);
 
+	const Framework::vec2 WIDE_SIZE = Framework::Vec(384, 56); //512?
+
 	const uint8_t SELECTED_ALPHA = 0x40;
 
 	const uint8_t NONE = 255;
@@ -195,8 +201,12 @@ namespace BUTTONS {
 namespace MENU {
 	const Framework::Rect BACKGROUND_RECT = Framework::Rect(WINDOW::SIZE.x * 0.1f, 0.0f, BUTTONS::SIZE.x, WINDOW::SIZE.y);
 	extern const Framework::Rect SUBMENU_BACKGROUND_RECT = Framework::Rect(BACKGROUND_RECT.topright(), BACKGROUND_RECT.size);
+	extern const Framework::Rect OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
 
 	const uint8_t BACKGROUND_ALPHA = 0x60;
+	const uint8_t OVERLAY_ALPHA = 0x60;//0xA0;
+	const uint8_t BORDER_ALPHA = 0x80;
+	//const uint8_t OVERLAY_BACKGROUND_ALPHA = 0x40;
 }
 
 namespace GAME {
@@ -238,13 +248,13 @@ namespace GAME {
 			2,
 			5,
 			10,
-			50,
+			50/*,
 			100,
 			1000,
 			10000,
 			100000,
 			1000000,
-			10000000
+			10000000*/
 		};
 
 		namespace UI {

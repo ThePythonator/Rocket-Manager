@@ -25,7 +25,7 @@ void AttractMode::render() {
 
 	graphics_objects->graphics_ptr->fill(COLOURS::BLACK);
 
-	graphics_objects->graphics_ptr->fill(COLOURS::ATMOSPHERES[3], 0x7F);
+	graphics_objects->graphics_ptr->fill(COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0xA0); // TODO change
 
 
 	Framework::SDLUtils::SDL_RenderDrawArcInWindow(graphics_objects->graphics_ptr->get_renderer(), { WINDOW::SIZE_HALF.x, WINDOW::SIZE_HALF.y + 10200.0f }, 10000.0f, WINDOW::SIZE, COLOURS::PLANETS[3]);

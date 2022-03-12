@@ -28,7 +28,6 @@ namespace Framework {
 
 	void Graphics::render_line(const vec2& start, const vec2& end, const Colour& colour) {
 		set_colour(colour);
-		//printf("s: %f, %f, e: %f, %f\n", start.x, start.y, end.x, end.y);
 		SDLUtils::SDL_RenderDrawLine(renderer, start, end);
 	}
 
@@ -51,7 +50,8 @@ namespace Framework {
 	}
 
 	void Graphics::render_rect(const Rect& rect, const Colour& colour) {
-		render_poly({rect.topleft(), rect.topright(), rect.bottomright(), rect.bottomleft()}, colour);
+		set_colour(colour);
+		SDLUtils::SDL_RenderDrawRect(renderer, rect);
 	}
 
 	void Graphics::render_filled_rect(const Rect& rect, const Colour& colour) {

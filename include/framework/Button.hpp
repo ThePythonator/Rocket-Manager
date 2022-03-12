@@ -44,6 +44,8 @@ namespace Framework {
 		vec2 initial_position() const;
 		vec2 position() const;
 
+		void reset_state();
+
 	private:
 		ButtonState _state = ButtonState::STILL_UP;
 		bool _mouse_over = false;

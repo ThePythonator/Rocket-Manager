@@ -31,7 +31,7 @@ public:
 	bool update(float dt);
 	void render();
 
-	Framework::vec2 get_submenu_root_position();
+	Framework::vec2 get_submenu_parent_position();
 
 	bool submenu_must_die();
 	void submenu_killed();
@@ -61,6 +61,24 @@ public:
 
 private:
 	TitleStage* title_stage = nullptr;
+};
+
+class SaveSelectStage : public Framework::BaseStage {
+public:
+	SaveSelectStage();
+	SaveSelectStage(PlayOptionsStage* _play_options_stage);
+
+	void init();
+
+	void start();
+
+	bool update(float dt);
+	void render();
+
+private:
+	PlayOptionsStage* play_options_stage = nullptr;
+
+	std::vector<std::string> save_names;
 };
 
 class SettingsStage : public Framework::BaseStage {
