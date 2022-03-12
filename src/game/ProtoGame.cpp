@@ -24,7 +24,6 @@ void GameStage::init() {
 	// Set camera position
 
 	// Just for testing
-	map_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3], -GAME::SANDBOX::BODIES::RADII[3] });
 	//map_camera.set_position({});
 	map_camera.set_scale(1e-5f / GAME::SANDBOX::UNIVERSE_SCALE);
 
@@ -90,6 +89,9 @@ void GameStage::init_temporaries() {
 	update_temporaries(WINDOW::TARGET_DT);
 
 	sandbox_temporaries.last_cmd_mdl_centre = sandbox_temporaries.cmd_mdl_centre;
+
+	// Set map camera to be centred on current rocket
+	map_camera.set_position(sandbox_temporaries.cmd_mdl_centre);
 }
 
 void GameStage::load_settings() {
