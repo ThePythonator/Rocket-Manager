@@ -251,7 +251,7 @@ namespace GAME {
 	}
 
 	namespace SANDBOX {
-		const double UNIVERSE_SCALE = 0.01;//0.0001; small world
+		const double UNIVERSE_SCALE = 1;//0.01;//0.0001; small world
 
 		const double GRAVITATIONAL_CONSTANT = 6.674e-11 / (UNIVERSE_SCALE * UNIVERSE_SCALE);
 
@@ -266,7 +266,7 @@ namespace GAME {
 			10000,
 			100000,
 			1000000,
-			10000000
+			//10000000
 		};
 
 		namespace UI {
@@ -341,7 +341,7 @@ namespace GAME {
 				4460e9 * UNIVERSE_SCALE,
 
 				// Moons
-				3626e2 * UNIVERSE_SCALE
+				3626e5 * UNIVERSE_SCALE
 			};
 			const std::vector<double> APOAPSIS_DISTANCES = {
 				// Planets
@@ -356,7 +356,7 @@ namespace GAME {
 				4537e9 * UNIVERSE_SCALE,
 
 				// Moons
-				4054e6 * UNIVERSE_SCALE
+				4054e5 * UNIVERSE_SCALE
 			};
 
 			// Maybe don't scale by UNIVERSE_SCALE??

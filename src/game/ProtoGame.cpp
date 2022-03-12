@@ -213,7 +213,7 @@ void GameStage::new_sandbox() {
 		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 		
 		phyflt speed = find_velocity(parent_mass, PhysicsEngine::length(me_to_parent), semimajor_axis);
-		printf("sped: %f\n", speed);
+
 		if (i != GAME::SANDBOX::BODIES::ID::SUN) {
 			object_ptr->velocity = speed * velocity_direction + parent_velocity;
 		}
