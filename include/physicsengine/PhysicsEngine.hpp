@@ -45,6 +45,9 @@ namespace PhysicsEngine {
 		std::vector<RigidBody*>& get_bodies();
 		std::vector<Constraint*>& get_constraints();
 
+		// Clear everything
+		void clear();
+
 	private:
 		void update_velocity(RigidBody* body, phyflt dt);
 		void update_position(RigidBody* body, phyflt dt);

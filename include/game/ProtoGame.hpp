@@ -38,15 +38,11 @@ private:
 	void load_sandbox();
 	void save_sandbox();
 
-	void create_solar_system();
+	void new_sandbox();
 	void create_planets(const std::vector<Planet>& planets);
 
 	void create_components();
 	void create_rocket(const Rocket& rocket);
-	//void create_rocket(uint32_t rocket_id);
-
-	/*std::vector<PhysicsEngine::RigidBody> create_rocket_rigidbodies(const Rocket& rocket, const phyvec& offset = {});
-	std::vector<PhysicsEngine::Constraint*> create_rocket_constraints(const Rocket& rocket);*/
 
 	phyflt find_eccentricity(phyflt aphelion, phyflt perihelion);
 	phyflt find_semimajor_axis(phyflt aphelion, phyflt perihelion);
@@ -76,16 +72,14 @@ private:
 
 	uint32_t get_next_rocket_index();
 
+	PhysicsEngine::RigidBody* get_planet_from_rigidbodies(uint32_t id);
+
 	PhysicsEngine::PhysicsManager physics_manager;
 	PhysicsEngine::PhysicsData physics_data;
 
 	Camera map_camera, sandbox_camera;
 
 	std::map<uint32_t, Rocket> rockets;
-
-	// Images for all physics objects??
-	//std::vector<Framework::BaseSprite*> planets;
-	//std::vector<Framework::Image> components; // do I need this, or can it be stored in game_objects???
 
 	// State variables
 	struct {

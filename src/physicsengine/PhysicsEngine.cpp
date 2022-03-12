@@ -71,6 +71,12 @@ namespace PhysicsEngine {
 	}
 
 
+	void PhysicsManager::clear() {
+		bodies.clear();
+		constraints.clear();
+	}
+
+
 	void PhysicsManager::step(phyflt dt) {
 		// Old method
 		// Apply interaction forces

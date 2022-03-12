@@ -28,7 +28,7 @@ void GameStage::init() {
 	map_camera.set_scale(1e-5f / GAME::SANDBOX::UNIVERSE_SCALE);
 
 	// TODO
-	//sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APHELION_DISTANCES[3],  -GAME::SANDBOX::BODIES::RADII[3] });
+	//sandbox_camera.set_position({ GAME::SANDBOX::BODIES::APOAPSIS_DISTANCES[3],  -GAME::SANDBOX::BODIES::RADII[3] });
 	//sandbox_camera.set_position({ 0.0f ,  -GAME::SANDBOX::BODIES::RADII[3] });
 	sandbox_camera.set_scale(5.0f);
 
@@ -133,6 +133,13 @@ void GameStage::load_sandbox() {
 	catch (const json::exception& e) {
 		// Ignore - we set defaults already so it's not the end of the world
 		printf("Couldn't load save file: %s. Error: %s\n", save_name.c_str(), e.what());
+
+		printf("Creating new sandbox instead...\n");
+
+		new_sandbox();
+
+		// For now, create basic rocket (handle loading later)
+		create_components();
 	}
 }
 
@@ -161,47 +168,12 @@ void GameStage::save_sandbox() {
 		{"rockets", rockets}
 	};
 
-	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + save_name + PATHS::SANDBOX_SAVES::LOCATION, data);
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + save_name + PATHS::SANDBOX_SAVES::EXTENSION, data);
 }
 
-// TEST? or setup?
-void GameStage::create_solar_system() {
-#if 0
-	int i = 3;
-	phyflt radius = GAME::SANDBOX::BODIES::RADII[i];
-
-	PhysicsEngine::Circle* circle_ptr = new PhysicsEngine::Circle(radius);
-	physics_data.shapes.push_back(circle_ptr);
-
-	phyflt area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[i], radius);
-
-	// Add material_ptr to physics_data since it's not a heap allocated ptr
-	PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.1f, area_density); // todo: get friction and restitution?
-	physics_data.materials.push_back(material_ptr);
-
-	PhysicsEngine::RigidBody object = PhysicsEngine::RigidBody(circle_ptr, material_ptr, { 0, 0 }); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
-
-	object.ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
-
-	// Set render ID
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] = 3;
-
-	// Set category ID
-	object.ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] = GAME::SANDBOX::CATEGORIES::PLANET;
-
-	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] = idk;
-
-	//object.ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT] = i; //?
-
-	physics_manager.add_body(object);
-#else
-	// TODO: create method to load system from object positions
-	phyflt sun_radius = GAME::SANDBOX::BODIES::RADII[GAME::SANDBOX::BODIES::ID::SUN];
-	phyflt sun_area_density = volume_to_area_density(GAME::SANDBOX::BODIES::VOLUME_DENSITIES[GAME::SANDBOX::BODIES::ID::SUN], sun_radius);
-	phyflt sun_area = PhysicsEngine::PI * sun_radius * sun_radius;
-	phyflt sun_mass = sun_area * sun_area_density;
-
-	PhysicsEngine::phyvec sun_position; // defaults to (0,0)
+void GameStage::new_sandbox() {
+	rockets.clear();
+	physics_manager.clear();
 
 	for (uint8_t i = 0; i < GAME::SANDBOX::BODIES::ID::TOTAL; i++) {
 		phyflt radius = GAME::SANDBOX::BODIES::RADII[i];
@@ -215,26 +187,35 @@ void GameStage::create_solar_system() {
 		PhysicsEngine::Material* material_ptr = new PhysicsEngine::Material(0.7f, 0.5f, 0.0f, area_density); // todo: get friction and restitution?
 		physics_data.materials.push_back(material_ptr);
 
-		phyflt aphelion = GAME::SANDBOX::BODIES::APHELION_DISTANCES[i];
-		phyflt perihelion = GAME::SANDBOX::BODIES::PERIHELION_DISTANCES[i];
-		phyflt semimajor_axis = find_semimajor_axis(aphelion, perihelion);
+		phyflt apoapsis = GAME::SANDBOX::BODIES::APOAPSIS_DISTANCES[i];
+		phyflt periapsis = GAME::SANDBOX::BODIES::PERIAPSIS_DISTANCES[i];
+		phyflt semimajor_axis = find_semimajor_axis(apoapsis, periapsis);
 
-		// Todo: calculate actual position? or get position from save data?
-		PhysicsEngine::phyvec position = PhysicsEngine::phyvec{ aphelion, 0.0f };
-		PhysicsEngine::phyvec me_to_sun = sun_position - position;
+		// Position of body in sandbox
+		PhysicsEngine::phyvec parent_position, parent_velocity;
+		PhysicsEngine::phyflt parent_mass = 0.0f;
+		if (GAME::SANDBOX::BODIES::PARENT_BODIES[i] != GAME::SANDBOX::BODIES::ID::NONE) {
+			PhysicsEngine::RigidBody* parent_ptr = get_planet_from_rigidbodies(GAME::SANDBOX::BODIES::PARENT_BODIES[i]);
+			parent_position = parent_ptr->centre;
+			parent_velocity = parent_ptr->velocity;
+			parent_mass = parent_ptr->mass;
+		}
 
-		// Todo: get correct direction
-		PhysicsEngine::phyvec velocity_direction = PhysicsEngine::normalise(PhysicsEngine::perpendicular_acw(me_to_sun));
+		PhysicsEngine::phyvec position = parent_position + PhysicsEngine::phyvec{ apoapsis, 0.0f };
 
-		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(circle_ptr, material_ptr, position); //i==GAME::SANDBOX::BODIES::ID::SUN // Make sun immovable? - would break gravity calculation!
+		PhysicsEngine::phyvec me_to_parent = parent_position - position;
+
+		PhysicsEngine::phyvec velocity_direction = PhysicsEngine::normalise(PhysicsEngine::perpendicular_acw(me_to_parent));
+
+		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(circle_ptr, material_ptr, position);
 		physics_data.bodies.push_back(object_ptr);
 
 		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0);
 		
-		phyflt speed = find_velocity(sun_mass, PhysicsEngine::length(me_to_sun), semimajor_axis);
-		
-		if (sun_position != position) {
-			object_ptr->velocity = speed * velocity_direction;
+		phyflt speed = find_velocity(parent_mass, PhysicsEngine::length(me_to_parent), semimajor_axis);
+		printf("sped: %f\n", speed);
+		if (i != GAME::SANDBOX::BODIES::ID::SUN) {
+			object_ptr->velocity = speed * velocity_direction + parent_velocity;
 		}
 
 		// Set planet ID
@@ -249,7 +230,6 @@ void GameStage::create_solar_system() {
 
 		physics_manager.add_body(object_ptr);
 	}
-#endif
 }
 
 
@@ -306,7 +286,7 @@ void GameStage::create_components() {
 
 	//phyvec position = sandbox_camera.get_position() - phyvec{ 0.0f, 24.0f }; // testing
 	//phyvec position = phyvec{0, -GAME::SANDBOX::BODIES::RADII[3]} - phyvec{ 0.0f, 25.0f };
-	phyvec position = physics_manager.get_bodies()[3]->centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 25.0f };
+	phyvec position = physics_manager.get_bodies()[3]->centre + phyvec{ 0, -GAME::SANDBOX::BODIES::RADII[3] } - phyvec{ 0.0f, 24.8f };
 
 	//PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[; // TODO
 	//physics_data.materials.push_back(material_ptr);
@@ -368,14 +348,6 @@ void GameStage::create_rocket(const Rocket& rocket) {
 
 	// Add rocket to rockets
 	rockets[rocket_id] = rocket;
-
-//	// Create rocket
-//	create_rocket(rocket_id);
-//}
-//
-//
-//void GameStage::create_rocket(uint32_t rocket_id) {
-//	const Rocket& rocket = rockets[rocket_id];
 
 
 	Rocket::InitialData initial_data = rocket.get_initial_data();
@@ -651,9 +623,9 @@ void GameStage::render_sandbox() {
 
 
 	// Testing: render constraints
-	for (PhysicsEngine::Constraint* c : physics_manager.get_constraints()) {
+	/*for (PhysicsEngine::Constraint* c : physics_manager.get_constraints()) {
 		graphics_objects->graphics_ptr->render_line(PhysicsEngine::to_fvec(sandbox_camera.get_render_position(c->a->centre + PhysicsEngine::to_world_space(c->offset_a, c->a->get_rotation_matrix()))), PhysicsEngine::to_fvec(sandbox_camera.get_render_position(c->b->centre + PhysicsEngine::to_world_space(c->offset_b, c->b->get_rotation_matrix()))), c->is_broken() ? COLOURS::PLANETS[0] : COLOURS::WHITE);
-	}
+	}*/
 }
 
 
@@ -734,8 +706,10 @@ void GameStage::update_map(float dt) {
 	// Handle map controls
 	
 	// Move camera by distance the command module has moved
-	phyvec distance = sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre;
-	map_camera.set_position(map_camera.get_position() + distance);
+	if (settings.auto_move_map) {
+		phyvec distance = sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre;
+		map_camera.set_position(map_camera.get_position() + distance);
+	}
 
 	// Only allow scrolling/dragging map if we're in fullscreen map mode, or if the mouse is over the minimap
 	if (game_state.show_map || Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
@@ -901,4 +875,18 @@ uint32_t GameStage::get_next_rocket_index() {
 		i++;
 	}
 	return i;
+}
+
+
+PhysicsEngine::RigidBody* GameStage::get_planet_from_rigidbodies(uint32_t id) {
+	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+		if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::PLANET) {
+			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == id) {
+				return body;
+			}
+		}
+	}
+
+	// Couldn't find it
+	return nullptr;
 }

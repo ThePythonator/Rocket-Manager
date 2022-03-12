@@ -321,7 +321,7 @@ namespace GAME {
 
 		namespace CATEGORIES {
 			enum CATEGORIES {
-				PLANET, // Can be planet, sun, moon etc
+				PLANET, // Can be planet, or sun, or moon
 				COMPONENT,
 
 				TOTAL
@@ -347,12 +347,15 @@ namespace GAME {
 		namespace BODIES {
 			extern const std::vector<double> RADII;
 			extern const std::vector<double> VOLUME_DENSITIES;
-			extern const std::vector<double> PERIHELION_DISTANCES;
-			extern const std::vector<double> APHELION_DISTANCES;
+			extern const std::vector<double> PERIAPSIS_DISTANCES;
+			extern const std::vector<double> APOAPSIS_DISTANCES;
 			extern const std::vector<double> SCALE_HEIGHTS;
 
+			extern const std::vector<uint32_t> PARENT_BODIES; // Used to identify what planet/moon orbits around what
+
 			namespace ID {
-				enum ID { // TODO: add moon(s)!
+				enum ID {
+					// Planets
 					SUN,
 					MERCURY,
 					VENUS,
@@ -363,17 +366,15 @@ namespace GAME {
 					URANUS,
 					NEPTUNE,
 
-					TOTAL
+					// Moons
+					MOON,
+
+					TOTAL,
+
+					NONE
 				};
 			}
 		}
-
-		//namespace COMPONENTS {
-		//	//extern const std::vector<PhysicsEngine::phyvec> SIZES;
-		//	extern const std::vector<std::vector<PhysicsEngine::phyvec>> VERTICES;
-
-		//	extern const std::vector<uint32_t> MATERIALS;
-		//}
 
 		namespace CONNECTIONS {
 			extern const float MAX_EXTENSION;

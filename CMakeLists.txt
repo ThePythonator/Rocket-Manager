@@ -35,6 +35,8 @@ set(GAME_SOURCES
 
 	"StarField.cpp"
 
+	"Particles.cpp"
+
 	"ExtraMaths.cpp"
 
 	"Camera.cpp"
