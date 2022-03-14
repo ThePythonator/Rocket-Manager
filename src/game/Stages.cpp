@@ -56,7 +56,7 @@ void TitleStage::init() {
 	// Create buttons
 	buttons = create_menu_from_constants(graphics_objects, STRINGS::BUTTONS::TITLE);
 
-	// Start transition
+	// Set transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
 }
 
@@ -118,7 +118,8 @@ bool TitleStage::update(float dt) {
 		// Next stage!
 		switch (button_selected) {
 		case BUTTONS::TITLE::EDITOR:
-			//finish(new EditorStage());
+			// create submenu??
+			finish(new EditorStage());
 			break;
 
 		case BUTTONS::TITLE::QUIT:

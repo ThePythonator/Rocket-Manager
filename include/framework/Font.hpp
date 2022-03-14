@@ -64,8 +64,8 @@ namespace Framework {
 	class Text {
 	public:
 		Text();
-		Text(Font* font, std::string text, Colour colour, Font::AnchorPosition anchor_position = Font::AnchorPosition::CENTER_CENTER);
-		Text(Font* font, std::string text, Colour colour, float scale, Font::AnchorPosition anchor_position = Font::AnchorPosition::CENTER_CENTER);
+		Text(Font* font, std::string text, Colour colour, Font::AnchorPosition anchor_position = Font::AnchorPosition::CENTER_CENTER, vec2 offset = VEC_NULL);
+		Text(Font* font, std::string text, Colour colour, float scale, Font::AnchorPosition anchor_position = Font::AnchorPosition::CENTER_CENTER, vec2 offset = VEC_NULL);
 
 		void render(vec2 position) const;
 		void render(vec2 position, Colour colour) const;
@@ -81,5 +81,6 @@ namespace Framework {
 		Colour _colour;
 		Font::AnchorPosition _anchor = Font::AnchorPosition::CENTER_CENTER;
 		float _scale = 1.0f;
+		vec2 _offset = VEC_NULL;
 	};
 }

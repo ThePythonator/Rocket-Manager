@@ -187,6 +187,16 @@ namespace PhysicsEngine {
 		return centroid;
 	}
 
+	phyflt find_bounding_radius(const std::vector<phyvec>& vertices) {
+		phyflt max_squared_dist = 0.0f;
+
+		for (phyvec vertex : vertices) {
+			max_squared_dist = std::max(max_squared_dist, length_squared(vertex));
+		}
+
+		return std::sqrt(max_squared_dist);
+	}
+
 
 	std::vector<phyvec> translate(const std::vector<phyvec>& vertices, const phyvec& offset) {
 		std::vector<phyvec> new_vertices;

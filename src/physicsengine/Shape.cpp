@@ -148,13 +148,7 @@ namespace PhysicsEngine {
 	}
 
 	phyflt Polygon::get_bounding_radius() {
-		phyflt max_squared_dist = 0.0f;
-
-		for (phyvec vertex : vertices) {
-			max_squared_dist = std::max(max_squared_dist, length_squared(vertex));
-		}
-
-		return std::sqrt(max_squared_dist);
+		return find_bounding_radius(vertices);
 	}
 
 

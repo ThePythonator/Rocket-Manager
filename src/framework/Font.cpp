@@ -185,19 +185,21 @@ namespace Framework {
 	Text::Text() {
 
 	}
-	Text::Text(Font* font, std::string text, Colour colour, Font::AnchorPosition anchor_position) {
+	Text::Text(Font* font, std::string text, Colour colour, Font::AnchorPosition anchor_position, vec2 offset) {
 		_font_ptr = font;
 		_text = text;
 		_colour = colour;
 		_anchor = anchor_position;
 		_scale = _font_ptr->get_spritesheet_ptr()->get_scale();
+		_offset = offset;
 	}
-	Text::Text(Font* font, std::string text, Colour colour, float scale, Font::AnchorPosition anchor_position) {
+	Text::Text(Font* font, std::string text, Colour colour, float scale, Font::AnchorPosition anchor_position, vec2 offset) {
 		_font_ptr = font;
 		_text = text;
 		_colour = colour;
 		_anchor = anchor_position;
 		_scale = scale;
+		_offset = offset;
 	}
 
 	void Text::render(vec2 position) const {
@@ -210,7 +212,7 @@ namespace Framework {
 		render(position, _colour, anchor_position);
 	}
 	void Text::render(vec2 position, Colour colour, Font::AnchorPosition anchor_position) const {
-		_font_ptr->render_text(_text, position, colour, _scale, anchor_position);
+		_font_ptr->render_text(_text, position + _offset, colour, _scale, anchor_position);
 	}
 
 	void Text::set_text(std::string text) {

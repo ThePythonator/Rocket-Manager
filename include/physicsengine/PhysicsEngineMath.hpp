@@ -115,6 +115,9 @@ namespace PhysicsEngine {
 	// Find centroid of vector of points
 	phyvec find_centroid(const std::vector<phyvec>& vertices);
 
+	// Find furthest distance from origin to point
+	phyflt find_bounding_radius(const std::vector<phyvec>& vertices);
+
 	// Adds offset to every element in vertices
 	std::vector<phyvec> translate(const std::vector<phyvec>& vertices, const phyvec& offset);
 

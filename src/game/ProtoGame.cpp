@@ -26,6 +26,9 @@ void GameStage::init() {
 	// Set camera scales
 	map_camera.set_scale(GAME::MAP::UI::DEFAULT_CAMERA_SCALE);
 	sandbox_camera.set_scale(GAME::SANDBOX::UI::DEFAULT_CAMERA_SCALE);
+
+	// Set transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
 }
 
 void GameStage::start() {
@@ -33,6 +36,9 @@ void GameStage::start() {
 	load_sandbox();
 
 	init_temporaries();
+
+	// Open transition
+	transition->open();
 }
 
 void GameStage::end() {
@@ -41,7 +47,7 @@ void GameStage::end() {
 }
 
 bool GameStage::update(float dt) {
-	//transition->update(dt);
+	transition->update(dt);
 
 	// Handle inputs etc
 	update_game_state(dt);
@@ -68,6 +74,8 @@ void GameStage::render() {
 	render_map();
 
 	if (settings.show_debug) render_debug();
+
+	transition->render();
 }
 
 
@@ -677,6 +685,14 @@ void GameStage::update_game_state(float dt) {
 		if (game_state.time_warp_index >= GAME::SANDBOX::WARP_SPEEDS.size()) game_state.time_warp_index = 0;
 	}
 
+	// Compare distance above surface to "atmosphere" height
+	if (sandbox_temporaries.distance_to_nearest_planet - GAME::SANDBOX::BODIES::RADII[sandbox_temporaries.nearest_planet] < GAME::SANDBOX::BODIES::SCALE_HEIGHTS[sandbox_temporaries.nearest_planet] * GAME::SANDBOX::SCALE_HEIGHT_TO_ATMOSPHERE_HEIGHT_FACTOR) {
+		// Within "atmosphere", so can't warp!
+		game_state.time_warp_index = 0;
+
+		// TODO: show message saying about why can't warp
+	}
+
 
 	if (input->just_down(Framework::KeyHandler::Key::SPACE)) game_state.paused = !game_state.paused;
 
@@ -685,15 +701,18 @@ void GameStage::update_game_state(float dt) {
 
 
 	// Controls
-	// Positive is anticlockwise
-	rocket_controls.direction = 0;
-	if (input->is_down(Framework::KeyHandler::Key::LEFT)) rocket_controls.direction++;
-	if (input->is_down(Framework::KeyHandler::Key::RIGHT)) rocket_controls.direction--;
+	if (!game_state.paused) {
 
-	if (input->is_down(Framework::KeyHandler::Key::UP)) rocket_controls.engine_power += GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
-	if (input->is_down(Framework::KeyHandler::Key::DOWN)) rocket_controls.engine_power -= GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+		// Positive is anticlockwise
+		rocket_controls.direction = 0;
+		if (input->is_down(Framework::KeyHandler::Key::LEFT)) rocket_controls.direction++;
+		if (input->is_down(Framework::KeyHandler::Key::RIGHT)) rocket_controls.direction--;
 
-	rocket_controls.engine_power = Framework::clamp(rocket_controls.engine_power, 0.0f, 1.0f);
+		if (input->is_down(Framework::KeyHandler::Key::UP)) rocket_controls.engine_power += GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+		if (input->is_down(Framework::KeyHandler::Key::DOWN)) rocket_controls.engine_power -= GAME::CONTROLS::ENGINE_POWER_INCREASE_RATE * dt;
+
+		rocket_controls.engine_power = Framework::clamp(rocket_controls.engine_power, 0.0f, 1.0f);
+	}
 }
 
 
@@ -789,6 +808,7 @@ void GameStage::update_sandbox(float dt) {
 						// Particles
 
 						// Create more particles if engine throttle is higher
+						// NOTE: currently not framerate independent code!!
 						if (rocket_controls.engine_power > Framework::randf()) {
 
 							phyflt size = Framework::randf(GAME::PARTICLES::SMOKE::MIN_SIZE, GAME::PARTICLES::SMOKE::MAX_SIZE);
@@ -796,7 +816,6 @@ void GameStage::update_sandbox(float dt) {
 
 							phyvec position = body->centre;
 
-							// Not sure which one
 							phyvec velocity = body->velocity;
 							velocity += PhysicsEngine::mul(PhysicsEngine::rotation_matrix(Framework::randf(0.0, 2 * PhysicsEngine::PI)), { 1, 0 }) * Framework::randf() * GAME::PARTICLES::SMOKE::VELOCITY_OFFSET_MAX;
 

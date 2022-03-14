@@ -151,6 +151,9 @@ namespace COLOURS {
 	extern const Framework::Colour BLACK;
 	extern const Framework::Colour WHITE;
 
+	extern const Framework::Colour EDITOR_GREY;
+	extern const Framework::Colour EDITOR_PALETTE_GREY;
+
 	extern const Framework::Colour CURRENT_ROCKET_ICON;
 	extern const Framework::Colour OTHER_ROCKET_ICONS;
 
@@ -204,6 +207,7 @@ namespace CURVES {
 namespace BUTTONS {
 	extern const Framework::vec2 SIZE;
 	extern const Framework::vec2 WIDE_SIZE;
+	extern const Framework::vec2 EDITOR_SIZE;
 	
 	extern const uint8_t SELECTED_ALPHA;
 
@@ -327,6 +331,8 @@ namespace GAME {
 		extern const double GRAVITATIONAL_CONSTANT;
 
 		extern const std::vector<uint32_t> WARP_SPEEDS;
+		
+		extern const float SCALE_HEIGHT_TO_ATMOSPHERE_HEIGHT_FACTOR;
 
 		namespace UI {
 			extern const float SCROLL_ZOOM_RATE;
@@ -468,5 +474,19 @@ namespace GAME {
 				NONE
 			};
 		}
+	}
+}
+
+namespace EDITOR {
+	namespace CAMERA {
+		extern const float DEFAULT_SCALE;
+	}
+
+	namespace UI {
+		extern const Framework::Rect PALETTE_RECT;
+
+		extern const Framework::vec2 BUTTON_OFFSET;
+
+		extern const Framework::vec2 BUTTON_ICON_OFFSET;
 	}
 }

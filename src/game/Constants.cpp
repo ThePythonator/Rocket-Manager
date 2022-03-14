@@ -181,6 +181,10 @@ namespace FONTS {
 namespace COLOURS {
 	const Framework::Colour BLACK{ 0x00, 0x00, 0x00 };
 	const Framework::Colour WHITE{ 0xFF, 0xFF, 0xFF };
+
+	const Framework::Colour EDITOR_GREY{ 0x7A, 0xA2, 0xB0 };
+	//const Framework::Colour EDITOR_GREY{ 0x4C, 0x65, 0x89 };
+	const Framework::Colour EDITOR_PALETTE_GREY{ 0x60, 0x83, 0x9C };
 	
 	const Framework::Colour CURRENT_ROCKET_ICON{ 0xFF, 0xFF, 0xFF };
 	const Framework::Colour OTHER_ROCKET_ICONS{ 0x9C, 0xBB, 0xC1 };
@@ -256,8 +260,8 @@ namespace SCALES {
 
 namespace BUTTONS {
 	const Framework::vec2 SIZE = Framework::Vec(192, 56);
-
 	const Framework::vec2 WIDE_SIZE = Framework::Vec(384, 56); //512?
+	const Framework::vec2 EDITOR_SIZE = Framework::Vec(320, 56);
 
 	const uint8_t SELECTED_ALPHA = 0x40;
 
@@ -330,6 +334,9 @@ namespace GAME {
 			1000000,
 			//10000000
 		};
+
+		// ~95% of atmosphere is below 3 scale heights
+		extern const float SCALE_HEIGHT_TO_ATMOSPHERE_HEIGHT_FACTOR = 3.0f;
 
 		namespace UI {
 			const float SCROLL_ZOOM_RATE = 0.2f;
@@ -512,5 +519,21 @@ namespace GAME {
 		std::map<uint32_t, uint32_t> MATERIALS;
 
 		std::map<uint32_t, std::string> NAMES;
+	}
+}
+
+
+
+namespace EDITOR {
+	namespace CAMERA {
+		const float DEFAULT_SCALE = 10.0f;
+	}
+
+	namespace UI {
+		const Framework::Rect PALETTE_RECT = Framework::Rect(0.0f, 0.0f, BUTTONS::EDITOR_SIZE.x, WINDOW::SIZE.y);
+
+		const Framework::vec2 BUTTON_OFFSET = { -BUTTONS::EDITOR_SIZE.x * 0.47f, 0.0f };
+
+		const Framework::vec2 BUTTON_ICON_OFFSET = { BUTTONS::EDITOR_SIZE.x * 0.9f, BUTTONS::EDITOR_SIZE.y / 2};
 	}
 }

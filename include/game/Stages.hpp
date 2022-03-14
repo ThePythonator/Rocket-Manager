@@ -9,6 +9,7 @@
 
 //#include "GameStage.hpp"
 #include "ProtoGame.hpp"
+#include "EditorStage.hpp"
 
 class IntroStage : public Framework::BaseStage {
 public:

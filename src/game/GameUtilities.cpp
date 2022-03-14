@@ -19,10 +19,6 @@ std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button
 }
 
 
-std::vector<Framework::Button> create_menu_buttons(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour, float top_button_y) {
-	return create_menu_buttons(button_area, button_size, button_images, button_titles, font, text_colour, top_button_y, 0);
-}
-
 std::vector<Framework::Button> create_menu_buttons_centralised(const Framework::Rect& button_area, const Framework::vec2& button_size, const Framework::Button::ButtonImages& button_images, const std::vector<std::string>& button_titles, Framework::Font* font, const Framework::Colour& text_colour) {
 	std::vector<Framework::Button> buttons;
 
