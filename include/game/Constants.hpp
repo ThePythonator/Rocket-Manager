@@ -153,6 +153,7 @@ namespace COLOURS {
 
 	extern const Framework::Colour EDITOR_GREY;
 	extern const Framework::Colour EDITOR_PALETTE_GREY;
+	extern const Framework::Colour EDITOR_GRID_COLOUR;
 
 	extern const Framework::Colour CURRENT_ROCKET_ICON;
 	extern const Framework::Colour OTHER_ROCKET_ICONS;

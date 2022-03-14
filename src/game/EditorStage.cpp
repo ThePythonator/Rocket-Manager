@@ -39,6 +39,28 @@ void EditorStage::start() {
 bool EditorStage::update(float dt) {
 	transition->update(dt);
 
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			// Create module
+			// TODO: check if ID is actually a module?
+
+			// If component_selected is not none, remove currently selected component
+			rocket.erase_component(component_selected);
+
+			// Add new component
+			component_selected = rocket.add_component({ button_selected });
+		}
+	}
+
+	// Handle editing
+
+	float line_size = camera.get_scale();
+
 	phyvec converted_mouse_position = camera.get_position_from_render_position(PhysicsEngine::to_phyvec(input->get_mouse()->position()));
 
 	// Set position of currently selected component to cursor position
@@ -64,26 +86,16 @@ bool EditorStage::update(float dt) {
 			rocket.erase_component(component_selected);
 		}
 
+		// Snap position to grid
+		phyvec offset = component_ptr->get_offset();
+		offset.x = std::round(offset.x);
+		offset.y = std::round(offset.y);
+		component_ptr->set_offset(offset);
+
+		// TODO: issue: currently snapping to centroid. need to somehow store an 'origin' point which lies on grid, then snap that to grid (also shift by centroid when loading, so can unshift when snapping).
+		
 		// If currently selected something, drop it
 		component_selected = EDITOR::NO_COMPONENT_SELECTED;
-	}
-
-	// Update buttons
-	for (Framework::Button& button : buttons) {
-		button.update(input);
-
-		if (button.pressed() && transition->is_open()) {
-			button_selected = button.get_id();
-
-			// Create module
-			// TODO: check if ID is actually a module?
-
-			// If component_selected is not none, remove currently selected component
-			rocket.erase_component(component_selected);
-
-			// Add new component
-			component_selected = rocket.add_component({ button_selected });
-		}
 	}
 
 	return true;
@@ -92,11 +104,30 @@ bool EditorStage::update(float dt) {
 void EditorStage::render() {
 	graphics_objects->graphics_ptr->fill(COLOURS::EDITOR_GREY);
 
+	render_grid();
+
 	render_ui();
 
 	render_rocket(rocket);
 
 	transition->render();
+}
+
+
+void EditorStage::render_grid() {
+	// Draw a line every metre
+	float line_size = camera.get_scale();
+
+	// TODO: centre on camera
+
+	for (float x = 0; x < WINDOW::SIZE.x; x += line_size) {
+		// Render vertical line
+		graphics_objects->graphics_ptr->render_line({ x, 0.0f }, { x, WINDOW::SIZE.y }, COLOURS::EDITOR_GRID_COLOUR);
+	}
+	for (float y = 0; y < WINDOW::SIZE.y; y += line_size) {
+		// Render horizontal line
+		graphics_objects->graphics_ptr->render_line({ 0.0f, y }, { WINDOW::SIZE.x, y }, COLOURS::EDITOR_GRID_COLOUR);
+	}
 }
 
 

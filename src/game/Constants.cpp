@@ -185,6 +185,7 @@ namespace COLOURS {
 	const Framework::Colour EDITOR_GREY{ 0x7A, 0xA2, 0xB0 };
 	//const Framework::Colour EDITOR_GREY{ 0x4C, 0x65, 0x89 };
 	const Framework::Colour EDITOR_PALETTE_GREY{ 0x60, 0x83, 0x9C };
+	const Framework::Colour EDITOR_GRID_COLOUR{ 0x9C, 0xBB, 0xC1 };
 	
 	const Framework::Colour CURRENT_ROCKET_ICON{ 0xFF, 0xFF, 0xFF };
 	const Framework::Colour OTHER_ROCKET_ICONS{ 0x9C, 0xBB, 0xC1 };
