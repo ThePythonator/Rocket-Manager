@@ -19,7 +19,7 @@ public:
 	void render();
 
 private:
-	void render_palette();
+	void render_ui();
 	void render_rocket(const Rocket& rocket);
 	void render_component(const Component& component);
 

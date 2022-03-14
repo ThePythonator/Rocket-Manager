@@ -88,7 +88,7 @@ namespace Framework {
 				}
 			}
 
-			character_rects[i] = Rect{ base_x + left, base_y, right - left + 1, sprite_size };
+			character_rects[i] = Rect(base_x + left, base_y, right - left + 1, sprite_size);
 		}
 
 		// White

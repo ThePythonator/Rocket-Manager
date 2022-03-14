@@ -47,17 +47,23 @@ bool EditorStage::update(float dt) {
 	}
 
 	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT)) {
-		// If colliding with any object then remove it
+		// If colliding with any object then pick it up
 		for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
 
-			// TODO: write method for colliding circle and point, params ( centre, radius, point )
-			/*if (Framework::colliding(p.second.get_offset(), component_bounding_radii[p.second.get_type()], converted_mouse_position)) {
+			if (colliding(p.second.get_offset(), component_bounding_radii[p.second.get_type()], converted_mouse_position)) {
 				component_selected = p.first;
 				break;
-			}*/
+			}
 		}
 	}
 	else if (input->just_up(Framework::MouseHandler::MouseButton::LEFT)) {
+		// If we dropped it onto the bin, remove it
+		Component* component_ptr = rocket.get_component_ptr(component_selected);
+
+		if (colliding(EDITOR::UI::BIN_RECT, PhysicsEngine::to_fvec(camera.get_render_position(component_ptr->get_offset())))) {
+			rocket.erase_component(component_selected);
+		}
+
 		// If currently selected something, drop it
 		component_selected = EDITOR::NO_COMPONENT_SELECTED;
 	}
@@ -86,7 +92,7 @@ bool EditorStage::update(float dt) {
 void EditorStage::render() {
 	graphics_objects->graphics_ptr->fill(COLOURS::EDITOR_GREY);
 
-	render_palette();
+	render_ui();
 
 	render_rocket(rocket);
 
@@ -94,8 +100,8 @@ void EditorStage::render() {
 }
 
 
-void EditorStage::render_palette() {
-	// Background
+void EditorStage::render_ui() {
+	// Background for palette
 	graphics_objects->graphics_ptr->fill(EDITOR::UI::PALETTE_RECT, COLOURS::EDITOR_PALETTE_GREY);
 
 	// Buttons
@@ -112,13 +118,8 @@ void EditorStage::render_palette() {
 		graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);
 	}
 
-	// Stuff
-	//for (uint8_t i = 0; i < GAME::COMPONENTS::NAMES.size(); i++) {
-	//	Component c = Component(i);
-	//	c.set_offset({10.0f, 10.0f + i * 10.0f}); // todo
-
-	//	render_component(c);
-	//}
+	// Bin icon
+	graphics_objects->spritesheet_ptrs[GRAPHICS_OBJECTS::SPRITESHEETS::MAIN_SPRITESHEET]->sprite(SPRITES::INDEX::BIN, EDITOR::UI::BIN_RECT.position / SPRITES::SCALE);
 }
 
 

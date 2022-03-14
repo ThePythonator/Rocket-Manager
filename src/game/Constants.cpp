@@ -133,7 +133,7 @@ namespace PATHS {
 		const std::string LOCATION = "assets/images/";
 
 		const std::string LOGO = "logo.png";
-		const std::string MAIN_SPRITESHEET = "demo_spritesheet.png";
+		const std::string MAIN_SPRITESHEET = "icons.png";
 		const std::string FONT_SPRITESHEET = "font.png";
 	}
 
@@ -249,8 +249,11 @@ namespace SPRITES {
 	const uint8_t SIZE_HALF = SIZE / 2;
 	const uint8_t SCALE = 4;
 	const uint8_t UI_SCALE = 4;
+
+	const uint8_t SCALED_SIZE = SIZE * SCALE;
 	
 	namespace INDEX {
+		const uint8_t BIN = 0;
 	}
 }
 
@@ -534,9 +537,9 @@ namespace EDITOR {
 
 	namespace UI {
 		const Framework::Rect PALETTE_RECT = Framework::Rect(0.0f, 0.0f, BUTTONS::EDITOR_SIZE.x, WINDOW::SIZE.y);
+		const Framework::Rect BIN_RECT = Framework::Rect(WINDOW::SIZE.x - SPRITES::SCALED_SIZE, 0, SPRITES::SCALED_SIZE, SPRITES::SCALED_SIZE);
 
 		const Framework::vec2 BUTTON_OFFSET = { -BUTTONS::EDITOR_SIZE.x * 0.47f, 0.0f };
-
 		const Framework::vec2 BUTTON_ICON_OFFSET = { BUTTONS::EDITOR_SIZE.x * 0.9f, BUTTONS::EDITOR_SIZE.y / 2};
 	}
 }

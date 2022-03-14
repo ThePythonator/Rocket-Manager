@@ -18,3 +18,16 @@ namespace linalg {
 		j.at(1).get_to(v.y);
 	}*/
 }
+
+bool colliding(phyvec centre, phyflt radius, phyvec point) {
+	phyflt distance_squared = PhysicsEngine::length_squared(point - centre);
+	return distance_squared < radius * radius;
+}
+
+Framework::Rect circle_to_rect(phyvec centre, phyflt radius) {
+	return circle_to_rect(PhysicsEngine::to_fvec(centre), PhysicsEngine::to_float(radius));
+}
+
+Framework::Rect circle_to_rect(Framework::vec2 centre, float radius) {
+	return Framework::Rect(centre - radius, radius * 2);
+}

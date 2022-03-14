@@ -189,8 +189,10 @@ namespace SPRITES {
 	extern const uint8_t SCALE;
 	extern const uint8_t UI_SCALE;
 
+	extern const uint8_t SCALED_SIZE;
+
 	namespace INDEX {
-		
+		extern const uint8_t BIN;
 	}
 }
 
@@ -486,9 +488,9 @@ namespace EDITOR {
 
 	namespace UI {
 		extern const Framework::Rect PALETTE_RECT;
+		extern const Framework::Rect BIN_RECT;
 
 		extern const Framework::vec2 BUTTON_OFFSET;
-
 		extern const Framework::vec2 BUTTON_ICON_OFFSET;
 	}
 }

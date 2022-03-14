@@ -25,10 +25,10 @@ namespace Framework {
 		size = vec2{ width, height };
 	}
 
-	Rect::Rect(int x, int y, int width, int height) {
+	/*Rect::Rect(int x, int y, int width, int height) {
 		position = vec2{ static_cast<float>(x), static_cast<float>(y) };
 		size = vec2{ static_cast<float>(width), static_cast<float>(height) };
-	}
+	}*/
 
 	vec2 Rect::centre() const {
 		return position + size / 2;

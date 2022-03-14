@@ -35,3 +35,9 @@ namespace linalg {
 	}
 
 }
+
+// Circle to point collisions
+bool colliding(phyvec centre, phyflt radius, phyvec point);
+
+Framework::Rect circle_to_rect(phyvec centre, phyflt radius);
+Framework::Rect circle_to_rect(Framework::vec2 centre, float radius);
