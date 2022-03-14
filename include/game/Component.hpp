@@ -56,6 +56,8 @@ public:
 	void set_components(std::map<uint32_t, Component> components);
 	void set_connections(std::vector<Connection> connections);
 
+	Component* get_component_ptr(uint32_t component_id);
+
 protected:
 	std::map<uint32_t, Component> _components;
 	std::vector<Connection> _connections;

@@ -525,6 +525,9 @@ namespace GAME {
 
 
 namespace EDITOR {
+	// Use -1 as way to get max value for uint32_t
+	const uint32_t NO_COMPONENT_SELECTED = -1;
+
 	namespace CAMERA {
 		const float DEFAULT_SCALE = 10.0f;
 	}

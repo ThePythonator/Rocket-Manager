@@ -18,8 +18,9 @@ void EditorStage::init() {
 
 		y += BUTTONS::EDITOR_SIZE.y;
 
-		// Initialise icon_scales
-		icon_scales[p.first] = 0.5f * BUTTONS::EDITOR_SIZE.y / PhysicsEngine::find_bounding_radius(GAME::COMPONENTS::VERTICES[p.first]);
+		// Initialise icon_scales and component_bounding_radii
+		component_bounding_radii[p.first] = PhysicsEngine::find_bounding_radius(GAME::COMPONENTS::VERTICES[p.first]);
+		icon_scales[p.first] = 0.5f * BUTTONS::EDITOR_SIZE.y / component_bounding_radii[p.first];
 	}
 }
 
@@ -38,6 +39,29 @@ void EditorStage::start() {
 bool EditorStage::update(float dt) {
 	transition->update(dt);
 
+	phyvec converted_mouse_position = camera.get_position_from_render_position(PhysicsEngine::to_phyvec(input->get_mouse()->position()));
+
+	// Set position of currently selected component to cursor position
+	if (component_selected != EDITOR::NO_COMPONENT_SELECTED) {
+		rocket.get_component_ptr(component_selected)->set_offset(converted_mouse_position);
+	}
+
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT)) {
+		// If colliding with any object then remove it
+		for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
+
+			// TODO: write method for colliding circle and point, params ( centre, radius, point )
+			/*if (Framework::colliding(p.second.get_offset(), component_bounding_radii[p.second.get_type()], converted_mouse_position)) {
+				component_selected = p.first;
+				break;
+			}*/
+		}
+	}
+	else if (input->just_up(Framework::MouseHandler::MouseButton::LEFT)) {
+		// If currently selected something, drop it
+		component_selected = EDITOR::NO_COMPONENT_SELECTED;
+	}
+
 	// Update buttons
 	for (Framework::Button& button : buttons) {
 		button.update(input);
@@ -45,7 +69,14 @@ bool EditorStage::update(float dt) {
 		if (button.pressed() && transition->is_open()) {
 			button_selected = button.get_id();
 
-			
+			// Create module
+			// TODO: check if ID is actually a module?
+
+			// If component_selected is not none, remove currently selected component
+			rocket.erase_component(component_selected);
+
+			// Add new component
+			component_selected = rocket.add_component({ button_selected });
 		}
 	}
 

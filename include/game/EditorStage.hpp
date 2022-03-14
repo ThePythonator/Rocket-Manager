@@ -27,4 +27,7 @@ private:
 	Camera camera;
 
 	std::map<uint32_t, float> icon_scales;
+	std::map<uint32_t, float> component_bounding_radii;
+
+	uint32_t component_selected = EDITOR::NO_COMPONENT_SELECTED;
 };

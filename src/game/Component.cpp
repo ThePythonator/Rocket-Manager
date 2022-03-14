@@ -60,6 +60,10 @@ void ComponentManager::set_connections(std::vector<Connection> connections) {
 	_connections = connections;
 }
 
+Component* ComponentManager::get_component_ptr(uint32_t component_id) {
+	return &_components[component_id];
+}
+
 uint32_t ComponentManager::get_next_component_index() const {
 	// Get next free index in map
 	uint32_t i = 0;

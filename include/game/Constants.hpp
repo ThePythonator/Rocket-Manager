@@ -478,6 +478,8 @@ namespace GAME {
 }
 
 namespace EDITOR {
+	extern const uint32_t NO_COMPONENT_SELECTED;
+
 	namespace CAMERA {
 		extern const float DEFAULT_SCALE;
 	}

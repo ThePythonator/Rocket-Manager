@@ -28,3 +28,8 @@ phyflt Camera::get_scale() const {
 phyvec Camera::get_render_position(const phyvec& position) const {
 	return (position - _position) * _scale + _window_size / 2;
 }
+
+// Essentially the inverse of get_render_position
+phyvec Camera::get_position_from_render_position(const phyvec& render_position) const {
+	return _position + (render_position - _window_size / 2) / _scale;
+}

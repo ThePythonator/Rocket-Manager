@@ -21,6 +21,8 @@ public:
 	//Framework::vec2 get_render_position(const Framework::vec2& position) const;
 	phyvec get_render_position(const phyvec& position) const;
 
+	phyvec get_position_from_render_position(const phyvec& render_position) const;
+
 private:
 	phyflt _scale = 1.0f;
 
