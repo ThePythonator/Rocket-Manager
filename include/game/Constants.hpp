@@ -290,6 +290,10 @@ namespace MENU {
 namespace GAME {
 	namespace CONTROLS {
 		extern const float ENGINE_POWER_INCREASE_RATE;
+
+		extern const float ENGINE_FORCE;
+
+		extern const float ENGINE_TURN_ANGLE;
 	}
 
 	namespace MAP {
@@ -422,6 +426,23 @@ namespace GAME {
 			extern const uint8_t RELATIVE_VELOCITY;
 
 			extern const uint8_t ENGINE_POWER;
+		}
+	}
+
+	namespace PARTICLES {
+		namespace SMOKE {
+			extern const float MIN_SIZE;
+			extern const float MAX_SIZE;
+
+			extern const float SIZE_CHANGE;
+
+			extern const float MIN_AGE;
+			extern const float MAX_AGE;
+
+			extern const float VELOCITY_OFFSET_MAX;
+
+			extern const uint8_t RGB_MIN;
+			extern const uint8_t RGB_MAX;
 		}
 	}
 

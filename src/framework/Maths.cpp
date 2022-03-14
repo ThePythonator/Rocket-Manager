@@ -60,6 +60,9 @@ namespace Framework {
 	Rect centred_rect(vec2 centre, vec2 size) {
 		return Rect(centre - size / 2, size);
 	}
+	Rect centred_rect(vec2 centre, float size) {
+		return Rect(centre - size / 2, size);
+	}
 	Rect centred_rect(float centre_x, float centre_y, float width, float height) {
 		return centred_rect({ centre_x, centre_y }, { width, height });
 	}
@@ -110,6 +113,10 @@ namespace Framework {
 
 	float randf() {
 		return (rand() % 1001) / 1000.0f;
+	}
+
+	float randf(float min, float max) {
+		return min + randf() * (max - min);
 	}
 
 

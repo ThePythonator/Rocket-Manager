@@ -278,6 +278,11 @@ namespace MENU {
 namespace GAME {
 	namespace CONTROLS {
 		const float ENGINE_POWER_INCREASE_RATE = 1.0f;
+
+		const float ENGINE_FORCE = 2e7f;
+
+		// In radians
+		const float ENGINE_TURN_ANGLE = PhysicsEngine::deg_to_rad(15);
 	}
 
 	namespace MAP {
@@ -477,6 +482,25 @@ namespace GAME {
 			const uint8_t RELATIVE_VELOCITY = 0;
 
 			const uint8_t ENGINE_POWER = 1;
+		}
+	}
+
+
+	namespace PARTICLES {
+		namespace SMOKE {
+			const float MIN_SIZE = 1.0f;
+			const float MAX_SIZE = 2.0f;
+
+			const float SIZE_CHANGE = 1.0f;
+
+			const float MIN_AGE = 2.0f;
+			const float MAX_AGE = 5.0f; // TODO: change
+
+			// Maximum variation in velocity
+			const float VELOCITY_OFFSET_MAX = 5.0f;
+
+			const uint8_t RGB_MIN = 0x70;
+			const uint8_t RGB_MAX = 0x90;
 		}
 	}
 

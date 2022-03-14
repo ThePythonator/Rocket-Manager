@@ -13,6 +13,7 @@
 #include "Planet.hpp"
 #include "Settings.hpp"
 #include "StarField.hpp"
+#include "Particles.hpp"
 
 using namespace PhysicsEngine::phy_t;
 
@@ -81,6 +82,14 @@ private:
 
 	std::map<uint32_t, Rocket> rockets;
 
+	Settings settings;
+
+	StarField star_field;
+
+	std::string save_name;
+
+	Particles particles;
+
 	// State variables
 	struct {
 		bool paused = true;
@@ -107,10 +116,4 @@ private:
 	struct {
 		float fps = 0.0f; // Used for debug info
 	} debug_temporaries;
-
-	Settings settings;
-
-	StarField star_field;
-
-	std::string save_name;
 };

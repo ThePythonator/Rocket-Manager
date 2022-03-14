@@ -14,6 +14,8 @@ void GameStage::init() {
 	map_camera = Camera(WINDOW::SIZE);
 	sandbox_camera = Camera(WINDOW::SIZE);
 
+	particles = Particles(graphics_objects->graphics_ptr);
+
 	PhysicsEngine::PhysicsManager::Constants constants = physics_manager.get_constants();
 	constants.gravitational_constant = GAME::SANDBOX::GRAVITATIONAL_CONSTANT;
 	physics_manager.set_constants(constants);
@@ -595,6 +597,9 @@ void GameStage::render_sandbox() {
 	// Add atmosphere overlay, depending on height
 	render_atmosphere();
 
+	// Draw particles
+	particles.render(sandbox_camera);
+
 	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
 		switch (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY]) {
 		case GAME::SANDBOX::CATEGORIES::PLANET:
@@ -736,6 +741,9 @@ void GameStage::update_sandbox(float dt) {
 	// Move stars
 	star_field.move(PhysicsEngine::to_fvec(sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre));
 
+	// Update particles
+	particles.update(dt);
+
 	// TESTING ONLY
 	// Only allow scrolling/--dragging-- sandbox if we're not in fullscreen map mode and not clicking on the minimap
 	if (!game_state.show_map && !Framework::colliding(GAME::MAP::UI::MINIMAP::RECT, input->get_mouse()->position())) {
@@ -757,27 +765,55 @@ void GameStage::update_sandbox(float dt) {
 		//sandbox_camera.set_position(new_position);
 	}
 
-	// Control rocket
 
-	for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
-		if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
-			// Does this component belong to the current rocket?
-			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
-				// Is the component an engine?
-				if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::ENGINE) {
-					static const phyflt ENGINE_FORCE = 2e7f;
-					// Add force
-					phyflt force_magnitude = ENGINE_FORCE * rocket_controls.engine_power;
+	if (!game_state.paused) {
+		// Control rocket
 
-					phyvec force = phyvec{ 0, -force_magnitude }; // Force up
+		for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
+			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
+				// Does this component belong to the current rocket?
+				if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+					// Is the component an engine?
+					if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::ENGINE) {
+						// Add force
+						phyflt force_magnitude = GAME::CONTROLS::ENGINE_FORCE * rocket_controls.engine_power;
 
-					static const phyflt TURN_AMOUNT = PhysicsEngine::deg_to_rad(15); //radians
+						phyvec force = phyvec{ 0, -force_magnitude }; // Force up
 
-					phyflt direction_angle = TURN_AMOUNT * rocket_controls.direction;
-					
-					force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body->angle), force);
+						phyflt direction_angle = GAME::CONTROLS::ENGINE_TURN_ANGLE * rocket_controls.direction;
 
-					body->apply_force(force);
+						force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body->angle), force);
+
+						body->apply_force(force);
+
+						// Particles
+
+						// Create more particles if engine throttle is higher
+						if (rocket_controls.engine_power > Framework::randf()) {
+
+							phyflt size = Framework::randf(GAME::PARTICLES::SMOKE::MIN_SIZE, GAME::PARTICLES::SMOKE::MAX_SIZE);
+							phyflt size_change = GAME::PARTICLES::SMOKE::SIZE_CHANGE;
+
+							phyvec position = body->centre;
+
+							// Not sure which one
+							phyvec velocity = body->velocity;
+							velocity += PhysicsEngine::mul(PhysicsEngine::rotation_matrix(Framework::randf(0.0, 2 * PhysicsEngine::PI)), { 1, 0 }) * Framework::randf() * GAME::PARTICLES::SMOKE::VELOCITY_OFFSET_MAX;
+
+							// Average between nearest planet's velocity and current velocity?
+							velocity += sandbox_temporaries.nearest_planet_velocity;
+							velocity /= 2;
+
+							phyflt age = Framework::randf(GAME::PARTICLES::SMOKE::MIN_AGE, GAME::PARTICLES::SMOKE::MAX_AGE);
+
+							uint8_t a = Framework::randf(GAME::PARTICLES::SMOKE::RGB_MIN, GAME::PARTICLES::SMOKE::RGB_MAX);
+							Framework::Colour colour = Framework::Colour(a, a, a);
+
+							phyflt alpha_change = -0xFF / age;
+
+							particles.add_particle({ size, size_change, position, velocity, age, colour, alpha_change });
+						}
+					}
 				}
 			}
 		}
