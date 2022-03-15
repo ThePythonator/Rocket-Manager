@@ -519,6 +519,7 @@ namespace GAME {
 	namespace COMPONENTS {
 		std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> VERTICES;
 		std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> NODE_POSITIONS;
+		std::map<uint32_t, PhysicsEngine::phyvec> CENTROIDS;
 
 		std::map<uint32_t, uint32_t> MATERIALS;
 

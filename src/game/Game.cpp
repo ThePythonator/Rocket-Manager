@@ -72,6 +72,7 @@ void Game::load_data() {
 			GAME::COMPONENTS::MATERIALS[i] = material;
 			GAME::COMPONENTS::VERTICES[i] = PhysicsEngine::translate(vertices, -centroid);
 			GAME::COMPONENTS::NODE_POSITIONS[i] = PhysicsEngine::translate(nodes, -centroid);
+			GAME::COMPONENTS::CENTROIDS[i] = centroid;
 
 			GAME::COMPONENTS::NAMES[i] = name;
 

@@ -31,3 +31,25 @@ Framework::Rect circle_to_rect(phyvec centre, phyflt radius) {
 Framework::Rect circle_to_rect(Framework::vec2 centre, float radius) {
 	return Framework::Rect(centre - radius, radius * 2);
 }
+
+Framework::Rect find_bounding_rect(const std::vector<phyvec>& vertices) {
+	Framework::Rect rect;
+
+	for (const phyvec& v : vertices) {
+		if (v.x < rect.position.x) {
+			rect.position.x = v.x;
+		}
+		else if (v.x > rect.position.x + rect.size.x) {
+			rect.size.x = v.x - rect.position.x;
+		}
+
+		if (v.y < rect.position.y) {
+			rect.position.y = v.y;
+		}
+		else if (v.y > rect.position.y + rect.size.y) {
+			rect.size.y = v.y - rect.position.y;
+		}
+	}
+
+	return rect;
+}

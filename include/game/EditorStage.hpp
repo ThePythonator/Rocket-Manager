@@ -29,6 +29,8 @@ private:
 
 	std::map<uint32_t, float> icon_scales;
 	std::map<uint32_t, float> component_bounding_radii;
+	std::map<uint32_t, Framework::Rect> component_bounding_rects;
 
 	uint32_t component_selected = EDITOR::NO_COMPONENT_SELECTED;
+	phyvec click_offset;
 };

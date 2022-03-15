@@ -460,6 +460,7 @@ namespace GAME {
 		//extern const std::vector<PhysicsEngine::phyvec> SIZES;
 		extern std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> VERTICES;
 		extern std::map<uint32_t, std::vector<PhysicsEngine::phyvec>> NODE_POSITIONS;
+		extern std::map<uint32_t, PhysicsEngine::phyvec> CENTROIDS;
 
 		extern std::map<uint32_t, uint32_t> MATERIALS;
 

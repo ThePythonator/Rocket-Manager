@@ -18,8 +18,9 @@ void EditorStage::init() {
 
 		y += BUTTONS::EDITOR_SIZE.y;
 
-		// Initialise icon_scales and component_bounding_radii
+		// Initialise icon_scales and component_bounding_radii and component_bounding_sizes
 		component_bounding_radii[p.first] = PhysicsEngine::find_bounding_radius(GAME::COMPONENTS::VERTICES[p.first]);
+		component_bounding_rects[p.first] = find_bounding_rect(GAME::COMPONENTS::VERTICES[p.first]);
 		icon_scales[p.first] = 0.5f * BUTTONS::EDITOR_SIZE.y / component_bounding_radii[p.first];
 	}
 }
@@ -54,6 +55,7 @@ bool EditorStage::update(float dt) {
 
 			// Add new component
 			component_selected = rocket.add_component({ button_selected });
+			click_offset = GAME::COMPONENTS::CENTROIDS[button_selected];
 		}
 	}
 
@@ -65,37 +67,49 @@ bool EditorStage::update(float dt) {
 
 	// Set position of currently selected component to cursor position
 	if (component_selected != EDITOR::NO_COMPONENT_SELECTED) {
-		rocket.get_component_ptr(component_selected)->set_offset(converted_mouse_position);
+		rocket.get_component_ptr(component_selected)->set_offset(converted_mouse_position - click_offset);
 	}
 
 	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT)) {
 		// If colliding with any object then pick it up
 		for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
 
-			if (colliding(p.second.get_offset(), component_bounding_radii[p.second.get_type()], converted_mouse_position)) {
+			if (colliding(Framework::Rect(PhysicsEngine::to_fvec(p.second.get_offset() + GAME::COMPONENTS::CENTROIDS[p.second.get_type()] + component_bounding_rects[p.second.get_type()].position), component_bounding_rects[p.second.get_type()].size), PhysicsEngine::to_fvec(converted_mouse_position))) {
 				component_selected = p.first;
+				click_offset = converted_mouse_position - p.second.get_offset();
 				break;
 			}
 		}
 	}
 	else if (input->just_up(Framework::MouseHandler::MouseButton::LEFT)) {
-		// If we dropped it onto the bin, remove it
-		Component* component_ptr = rocket.get_component_ptr(component_selected);
 
-		if (colliding(EDITOR::UI::BIN_RECT, PhysicsEngine::to_fvec(camera.get_render_position(component_ptr->get_offset())))) {
-			rocket.erase_component(component_selected);
+		if (component_selected != EDITOR::NO_COMPONENT_SELECTED) {
+			Component* component_ptr = rocket.get_component_ptr(component_selected);
+
+			// These two checks only compare the rect to the centre of the component (i.e. allowing some overlap before deleting)
+			// If we dropped it onto the bin, remove it
+			if (colliding(EDITOR::UI::BIN_RECT, PhysicsEngine::to_fvec(camera.get_render_position(component_ptr->get_offset() + GAME::COMPONENTS::CENTROIDS[component_ptr->get_type()])))) {
+				rocket.erase_component(component_selected);
+			}
+			// If we dragged it onto the palette, remove it
+			if (colliding(EDITOR::UI::PALETTE_RECT, PhysicsEngine::to_fvec(camera.get_render_position(component_ptr->get_offset() + GAME::COMPONENTS::CENTROIDS[component_ptr->get_type()])))) {
+				rocket.erase_component(component_selected);
+			}
+
+			// Snap position to grid
+			phyvec centroid;// = GAME::COMPONENTS::CENTROIDS[component_ptr->get_type()];
+			phyvec offset = component_ptr->get_offset() + centroid;
+
+			offset.x = std::round(offset.x);
+			offset.y = std::round(offset.y);
+
+			component_ptr->set_offset(offset - centroid);
+
+			// TODO: issue: currently snapping to centroid. need to somehow store an 'origin' point which lies on grid, then snap that to grid (also shift by centroid when loading, so can unshift when snapping).
+
+			// If currently selected something, drop it
+			component_selected = EDITOR::NO_COMPONENT_SELECTED;
 		}
-
-		// Snap position to grid
-		phyvec offset = component_ptr->get_offset();
-		offset.x = std::round(offset.x);
-		offset.y = std::round(offset.y);
-		component_ptr->set_offset(offset);
-
-		// TODO: issue: currently snapping to centroid. need to somehow store an 'origin' point which lies on grid, then snap that to grid (also shift by centroid when loading, so can unshift when snapping).
-		
-		// If currently selected something, drop it
-		component_selected = EDITOR::NO_COMPONENT_SELECTED;
 	}
 
 	return true;
@@ -118,16 +132,33 @@ void EditorStage::render_grid() {
 	// Draw a line every metre
 	float line_size = camera.get_scale();
 
+	Framework::vec2 line_counts = WINDOW::SIZE / line_size;
+
 	// TODO: centre on camera
 
-	for (float x = 0; x < WINDOW::SIZE.x; x += line_size) {
+	float i_have_made_this_code_so_bad_help = 5.0f;
+
+	for (float x = i_have_made_this_code_so_bad_help; x < WINDOW::SIZE_HALF.x; x += line_size) {
 		// Render vertical line
-		graphics_objects->graphics_ptr->render_line({ x, 0.0f }, { x, WINDOW::SIZE.y }, COLOURS::EDITOR_GRID_COLOUR);
+		graphics_objects->graphics_ptr->render_line({ WINDOW::SIZE_HALF.x + x, 0.0f }, { WINDOW::SIZE_HALF.x + x, WINDOW::SIZE.y }, COLOURS::EDITOR_GRID_COLOUR);
+		graphics_objects->graphics_ptr->render_line({ WINDOW::SIZE_HALF.x - x, 0.0f }, { WINDOW::SIZE_HALF.x - x, WINDOW::SIZE.y }, COLOURS::EDITOR_GRID_COLOUR);
 	}
-	for (float y = 0; y < WINDOW::SIZE.y; y += line_size) {
+	for (float y = 0.0f; y < WINDOW::SIZE_HALF.y; y += line_size) {
 		// Render horizontal line
-		graphics_objects->graphics_ptr->render_line({ 0.0f, y }, { WINDOW::SIZE.x, y }, COLOURS::EDITOR_GRID_COLOUR);
+		graphics_objects->graphics_ptr->render_line({ 0.0f, WINDOW::SIZE_HALF.y + y }, { WINDOW::SIZE.x, WINDOW::SIZE_HALF.y + y }, COLOURS::EDITOR_GRID_COLOUR);
+		graphics_objects->graphics_ptr->render_line({ 0.0f, WINDOW::SIZE_HALF.y - y }, { WINDOW::SIZE.x, WINDOW::SIZE_HALF.y - y }, COLOURS::EDITOR_GRID_COLOUR);
 	}
+
+	//for (uint16_t x = 0; x < line_counts.x; x++) {
+	//	// Render vertical line
+	//	float new_x = (x - camera.get_position().x) * camera.get_scale();
+	//	graphics_objects->graphics_ptr->render_line( { new_x , 0.0f }, { new_x, WINDOW::SIZE.y }, COLOURS::EDITOR_GRID_COLOUR);
+	//}
+	//for (uint16_t y = 0; y < line_counts.y; y++) {
+	//	// Render horizontal line
+	//	float new_y = (y - camera.get_position().y) * camera.get_scale();
+	//	graphics_objects->graphics_ptr->render_line({ 0.0f, new_y }, { WINDOW::SIZE.x, new_y }, COLOURS::EDITOR_GRID_COLOUR);
+	//}
 }
 
 
@@ -164,19 +195,21 @@ void EditorStage::render_rocket(const Rocket& rocket) {
 void EditorStage::render_component(const Component& component) {
 	uint32_t component_type = component.get_type();
 
+	phyvec centroid = GAME::COMPONENTS::CENTROIDS[component_type];
+
 	// TODO: rotate if needed later?
 
 	// Render component
 	std::vector<Framework::vec2> vertices;
 
 	for (const phyvec& v : GAME::COMPONENTS::VERTICES[component_type]) {
-		vertices.push_back(PhysicsEngine::to_fvec(camera.get_render_position(v + component.get_offset())));
+		vertices.push_back(PhysicsEngine::to_fvec(camera.get_render_position(v + component.get_offset() + centroid)));
 	}
 
 	graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);
 
 	// Render nodes
 	for (const phyvec& v : GAME::COMPONENTS::NODE_POSITIONS[component_type]) {
-		graphics_objects->graphics_ptr->render_filled_rect(Framework::centred_rect(PhysicsEngine::to_fvec(camera.get_render_position(v + component.get_offset())), 5.0f), COLOURS::WHITE); // TODO : change size to constant and colour to change if in use
+		graphics_objects->graphics_ptr->render_filled_rect(Framework::centred_rect(PhysicsEngine::to_fvec(camera.get_render_position(v + component.get_offset() + centroid)), 5.0f), COLOURS::WHITE); // TODO : change size to constant and colour to change if in use
 	}
 }

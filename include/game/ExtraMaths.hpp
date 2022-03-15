@@ -41,3 +41,5 @@ bool colliding(phyvec centre, phyflt radius, phyvec point);
 
 Framework::Rect circle_to_rect(phyvec centre, phyflt radius);
 Framework::Rect circle_to_rect(Framework::vec2 centre, float radius);
+
+Framework::Rect find_bounding_rect(const std::vector<phyvec>& vertices);
