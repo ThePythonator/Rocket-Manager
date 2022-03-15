@@ -180,6 +180,7 @@ namespace FONTS {
 
 namespace COLOURS {
 	const Framework::Colour BLACK{ 0x00, 0x00, 0x00 };
+	const Framework::Colour YELLOW{ 0xFF, 0xF1, 0x5E };
 	const Framework::Colour WHITE{ 0xFF, 0xFF, 0xFF };
 
 	const Framework::Colour EDITOR_GREY{ 0x7A, 0xA2, 0xB0 };
@@ -543,5 +544,8 @@ namespace EDITOR {
 
 		const Framework::vec2 BUTTON_OFFSET = { -BUTTONS::EDITOR_SIZE.x * 0.47f, 0.0f };
 		const Framework::vec2 BUTTON_ICON_OFFSET = { BUTTONS::EDITOR_SIZE.x * 0.9f, BUTTONS::EDITOR_SIZE.y / 2};
+
+
+		const float NODE_SIZE = 5.0f;
 	}
 }

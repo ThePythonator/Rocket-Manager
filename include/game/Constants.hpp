@@ -149,6 +149,7 @@ namespace FONTS {
 
 namespace COLOURS {
 	extern const Framework::Colour BLACK;
+	extern const Framework::Colour YELLOW;
 	extern const Framework::Colour WHITE;
 
 	extern const Framework::Colour EDITOR_GREY;
@@ -494,5 +495,7 @@ namespace EDITOR {
 
 		extern const Framework::vec2 BUTTON_OFFSET;
 		extern const Framework::vec2 BUTTON_ICON_OFFSET;
+
+		extern const float NODE_SIZE;
 	}
 }

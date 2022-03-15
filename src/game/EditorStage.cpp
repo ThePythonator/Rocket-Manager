@@ -53,6 +53,9 @@ bool EditorStage::update(float dt) {
 			// If component_selected is not none, remove currently selected component
 			rocket.erase_component(component_selected);
 
+			// Remove all connections to it
+			erase_connections(component_selected);
+
 			// Add new component
 			component_selected = rocket.add_component({ button_selected });
 			click_offset = GAME::COMPONENTS::CENTROIDS[button_selected];
@@ -77,6 +80,10 @@ bool EditorStage::update(float dt) {
 			if (colliding(Framework::Rect(PhysicsEngine::to_fvec(p.second.get_offset() + GAME::COMPONENTS::CENTROIDS[p.second.get_type()] + component_bounding_rects[p.second.get_type()].position), component_bounding_rects[p.second.get_type()].size), PhysicsEngine::to_fvec(converted_mouse_position))) {
 				component_selected = p.first;
 				click_offset = converted_mouse_position - p.second.get_offset();
+
+				// Remove all connections attached to this component
+				erase_connections(component_selected);
+
 				break;
 			}
 		}
@@ -97,15 +104,39 @@ bool EditorStage::update(float dt) {
 			}
 
 			// Snap position to grid
-			phyvec centroid;// = GAME::COMPONENTS::CENTROIDS[component_ptr->get_type()];
-			phyvec offset = component_ptr->get_offset() + centroid;
+			phyvec offset = component_ptr->get_offset();
 
 			offset.x = std::round(offset.x);
 			offset.y = std::round(offset.y);
 
-			component_ptr->set_offset(offset - centroid);
+			component_ptr->set_offset(offset);
 
-			// TODO: issue: currently snapping to centroid. need to somehow store an 'origin' point which lies on grid, then snap that to grid (also shift by centroid when loading, so can unshift when snapping).
+
+			// Add all connections from this component to nodes which overlap (i.e. rect intersect)
+			for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
+				// Check we're not connecting component to itself!
+				if (p.first != component_selected) {
+
+					uint8_t node_id_theirs = 0;
+					for (const phyvec& v_theirs : GAME::COMPONENTS::NODE_POSITIONS[p.second.get_type()]) {
+
+						uint8_t node_id_mine = 0;
+						// Check if rect intersects with each of our nodes, if so then add connection
+						for (const phyvec& v_mine : GAME::COMPONENTS::NODE_POSITIONS[component_ptr->get_type()]) {
+							printf("check: %f, %f and %f, %f\n", (v_mine + component_ptr->get_offset()).x, (v_mine + component_ptr->get_offset()).y, (v_theirs + p.second.get_offset()).x, (v_theirs + p.second.get_offset()).y);
+							if (Framework::colliding(Framework::centred_rect(PhysicsEngine::to_fvec(v_mine + component_ptr->get_offset() + GAME::COMPONENTS::CENTROIDS[component_ptr->get_type()]), EDITOR::UI::NODE_SIZE / camera.get_scale()), Framework::centred_rect(PhysicsEngine::to_fvec(v_theirs + p.second.get_offset() + GAME::COMPONENTS::CENTROIDS[p.second.get_type()]), EDITOR::UI::NODE_SIZE / camera.get_scale()))) {
+								rocket.add_connection({ { component_selected, node_id_mine }, { p.first, node_id_theirs } });
+								printf("yes: %u (%u) to %u (%u)\n", component_selected, node_id_mine, p.first, node_id_theirs);
+							}
+
+							node_id_mine++;
+						}
+
+						node_id_theirs++;
+					}
+				}
+			}
+
 
 			// If currently selected something, drop it
 			component_selected = EDITOR::NO_COMPONENT_SELECTED;
@@ -148,17 +179,6 @@ void EditorStage::render_grid() {
 		graphics_objects->graphics_ptr->render_line({ 0.0f, WINDOW::SIZE_HALF.y + y }, { WINDOW::SIZE.x, WINDOW::SIZE_HALF.y + y }, COLOURS::EDITOR_GRID_COLOUR);
 		graphics_objects->graphics_ptr->render_line({ 0.0f, WINDOW::SIZE_HALF.y - y }, { WINDOW::SIZE.x, WINDOW::SIZE_HALF.y - y }, COLOURS::EDITOR_GRID_COLOUR);
 	}
-
-	//for (uint16_t x = 0; x < line_counts.x; x++) {
-	//	// Render vertical line
-	//	float new_x = (x - camera.get_position().x) * camera.get_scale();
-	//	graphics_objects->graphics_ptr->render_line( { new_x , 0.0f }, { new_x, WINDOW::SIZE.y }, COLOURS::EDITOR_GRID_COLOUR);
-	//}
-	//for (uint16_t y = 0; y < line_counts.y; y++) {
-	//	// Render horizontal line
-	//	float new_y = (y - camera.get_position().y) * camera.get_scale();
-	//	graphics_objects->graphics_ptr->render_line({ 0.0f, new_y }, { WINDOW::SIZE.x, new_y }, COLOURS::EDITOR_GRID_COLOUR);
-	//}
 }
 
 
@@ -185,9 +205,25 @@ void EditorStage::render_ui() {
 }
 
 
-void EditorStage::render_rocket(const Rocket& rocket) {
+void EditorStage::render_rocket(Rocket& rocket) {
 	for (const std::pair<uint32_t, Component>& c : rocket.get_components()) {
 		render_component(c.second);
+	}
+
+	// Render connected nodes yellow
+	for (const Connection& c : rocket.get_connections()) {
+		Component* a = rocket.get_component_ptr(c.a.component_id);
+		Component* b = rocket.get_component_ptr(c.b.component_id);
+
+		const phyvec& v_a = GAME::COMPONENTS::NODE_POSITIONS[a->get_type()][c.a.node_id];
+		const phyvec& v_b = GAME::COMPONENTS::NODE_POSITIONS[b->get_type()][c.b.node_id];
+
+		const phyvec& centroid_a = GAME::COMPONENTS::CENTROIDS[a->get_type()];
+		const phyvec& centroid_b = GAME::COMPONENTS::CENTROIDS[b->get_type()];
+
+		// Rendering at probably same place so do I need both??
+		graphics_objects->graphics_ptr->render_filled_rect(Framework::centred_rect(PhysicsEngine::to_fvec(camera.get_render_position(v_a + a->get_offset() + centroid_a)), EDITOR::UI::NODE_SIZE), COLOURS::YELLOW);
+		graphics_objects->graphics_ptr->render_filled_rect(Framework::centred_rect(PhysicsEngine::to_fvec(camera.get_render_position(v_b + b->get_offset() + centroid_b)), EDITOR::UI::NODE_SIZE), COLOURS::YELLOW);
 	}
 }
 
@@ -208,8 +244,28 @@ void EditorStage::render_component(const Component& component) {
 
 	graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);
 
-	// Render nodes
+	// Render all nodes white
 	for (const phyvec& v : GAME::COMPONENTS::NODE_POSITIONS[component_type]) {
-		graphics_objects->graphics_ptr->render_filled_rect(Framework::centred_rect(PhysicsEngine::to_fvec(camera.get_render_position(v + component.get_offset() + centroid)), 5.0f), COLOURS::WHITE); // TODO : change size to constant and colour to change if in use
+		graphics_objects->graphics_ptr->render_filled_rect(Framework::centred_rect(PhysicsEngine::to_fvec(camera.get_render_position(v + component.get_offset() + centroid)), EDITOR::UI::NODE_SIZE), COLOURS::WHITE);
+	}
+}
+
+
+
+void EditorStage::erase_connections(uint32_t component_id) {
+	std::vector<uint32_t> to_erase;
+	uint32_t connection_id = 0;
+	for (const Connection& c : rocket.get_connections()) {
+		if (c.a.component_id == component_id || c.b.component_id == component_id) {
+			to_erase.push_back(connection_id);
+		}
+
+		connection_id++;
+	}
+
+	for (int i = to_erase.size() - 1; i >= 0; i--) {
+		uint32_t connection_id = to_erase[i];
+		printf("Remove %u\n", connection_id);
+		rocket.erase_connection(connection_id);
 	}
 }

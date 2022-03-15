@@ -44,6 +44,10 @@ void ComponentManager::erase_component(uint32_t component_id) {
 	_components.erase(component_id);
 }
 
+void ComponentManager::erase_connection(uint32_t connection_id) {
+	_connections.erase(_connections.begin() + connection_id);
+}
+
 const std::map<uint32_t, Component>& ComponentManager::get_components() const {
 	return _components;
 }

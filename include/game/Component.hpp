@@ -49,6 +49,7 @@ public:
 	void add_connection(const Connection& connection);
 
 	void erase_component(uint32_t component_id);
+	void erase_connection(uint32_t connection_id);
 
 	const std::map<uint32_t, Component>& get_components() const;
 	const std::vector<Connection>& get_connections() const;
