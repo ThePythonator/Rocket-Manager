@@ -31,6 +31,10 @@ namespace STRINGS {
 		extern const std::vector<std::string> SETTINGS;
 		extern const std::vector<std::string> CREDITS;
 		extern const std::vector<std::string> PAUSED;
+
+		namespace EDITOR {
+			extern const std::string SAVE;
+		}
 	}
 
 	namespace GAME {
@@ -249,6 +253,14 @@ namespace BUTTONS {
 		enum SAVE_SELECT {
 			NAME,
 			CREATE,
+
+			TOTAL
+		};
+	}
+
+	namespace EDITOR {
+		enum EDITOR {
+			SAVE,
 
 			TOTAL
 		};

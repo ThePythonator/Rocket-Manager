@@ -21,10 +21,13 @@ public:
 private:
 	void render_grid();
 	void render_ui();
-	void render_rocket(Rocket& rocket);
+	void render_rocket();
 	void render_component(const Component& component);
 
 	void erase_connections(uint32_t component_id);
+
+	//void load_rocket();
+	void save_rocket();
 
 	Rocket rocket;
 	Camera camera;

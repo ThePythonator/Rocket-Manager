@@ -8,11 +8,15 @@ void EditorStage::init() {
 	camera = Camera(WINDOW::SIZE);
 	camera.set_scale(EDITOR::CAMERA::DEFAULT_SCALE);
 
+	Framework::Text save_text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::BUTTONS::EDITOR::SAVE, COLOURS::WHITE);
+	Framework::Button save_button = Framework::Button(Framework::Rect({ 0, EDITOR::UI::PALETTE_RECT.size.y - BUTTONS::EDITOR_SIZE.y }, BUTTONS::EDITOR_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], save_text, BUTTONS::EDITOR::SAVE);
+	buttons.push_back(save_button);
+
 	// Create buttons
 	float y = 0.0f;
 	for (const std::pair<uint32_t, std::string>& p : GAME::COMPONENTS::NAMES) {
 		Framework::Text text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], p.second, COLOURS::WHITE, Framework::Font::CENTER_LEFT, EDITOR::UI::BUTTON_OFFSET);
-		Framework::Button button = Framework::Button(Framework::Rect({ 0, y }, BUTTONS::EDITOR_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, p.first);
+		Framework::Button button = Framework::Button(Framework::Rect({ 0, y }, BUTTONS::EDITOR_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::EDITOR::TOTAL + p.first);
 
 		buttons.push_back(button);
 
@@ -28,6 +32,8 @@ void EditorStage::init() {
 void EditorStage::start() {
 	// Reset rocket and add a COMMAND_MODULE
 	rocket = Rocket();
+
+	rocket.set_is_template(true);
 
 	Component command_module = Component(GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE);
 
@@ -47,18 +53,34 @@ bool EditorStage::update(float dt) {
 		if (button.pressed() && transition->is_open()) {
 			button_selected = button.get_id();
 
-			// Create module
-			// TODO: check if ID is actually a module?
+			switch (button_selected) {
+			case BUTTONS::EDITOR::SAVE:
+				save_rocket();
+				break;
 
-			// If component_selected is not none, remove currently selected component
-			rocket.erase_component(component_selected);
+			default:
+				break;
+			}
 
-			// Remove all connections to it
-			erase_connections(component_selected);
 
-			// Add new component
-			component_selected = rocket.add_component({ button_selected });
-			click_offset = GAME::COMPONENTS::CENTROIDS[button_selected];
+			if (button.get_id() >= BUTTONS::EDITOR::TOTAL) {
+				// Assume it was a new-component button pressed
+
+				// Create component
+				// TODO: check if ID is actually a module?
+
+				// If component_selected is not none, remove currently selected component
+				rocket.erase_component(component_selected);
+
+				// Remove all connections to it
+				erase_connections(component_selected);
+
+				uint8_t component_type = button_selected - BUTTONS::EDITOR::TOTAL;
+
+				// Add new component
+				component_selected = rocket.add_component({ component_type });
+				click_offset = GAME::COMPONENTS::CENTROIDS[component_type];
+			}
 		}
 	}
 
@@ -123,10 +145,9 @@ bool EditorStage::update(float dt) {
 						uint8_t node_id_mine = 0;
 						// Check if rect intersects with each of our nodes, if so then add connection
 						for (const phyvec& v_mine : GAME::COMPONENTS::NODE_POSITIONS[component_ptr->get_type()]) {
-							printf("check: %f, %f and %f, %f\n", (v_mine + component_ptr->get_offset()).x, (v_mine + component_ptr->get_offset()).y, (v_theirs + p.second.get_offset()).x, (v_theirs + p.second.get_offset()).y);
+
 							if (Framework::colliding(Framework::centred_rect(PhysicsEngine::to_fvec(v_mine + component_ptr->get_offset() + GAME::COMPONENTS::CENTROIDS[component_ptr->get_type()]), EDITOR::UI::NODE_SIZE / camera.get_scale()), Framework::centred_rect(PhysicsEngine::to_fvec(v_theirs + p.second.get_offset() + GAME::COMPONENTS::CENTROIDS[p.second.get_type()]), EDITOR::UI::NODE_SIZE / camera.get_scale()))) {
 								rocket.add_connection({ { component_selected, node_id_mine }, { p.first, node_id_theirs } });
-								printf("yes: %u (%u) to %u (%u)\n", component_selected, node_id_mine, p.first, node_id_theirs);
 							}
 
 							node_id_mine++;
@@ -153,7 +174,7 @@ void EditorStage::render() {
 
 	render_ui();
 
-	render_rocket(rocket);
+	render_rocket();
 
 	transition->render();
 }
@@ -192,12 +213,16 @@ void EditorStage::render_ui() {
 
 		// Render mini component icon over top
 
-		std::vector<Framework::vec2> vertices;
-		for (const phyvec& v : GAME::COMPONENTS::VERTICES[button.get_id()]) {
-			vertices.push_back(PhysicsEngine::to_fvec(v * icon_scales[button.get_id()]) + button.position() + EDITOR::UI::BUTTON_ICON_OFFSET);
-		}
+		if (button.get_id() >= BUTTONS::EDITOR::TOTAL) {
+			uint8_t id = button.get_id() - BUTTONS::EDITOR::TOTAL;
 
-		graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);
+			std::vector<Framework::vec2> vertices;
+			for (const phyvec& v : GAME::COMPONENTS::VERTICES[id]) {
+				vertices.push_back(PhysicsEngine::to_fvec(v * icon_scales[id]) + button.position() + EDITOR::UI::BUTTON_ICON_OFFSET);
+			}
+
+			graphics_objects->graphics_ptr->render_poly(vertices, COLOURS::WHITE);
+		}
 	}
 
 	// Bin icon
@@ -205,7 +230,7 @@ void EditorStage::render_ui() {
 }
 
 
-void EditorStage::render_rocket(Rocket& rocket) {
+void EditorStage::render_rocket() {
 	for (const std::pair<uint32_t, Component>& c : rocket.get_components()) {
 		render_component(c.second);
 	}
@@ -264,8 +289,11 @@ void EditorStage::erase_connections(uint32_t component_id) {
 	}
 
 	for (int i = to_erase.size() - 1; i >= 0; i--) {
-		uint32_t connection_id = to_erase[i];
-		printf("Remove %u\n", connection_id);
-		rocket.erase_connection(connection_id);
+		rocket.erase_connection(to_erase[i]);
 	}
+}
+
+
+void EditorStage::save_rocket() {
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + "my_rocket" + PATHS::ROCKET_TEMPLATES::EXTENSION, rocket);
 }

@@ -53,6 +53,11 @@ namespace STRINGS {
 			"Resume",
 			"Exit"
 		};
+
+
+		namespace EDITOR {
+			const std::string SAVE = "Save";
+		}
 	}
 
 
