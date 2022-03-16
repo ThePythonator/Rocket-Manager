@@ -63,8 +63,12 @@ void TitleStage::init() {
 void TitleStage::start() {
 	// Were we just in a submenu?
 	if (_submenu) {
-		transition->set_open();
 		_submenu = false;
+		transition->set_open();
+		
+		if (button_selected == BUTTONS::TITLE::EDITOR) {
+			transition->close();
+		}
 	}
 	else {
 		transition->open();
@@ -100,10 +104,15 @@ bool TitleStage::update(float dt) {
 
 			case BUTTONS::TITLE::CREDITS:
 				sub_menu_init();
+				// Stop button from appearing pressed/hovered
+				button.reset_state();
 				finish(new CreditsStage(this), false);
 				break;
 
 			case BUTTONS::TITLE::EDITOR:
+				_submenu_die = true;
+				break;
+
 			case BUTTONS::TITLE::QUIT:
 				transition->close();
 				break;
@@ -118,7 +127,6 @@ bool TitleStage::update(float dt) {
 		// Next stage!
 		switch (button_selected) {
 		case BUTTONS::TITLE::EDITOR:
-			// create submenu??
 			finish(new EditorStage());
 			break;
 
@@ -243,20 +251,6 @@ bool PlayOptionsStage::update(float dt) {
 		}
 	}
 
-	if (transition->is_closed()) {
-		// Next stage!
-		switch (button_selected) {
-		case BUTTONS::PLAY_OPTIONS::PLAY:
-			// TODO: delete title_stage???
-
-			//finish(new GameStage()); // TEMP: remove later?
-			break;
-
-		default:
-			break;
-		}
-	}
-
 	// If we need to kill this submenu, we need to know where to go next
 	if (title_stage->submenu_must_die()) {
 		finish(title_stage->get_finish_target());
@@ -277,7 +271,7 @@ void PlayOptionsStage::render() {
 	// Buttons
 	for (const Framework::Button& button : buttons) button.render();
 
-	transition->render();
+	//transition->render();
 }
 
 // SaveSelectStage
@@ -516,9 +510,28 @@ CreditsStage::CreditsStage() { }
 CreditsStage::CreditsStage(TitleStage* _title_stage) : title_stage(_title_stage) { }
 
 void CreditsStage::init() {
-	// Create buttons
-	buttons = create_submenu_from_constants(graphics_objects, STRINGS::BUTTONS::CREDITS, title_stage->get_submenu_parent_position().y);
+	// Create credits
 
+	Framework::vec2 left_position = MENU::WIDE_OVERLAY_RECT.topleft() + Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y / 2 };
+	Framework::vec2 right_position = MENU::WIDE_OVERLAY_RECT.topright() + Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y / 2 };
+
+	for (uint8_t i = 0; i < STRINGS::CREDITS.size(); i++) {
+		credits[left_position + BUTTONS::OFFSET] = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::CREDITS[i].first, COLOURS::WHITE, Framework::Font::CENTER_LEFT);
+
+		for (uint8_t j = 0; j < STRINGS::CREDITS[i].second.size(); j++) {
+			credits[right_position - BUTTONS::OFFSET] = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::CREDITS[i].second[j], COLOURS::LIGHT_GREY, Framework::Font::CENTER_RIGHT);
+
+			left_position.y += BUTTONS::VERY_WIDE_SIZE.y;
+			right_position.y += BUTTONS::VERY_WIDE_SIZE.y;
+		}
+	}
+
+
+	// Create GitHub repo URL button
+	// Generation of location of button is a bit hacky
+	Framework::Text text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], "", COLOURS::WHITE);
+	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 1.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::GITHUB));
+	
 	// Create transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
 }
@@ -528,7 +541,12 @@ void CreditsStage::start() {
 }
 
 bool CreditsStage::update(float dt) {
-	bool running = title_stage->update(dt);
+	transition->update(dt);
+
+	// If user clicked outside menu overlay, then go back
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT) && !Framework::colliding(MENU::OVERLAY_RECT, input->get_mouse()->position())) {
+		finish(title_stage);
+	}
 
 	// Update buttons
 	for (Framework::Button& button : buttons) {
@@ -537,15 +555,9 @@ bool CreditsStage::update(float dt) {
 		if (button.pressed() && transition->is_open()) {
 			button_selected = button.get_id();
 
-			// Next stage!
 			switch (button_selected) {
-			/*case BUTTONS::CREDITS::PLAY:
-			case BUTTONS::PLAY_OPTIONS::CREATE:
-				transition->close();
-				break;*/
-
-			case BUTTONS::CREDITS::BACK:
-				finish(title_stage);
+			case BUTTONS::CREDITS::GITHUB:
+				Framework::URLHandler::open_url(STRINGS::REPO_URL);
 				break;
 
 			default:
@@ -554,25 +566,25 @@ bool CreditsStage::update(float dt) {
 		}
 	}
 
-	// If we need to kill this submenu, we need to know where to go next
-	if (title_stage->submenu_must_die()) {
-		finish(title_stage->get_finish_target());
-		// Tell the title stage that this submenu has been killed
-		title_stage->submenu_killed();
-	}
-
-	return running;
+	return true;
 }
 
 void CreditsStage::render() {
-	// Render title stage
+	// Render play options stage
 	title_stage->render();
 
-	// Menu bar
-	graphics_objects->graphics_ptr->fill(MENU::SUBMENU_BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
+	// Menu overlay
+	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::WHITE, 0x60);
+	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
+	graphics_objects->graphics_ptr->render_rect(MENU::WIDE_OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
 
 	// Buttons
 	for (const Framework::Button& button : buttons) button.render();
+
+	for (const std::pair<Framework::vec2, Framework::Text>& p : credits) {
+		p.second.render(p.first);
+	}
 
 	transition->render();
 }

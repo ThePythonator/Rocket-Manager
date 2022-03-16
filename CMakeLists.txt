@@ -89,6 +89,7 @@ set(FRAMEWORK_SOURCES
 	"Curves.cpp"
 
 	"File.cpp"
+	"URL.cpp"
 
 	"SDLUtils.cpp"
 )

@@ -67,9 +67,10 @@ namespace STRINGS {
 		}
 
 
-		namespace EDITOR {
-			const std::string SAVE = "Save";
-		}
+		const std::vector<std::string> EDITOR {
+			"Save",
+			"Exit"
+		};
 	}
 
 
@@ -90,6 +91,15 @@ namespace STRINGS {
 			"Moon"
 		};
 	}
+
+	const std::vector<std::pair<std::string, std::vector<std::string>>> CREDITS{
+		{ "Created by: ", { "The Pythonator" } },
+		{ "Created using: ",  {"C++ with SDL", "Aseprite" } },
+		{ "", { "" }},
+		{ "Inspirations:", { "Stage system by Ali1324", "Impulse Engine by Randy Gaul", "Arc rendering code in Pygame"}},
+		{ "", { "" }},
+		{ "GitHub:", { "ThePythonator/CS_NEA" }}
+	};
 
 	const std::vector<std::string> RANDOM_SAVE_ADJECTIVES {
 		"Broken",
@@ -136,6 +146,12 @@ namespace STRINGS {
 		"Explosion",
 		"Colony"
 	};
+
+
+	const std::string GITHUB_URL = "https://github.com/ThePythonator";
+	const std::string ITCHIO_URL = "https://scorpion-games-uk.itch.io/";
+
+	const std::string REPO_URL = "https://github.com/ThePythonator/CS_NEA";
 }
 
 namespace PATHS {
@@ -198,6 +214,7 @@ namespace FONTS {
 namespace COLOURS {
 	const Framework::Colour BLACK{ 0x00, 0x00, 0x00 };
 	const Framework::Colour YELLOW{ 0xFF, 0xF1, 0x5E };
+	const Framework::Colour LIGHT_GREY{ 0xC0, 0xDA, 0xDC };
 	const Framework::Colour WHITE{ 0xFF, 0xFF, 0xFF };
 
 	const Framework::Colour EDITOR_GREY{ 0x7A, 0xA2, 0xB0 };
@@ -283,7 +300,12 @@ namespace SCALES {
 namespace BUTTONS {
 	const Framework::vec2 SIZE = Framework::Vec(192, 56);
 	const Framework::vec2 WIDE_SIZE = Framework::Vec(384, 56); //512?
+	const Framework::vec2 VERY_WIDE_SIZE = Framework::Vec(576, 56); //512?
 	const Framework::vec2 EDITOR_SIZE = Framework::Vec(320, 56);
+
+	const Framework::vec2 OFFSET = Framework::Vec(16, 0);
+
+	//const int INDENT = 64;
 
 	const uint8_t SELECTED_ALPHA = 0x40;
 
@@ -294,6 +316,7 @@ namespace MENU {
 	const Framework::Rect BACKGROUND_RECT = Framework::Rect(WINDOW::SIZE.x * 0.1f, 0.0f, BUTTONS::SIZE.x, WINDOW::SIZE.y);
 	const Framework::Rect SUBMENU_BACKGROUND_RECT = Framework::Rect(BACKGROUND_RECT.topright(), BACKGROUND_RECT.size);
 	const Framework::Rect OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
+	const Framework::Rect WIDE_OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::VERY_WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
 
 	const uint8_t BACKGROUND_ALPHA = 0x60;
 	const uint8_t OVERLAY_ALPHA = 0x60;//0xA0;

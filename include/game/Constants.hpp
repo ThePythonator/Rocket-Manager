@@ -39,17 +39,22 @@ namespace STRINGS {
 			extern const std::string SITE;
 		}
 
-		namespace EDITOR {
-			extern const std::string SAVE;
-		}
+		extern const std::vector<std::string> EDITOR;
 	}
 
 	namespace GAME {
 		extern const std::vector<std::string> PLANET_NAMES;
 	}
 
+	extern const std::vector<std::pair<std::string, std::vector<std::string>>> CREDITS;
+
 	extern const std::vector<std::string> RANDOM_SAVE_ADJECTIVES;
 	extern const std::vector<std::string> RANDOM_SAVE_NOUNS;
+
+	extern const std::string GITHUB_URL;
+	extern const std::string ITCHIO_URL;
+
+	extern const std::string REPO_URL;
 }
 
 namespace PATHS {
@@ -161,6 +166,7 @@ namespace FONTS {
 namespace COLOURS {
 	extern const Framework::Colour BLACK;
 	extern const Framework::Colour YELLOW;
+	extern const Framework::Colour LIGHT_GREY;
 	extern const Framework::Colour WHITE;
 
 	extern const Framework::Colour EDITOR_GREY;
@@ -222,7 +228,12 @@ namespace CURVES {
 namespace BUTTONS {
 	extern const Framework::vec2 SIZE;
 	extern const Framework::vec2 WIDE_SIZE;
+	extern const Framework::vec2 VERY_WIDE_SIZE;
 	extern const Framework::vec2 EDITOR_SIZE;
+
+	extern const Framework::vec2 OFFSET;
+
+	//extern const int INDENT;
 	
 	extern const uint8_t SELECTED_ALPHA;
 
@@ -268,6 +279,7 @@ namespace BUTTONS {
 	namespace EDITOR {
 		enum EDITOR {
 			SAVE,
+			EXIT,
 
 			TOTAL
 		};
@@ -287,7 +299,7 @@ namespace BUTTONS {
 
 	namespace CREDITS {
 		enum CREDITS {
-			BACK,
+			GITHUB,
 
 			TOTAL
 		};
@@ -319,6 +331,7 @@ namespace MENU {
 	extern const Framework::Rect BACKGROUND_RECT;
 	extern const Framework::Rect SUBMENU_BACKGROUND_RECT;
 	extern const Framework::Rect OVERLAY_RECT;
+	extern const Framework::Rect WIDE_OVERLAY_RECT;
 
 	extern const uint8_t BACKGROUND_ALPHA;
 	extern const uint8_t OVERLAY_ALPHA;

@@ -6,6 +6,8 @@
 
 #include "GameUtilities.hpp"
 
+#include "Stages.hpp"
+
 #include "Rocket.hpp"
 #include "Camera.hpp"
 

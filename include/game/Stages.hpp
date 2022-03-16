@@ -11,6 +11,8 @@
 #include "ProtoGame.hpp"
 #include "EditorStage.hpp"
 
+#include "URL.hpp"
+
 class IntroStage : public Framework::BaseStage {
 public:
 	void init();
@@ -132,4 +134,6 @@ public:
 
 private:
 	TitleStage* title_stage = nullptr;
+
+	std::map<Framework::vec2, Framework::Text> credits;
 };

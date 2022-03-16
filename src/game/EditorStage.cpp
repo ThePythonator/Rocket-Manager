@@ -8,9 +8,17 @@ void EditorStage::init() {
 	camera = Camera(WINDOW::SIZE);
 	camera.set_scale(EDITOR::CAMERA::DEFAULT_SCALE);
 
-	Framework::Text save_text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::BUTTONS::EDITOR::SAVE, COLOURS::WHITE);
-	Framework::Button save_button = Framework::Button(Framework::Rect({ 0, EDITOR::UI::PALETTE_RECT.size.y - BUTTONS::EDITOR_SIZE.y }, BUTTONS::EDITOR_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], save_text, BUTTONS::EDITOR::SAVE);
-	buttons.push_back(save_button);
+	Framework::vec2 position = EDITOR::UI::PALETTE_RECT.bottomleft() - Framework::vec2{ 0.0f, BUTTONS::EDITOR_SIZE.y * BUTTONS::EDITOR::TOTAL };
+
+	for (uint8_t i = 0; i < BUTTONS::EDITOR::TOTAL; i++) {
+		Framework::Text save_text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], STRINGS::BUTTONS::EDITOR[i], COLOURS::WHITE);
+		Framework::Button save_button = Framework::Button(Framework::Rect(position, BUTTONS::EDITOR_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], save_text, i);
+		buttons.push_back(save_button);
+
+		position.y += BUTTONS::EDITOR_SIZE.y;
+	}
+
+	
 
 	// Create buttons
 	float y = 0.0f;
@@ -56,6 +64,10 @@ bool EditorStage::update(float dt) {
 			switch (button_selected) {
 			case BUTTONS::EDITOR::SAVE:
 				save_rocket();
+				break;
+
+			case BUTTONS::EDITOR::EXIT:
+				transition->close();
 				break;
 
 			default:
@@ -161,6 +173,17 @@ bool EditorStage::update(float dt) {
 
 			// If currently selected something, drop it
 			component_selected = EDITOR::NO_COMPONENT_SELECTED;
+		}
+	}
+
+	if (transition->is_closed()) {
+		switch (button_selected) {
+		case BUTTONS::EDITOR::EXIT:
+			finish(new TitleStage());
+			break;
+
+		default:
+			break;
 		}
 	}
 
