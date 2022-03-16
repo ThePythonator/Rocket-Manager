@@ -442,6 +442,7 @@ void GameStage::create_rocket(const Rocket& rocket) {
 
 	// Create constraints
 
+	uint32_t connection_id = 0;
 	for (const Connection& c : rocket.get_connections()) {
 		PhysicsEngine::RigidBody* a = nullptr;
 		PhysicsEngine::RigidBody* b = nullptr;
@@ -471,11 +472,19 @@ void GameStage::create_rocket(const Rocket& rocket) {
 			phyvec offset_a = GAME::COMPONENTS::NODE_POSITIONS[components[c.a.component_id].get_type()][c.a.node_id];
 			phyvec offset_b = GAME::COMPONENTS::NODE_POSITIONS[components[c.b.component_id].get_type()][c.b.node_id];
 
-			PhysicsEngine::Constraint* constraint = new PhysicsEngine::Spring(a, b, offset_a, offset_b, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
-			physics_data.constraints.push_back(constraint);
+			PhysicsEngine::Constraint* constraint_ptr = new PhysicsEngine::Spring(a, b, offset_a, offset_b, 0.01f, GAME::SANDBOX::CONNECTIONS::MODULUS_OF_ELASTICITY, GAME::SANDBOX::CONNECTIONS::MAX_EXTENSION);
 
-			physics_manager.add_constraint(constraint); // NOTE: ISSUE WITH THIS?? constraints seem to do right force, but objects don't move under their infludence
+			constraint_ptr->ids.assign(GAME::SANDBOX::CONSTRAINT_IDS::TOTAL, 0); // Set size of vector
+
+			constraint_ptr->ids[GAME::SANDBOX::CONSTRAINT_IDS::ROCKET] = rocket_id; // Which rocket is it part of
+			constraint_ptr->ids[GAME::SANDBOX::CONSTRAINT_IDS::CONSTRAINT] = connection_id; // What constraint id
+
+			physics_data.constraints.push_back(constraint_ptr);
+
+			physics_manager.add_constraint(constraint_ptr);
 		}
+
+		connection_id++;
 	}
 }
 
@@ -918,7 +927,7 @@ void GameStage::update_sandbox(float dt) {
 
 						body->apply_force(force);
 
-						// Particles
+						// Smoke particles
 
 						// Create more particles if engine throttle is higher
 						// NOTE: currently not framerate independent code!!
@@ -947,6 +956,28 @@ void GameStage::update_sandbox(float dt) {
 						}
 					}
 				}
+			}
+		}
+
+		// Handle broken constraints
+
+		// TODO: remove from PhysicsEngine?
+
+		for (PhysicsEngine::Constraint* constraint : physics_manager.get_constraints()) {
+			// Is it broken?
+			if (constraint->is_broken()) {
+
+				uint32_t rocket_id = constraint->ids[GAME::SANDBOX::CONSTRAINT_IDS::ROCKET];
+				uint32_t connection_id = constraint->ids[GAME::SANDBOX::CONSTRAINT_IDS::CONSTRAINT];
+
+				Rocket& rocket = rockets[rocket_id];
+
+				Connection* connection = rocket.get_connection_ptr(connection_id);
+
+				// TODO: if no path via connections to CMD_MODULE then remove component from rocket
+
+				// Remove connection
+				connection->broken = true;
 			}
 		}
 	}

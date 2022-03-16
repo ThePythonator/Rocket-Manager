@@ -8,6 +8,9 @@ struct ComponentNode {
 
 struct Connection {
 	ComponentNode a, b;
+
+	// If set to true, don't save this
+	bool broken = false;
 };
 
 // TODO: use something like this:
@@ -58,6 +61,7 @@ public:
 	void set_connections(std::vector<Connection> connections);
 
 	Component* get_component_ptr(uint32_t component_id);
+	Connection* get_connection_ptr(uint32_t connection_id);
 
 protected:
 	std::map<uint32_t, Component> _components;
@@ -78,3 +82,6 @@ void from_json(const json& j, Connection& c);
 
 void to_json(json& j, const Component& c);
 void from_json(const json& j, Component& c);
+
+void to_json(json& j, const ComponentManager& c);
+void from_json(const json& j, ComponentManager& c);

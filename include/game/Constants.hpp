@@ -403,6 +403,15 @@ namespace GAME {
 			};
 		}
 
+		namespace CONSTRAINT_IDS {
+			enum CONSTRAINT_IDS {
+				ROCKET, // What rocket id
+				CONSTRAINT, // What constraint id
+
+				TOTAL
+			};
+		}
+
 		namespace CATEGORIES {
 			enum CATEGORIES {
 				PLANET, // Can be planet, or sun, or moon

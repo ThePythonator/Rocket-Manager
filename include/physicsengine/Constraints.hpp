@@ -22,6 +22,11 @@ namespace PhysicsEngine {
 		phyvec offset_a;
 		phyvec offset_b;
 
+		// IDs can be used to:
+		//		-	look up sprites and corresponding offsets to render at
+		//		-	group rigidbodies when searching
+		std::vector<uint32_t> ids;
+
 	protected:
 		bool broken = false;
 	};

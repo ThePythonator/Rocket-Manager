@@ -70,6 +70,9 @@ namespace PhysicsEngine {
 		return constraints;
 	}
 
+	void PhysicsManager::remove_constraint(uint32_t index) {
+		constraints.erase(constraints.begin() + index);
+	}
 
 	void PhysicsManager::clear() {
 		bodies.clear();

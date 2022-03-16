@@ -110,7 +110,12 @@ bool TitleStage::update(float dt) {
 				break;
 
 			case BUTTONS::TITLE::EDITOR:
-				_submenu_die = true;
+				if (_submenu) {
+					_submenu_die = true;
+				}
+				else {
+					transition->close();
+				}
 				break;
 
 			case BUTTONS::TITLE::QUIT:

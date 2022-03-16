@@ -68,6 +68,10 @@ Component* ComponentManager::get_component_ptr(uint32_t component_id) {
 	return &_components[component_id];
 }
 
+Connection* ComponentManager::get_connection_ptr(uint32_t connection_id) {
+	return &_connections[connection_id];
+}
+
 uint32_t ComponentManager::get_next_component_index() const {
 	// Get next free index in map
 	uint32_t i = 0;
@@ -110,4 +114,20 @@ void to_json(json& j, const Component& c) {
 void from_json(const json& j, Component& c) {
 	c.set_type(j.at("type").get<uint32_t>());
 	c.set_offset(j.at("offset").get<phyvec>());
+}
+
+void to_json(json& j, const ComponentManager& c) {
+	std::map<uint32_t, Component> components = c.get_components();
+	std::vector<Connection> connections = c.get_connections();
+
+	connections.erase(std::remove_if(connections.begin(), connections.end(), [](Connection& connection) { return connection.broken; }), connections.end());
+
+	ComponentManager reduced;
+	reduced.set_components(components);
+	reduced.set_connections(connections);
+
+	j = c;
+}
+void from_json(const json& j, ComponentManager& c) {
+	j.get_to(c);
 }

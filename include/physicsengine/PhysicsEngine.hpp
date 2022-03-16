@@ -45,6 +45,9 @@ namespace PhysicsEngine {
 		std::vector<RigidBody*>& get_bodies();
 		std::vector<Constraint*>& get_constraints();
 
+
+		void remove_constraint(uint32_t index);
+
 		// Clear everything
 		void clear();
 
