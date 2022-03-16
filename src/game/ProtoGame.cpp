@@ -88,6 +88,42 @@ void GameStage::render() {
 }
 
 
+void GameStage::load_rocket(std::string rocket_name, uint8_t planet, uint8_t site) {
+	printf("Loading rocket: %s on planet %s at site %u...\n", rocket_name.c_str(), STRINGS::GAME::PLANET_NAMES[planet].c_str(), site);
+
+	Rocket rocket = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + rocket_name + PATHS::ROCKET_TEMPLATES::EXTENSION);
+
+	rocket.set_is_template(false);
+
+	PhysicsEngine::RigidBody* planet_ptr = get_planet_from_rigidbodies(planet);
+
+	phyvec position = get_launch_site_position(planet, site);
+	phyvec velocity = planet_ptr->velocity;
+	phyflt angle = GAME::SANDBOX::LAUNCH_SITES::SITES[planet][site];
+
+	phyvec normalised_planet_to_me = PhysicsEngine::normalise(position - planet_ptr->centre);
+
+	// Get a rough idea of the closest component to the planet
+	phyvec closest_component_centre_to_planet; // 0, 0 : CMD module
+	Framework::Rect component_size = find_bounding_rect(GAME::COMPONENTS::VERTICES[GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE]);
+
+	for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
+		if (p.second.get_offset().y > closest_component_centre_to_planet.y) {
+			closest_component_centre_to_planet = p.second.get_offset();
+			component_size = find_bounding_rect(GAME::COMPONENTS::VERTICES[p.second.get_type()]);
+		}
+	}
+
+	position += normalised_planet_to_me * (closest_component_centre_to_planet + phyvec{ 0.0f, component_size.size.y / 2 });
+	phyvec a = position - get_launch_site_position(planet, site);
+
+	Rocket::InitialData initial_data{ position, velocity, angle };
+	
+	rocket.set_initial_data(initial_data);
+
+	create_rocket(rocket);
+}
+
 
 
 void GameStage::init_temporaries() {
@@ -358,6 +394,13 @@ void GameStage::create_components() {
 void GameStage::create_rocket(const Rocket& rocket) {
 	uint32_t rocket_id = get_next_rocket_index();
 
+	// Set current rocket
+	sandbox_temporaries.current_rocket = rocket_id;
+
+	// Set throttle to 0, direction to 0
+	rocket_controls.direction = 0;
+	rocket_controls.engine_power = 0.0f;
+
 	// Add rocket to rockets
 	rockets[rocket_id] = rocket;
 
@@ -378,7 +421,7 @@ void GameStage::create_rocket(const Rocket& rocket) {
 		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
 
 		// TODO: change so that angle isn't necessarily just same as CMD MODULE?
-		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset()) + initial_data.position, initial_data.angle);
+		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset()) + initial_data.position + GAME::COMPONENTS::CENTROIDS[component_type], initial_data.angle);
 		physics_data.bodies.push_back(object_ptr);
 
 		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
@@ -825,11 +868,6 @@ void GameStage::update_sandbox(float dt) {
 	// Move camera to centre of command module of current_rocket
 	sandbox_camera.set_position(sandbox_temporaries.cmd_mdl_centre);
 
-	// Move stars
-	star_field.move(PhysicsEngine::to_fvec(sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre));
-
-	// Update particles
-	particles.update(dt);
 
 	// TESTING ONLY
 	// Only allow scrolling/--dragging-- sandbox if we're not in fullscreen map mode and not clicking on the minimap
@@ -854,6 +892,13 @@ void GameStage::update_sandbox(float dt) {
 
 
 	if (!game_state.paused) {
+
+		// Move stars
+		star_field.move(PhysicsEngine::to_fvec(sandbox_temporaries.cmd_mdl_centre - sandbox_temporaries.last_cmd_mdl_centre));
+
+		// Update particles
+		particles.update(dt);
+
 		// Control rocket
 
 		for (PhysicsEngine::RigidBody* body : physics_manager.get_bodies()) {
@@ -1024,7 +1069,7 @@ phyvec GameStage::get_launch_site_position(uint8_t planet, uint8_t site) {
 
 // PausedStage
 
-PausedStage::PausedStage(BaseStage* background_stage) : BaseStage() {
+PausedStage::PausedStage(GameStage* background_stage) : BaseStage() {
 	// Save the background stage so we can still render it, and then go back to it when done
 	_background_stage = background_stage;
 }
@@ -1066,7 +1111,7 @@ bool PausedStage::update(float dt) {
 				break;
 
 			case BUTTONS::PAUSED::LOAD_ROCKET:
-				// TODO
+				finish(new LoadRocketStage(this), false);
 				break;
 
 			case BUTTONS::PAUSED::EXIT:
@@ -1082,7 +1127,7 @@ bool PausedStage::update(float dt) {
 	if (transition->is_closed()) {
 		if (button_selected == BUTTONS::PAUSED::EXIT) {
 			_background_stage->end();
-			//delete _background_stage;???
+			//delete _background_stage; // MEM LEAK!?
 
 			finish(new TitleStage());
 		}
@@ -1099,4 +1144,156 @@ void PausedStage::render() {
 
 	// Render pause menu
 	for (const Framework::Button& button : buttons) button.render();
+}
+
+
+void PausedStage::load_rocket(std::string rocket_name, uint8_t planet, uint8_t site) {
+	_background_stage->load_rocket(rocket_name, planet, site);
+}
+
+GameStage* PausedStage::get_background_stage() {
+	return _background_stage;
+}
+
+// PlayOptionsStage
+
+LoadRocketStage::LoadRocketStage() { }
+LoadRocketStage::LoadRocketStage(PausedStage* paused_stage) : _paused_stage(paused_stage) { }
+
+void LoadRocketStage::init() {
+	// Find valid rocket files:
+	std::vector<std::string> filepaths = find_files_with_extension(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION, PATHS::ROCKET_TEMPLATES::EXTENSION);
+
+	for (std::string path : filepaths) {
+		rocket_names.push_back(trim_extension(get_filename(path)));
+	}
+
+	// Create buttons for selecting save file
+	buttons = create_menu_buttons(MENU::OVERLAY_RECT, BUTTONS::WIDE_SIZE, graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], STRINGS::BUTTONS::LOAD_ROCKET, graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], COLOURS::WHITE, MENU::OVERLAY_RECT.position.y);
+
+	buttons[BUTTONS::LOAD_ROCKET::LAUNCH].set_position(MENU::OVERLAY_RECT.bottomleft() - Framework::vec2{ 0, BUTTONS::WIDE_SIZE.y });
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void LoadRocketStage::start() {
+	transition->set_open();
+
+	// Set default text:
+	for (uint8_t i = 0; i < BUTTONS::LOAD_ROCKET::TOTAL; i++) {
+		buttons[i].set_text(STRINGS::BUTTONS::LOAD_ROCKET[i]);
+	}
+
+	// Set text and selected items:
+	rocket_index = 0;
+	planet_index = 0;
+	site_index = 0;
+
+	if (rocket_names.size() > 0) {
+		buttons[BUTTONS::LOAD_ROCKET::FILE].set_text(rocket_names[rocket_index]);
+	}
+	if (GAME::SANDBOX::LAUNCH_SITES::SITES.size() > 0) {
+		buttons[BUTTONS::LOAD_ROCKET::PLANET].set_text(STRINGS::GAME::PLANET_NAMES[planet_index]);
+
+		if (GAME::SANDBOX::LAUNCH_SITES::SITES[planet_index].size() > 0) {
+			buttons[BUTTONS::LOAD_ROCKET::PLANET].set_text(STRINGS::BUTTONS::LOAD_ROCKET_TEXT::SITE + std::to_string(site_index));
+		}
+	}
+}
+
+bool LoadRocketStage::update(float dt) {
+	transition->update(dt);
+
+	// If user clicked outside menu overlay, then go back
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT) && !Framework::colliding(MENU::OVERLAY_RECT, input->get_mouse()->position())) {
+		finish(_paused_stage);
+	}
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+
+			switch (button_selected) {
+			case BUTTONS::LOAD_ROCKET::FILE:
+				if (rocket_names.size() > 0) {
+					rocket_index++;
+					rocket_index %= rocket_names.size();
+
+					// Set text
+					button.set_text(rocket_names[rocket_index]);
+				}
+				break;
+
+			case BUTTONS::LOAD_ROCKET::PLANET:
+				if (GAME::SANDBOX::LAUNCH_SITES::SITES.size() > 0) {
+					planet_index++;
+					planet_index %= GAME::SANDBOX::LAUNCH_SITES::SITES.size();
+
+					// Set text
+					button.set_text(STRINGS::GAME::PLANET_NAMES[planet_index]);
+
+					site_index = 0;
+
+					if (GAME::SANDBOX::LAUNCH_SITES::SITES[planet_index].size() > 0) {
+
+						// Set text
+						buttons[BUTTONS::LOAD_ROCKET::SITE].set_text(STRINGS::BUTTONS::LOAD_ROCKET_TEXT::SITE + std::to_string(site_index));
+					}
+					else {
+						buttons[BUTTONS::LOAD_ROCKET::SITE].set_text(STRINGS::BUTTONS::LOAD_ROCKET[BUTTONS::LOAD_ROCKET::SITE]);
+					}
+				}
+				break;
+
+			case BUTTONS::LOAD_ROCKET::SITE:
+				if (GAME::SANDBOX::LAUNCH_SITES::SITES.size() > 0 && GAME::SANDBOX::LAUNCH_SITES::SITES[planet_index].size() > 0) {
+					site_index++;
+					site_index %= GAME::SANDBOX::LAUNCH_SITES::SITES[planet_index].size();
+
+					// Set text
+					button.set_text(STRINGS::BUTTONS::LOAD_ROCKET_TEXT::SITE + std::to_string(site_index));
+				}
+				break;
+
+			case BUTTONS::LOAD_ROCKET::LAUNCH:
+				// Load rocket
+				if (rocket_index < rocket_names.size() && planet_index < GAME::SANDBOX::LAUNCH_SITES::SITES.size() && site_index < GAME::SANDBOX::LAUNCH_SITES::SITES[planet_index].size()) {
+					_paused_stage->load_rocket(rocket_names[rocket_index], planet_index, site_index);
+
+					// Slightly hacky way to unpause the game
+					finish(_paused_stage->get_background_stage());
+
+					_paused_stage->end();
+					//delete _paused_stage; // MEM LEAK!?
+				}
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+
+void LoadRocketStage::render() {
+	// Render play options stage
+	_paused_stage->render();
+
+	// Menu overlay
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::WHITE, 0x60);
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
+	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
 }

@@ -295,5 +295,6 @@ void EditorStage::erase_connections(uint32_t component_id) {
 
 
 void EditorStage::save_rocket() {
-	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + "my_rocket" + PATHS::ROCKET_TEMPLATES::EXTENSION, rocket);
+	// TODO: set name, no pretty print
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + "a_test" + PATHS::ROCKET_TEMPLATES::EXTENSION, rocket, true);
 }

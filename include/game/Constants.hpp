@@ -31,6 +31,13 @@ namespace STRINGS {
 		extern const std::vector<std::string> SETTINGS;
 		extern const std::vector<std::string> CREDITS;
 		extern const std::vector<std::string> PAUSED;
+		extern const std::vector<std::string> LOAD_ROCKET;
+
+
+
+		namespace LOAD_ROCKET_TEXT {
+			extern const std::string SITE;
+		}
 
 		namespace EDITOR {
 			extern const std::string SAVE;
@@ -291,6 +298,17 @@ namespace BUTTONS {
 			RESUME,
 			LOAD_ROCKET,
 			EXIT,
+
+			TOTAL
+		};
+	}
+
+	namespace LOAD_ROCKET {
+		enum LOAD_ROCKET {
+			FILE,
+			PLANET,
+			SITE,
+			LAUNCH,
 
 			TOTAL
 		};

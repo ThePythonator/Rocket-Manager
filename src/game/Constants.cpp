@@ -55,6 +55,17 @@ namespace STRINGS {
 			"Exit"
 		};
 
+		const std::vector<std::string> LOAD_ROCKET {
+			"No Rockets Found",
+			"No Planets Found",
+			"No Sites Found",
+			"Launch!"
+		};
+
+		namespace LOAD_ROCKET_TEXT {
+			const std::string SITE = "Site: ";
+		}
+
 
 		namespace EDITOR {
 			const std::string SAVE = "Save";

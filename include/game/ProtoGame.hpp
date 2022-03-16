@@ -30,6 +30,8 @@ public:
 	bool update(float dt);
 	void render();
 
+	void load_rocket(std::string rocket_name, uint8_t planet, uint8_t site);
+
 private:
 	void init_temporaries();
 
@@ -125,7 +127,27 @@ private:
 
 class PausedStage : public Framework::BaseStage {
 public:
-	PausedStage(BaseStage* background_stage);
+	PausedStage(GameStage* background_stage);
+
+	void init();
+
+	void start();
+
+	bool update(float dt);
+	void render();
+
+	void load_rocket(std::string rocket_name, uint8_t planet, uint8_t site);
+
+	GameStage* get_background_stage();
+
+private:
+	GameStage* _background_stage;
+};
+
+class LoadRocketStage : public Framework::BaseStage {
+public:
+	LoadRocketStage();
+	LoadRocketStage(PausedStage* paused_stage);
 
 	void init();
 
@@ -135,5 +157,11 @@ public:
 	void render();
 
 private:
-	BaseStage* _background_stage;
+
+	PausedStage* _paused_stage = nullptr;
+
+	std::vector<std::string> rocket_names;
+	uint8_t rocket_index = 0;
+	uint8_t planet_index = 0;
+	uint8_t site_index = 0;
 };

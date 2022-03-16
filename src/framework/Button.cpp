@@ -86,6 +86,7 @@ namespace Framework {
 	}
 
 	void Button::set_position(vec2 position) {
+		_collider_rect.position = position; // may not be right?
 		_render_rect.position = position;
 	}
 
