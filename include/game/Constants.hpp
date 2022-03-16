@@ -289,6 +289,7 @@ namespace BUTTONS {
 	namespace PAUSED {
 		enum PAUSED {
 			RESUME,
+			LOAD_ROCKET,
 			EXIT,
 
 			TOTAL
@@ -349,6 +350,8 @@ namespace GAME {
 		extern const std::vector<uint32_t> WARP_SPEEDS;
 		
 		extern const float SCALE_HEIGHT_TO_ATMOSPHERE_HEIGHT_FACTOR;
+
+		extern const uint32_t NO_ROCKET_SELECTED;
 
 		namespace UI {
 			extern const float SCROLL_ZOOM_RATE;
@@ -431,6 +434,13 @@ namespace GAME {
 		namespace CONNECTIONS {
 			extern const float MAX_EXTENSION;
 			extern const float MODULUS_OF_ELASTICITY;
+		}
+
+		namespace LAUNCH_SITES {
+			extern const uint8_t DEFAULT_LAUNCH_PLANET;
+			extern const uint8_t DEFAULT_LAUNCH_SITE;
+
+			extern const std::vector<std::vector<float>> SITES;
 		}
 	}
 

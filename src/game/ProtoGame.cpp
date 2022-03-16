@@ -11,34 +11,43 @@ GameStage::GameStage(std::string _save_name) {
 }
 
 void GameStage::init() {
-	map_camera = Camera(WINDOW::SIZE);
-	sandbox_camera = Camera(WINDOW::SIZE);
+	if (!game_state.paused) {
+		map_camera = Camera(WINDOW::SIZE);
+		sandbox_camera = Camera(WINDOW::SIZE);
 
-	particles = Particles(graphics_objects->graphics_ptr);
+		particles = Particles(graphics_objects->graphics_ptr);
 
-	PhysicsEngine::PhysicsManager::Constants constants = physics_manager.get_constants();
-	constants.gravitational_constant = GAME::SANDBOX::GRAVITATIONAL_CONSTANT;
-	physics_manager.set_constants(constants);
+		PhysicsEngine::PhysicsManager::Constants constants = physics_manager.get_constants();
+		constants.gravitational_constant = GAME::SANDBOX::GRAVITATIONAL_CONSTANT;
+		physics_manager.set_constants(constants);
 
-	// Create star field
-	star_field = StarField(graphics_objects->graphics_ptr, WINDOW::SIZE);
+		// Create star field
+		star_field = StarField(graphics_objects->graphics_ptr, WINDOW::SIZE);
 
-	// Set camera scales
-	map_camera.set_scale(GAME::MAP::UI::DEFAULT_CAMERA_SCALE);
-	sandbox_camera.set_scale(GAME::SANDBOX::UI::DEFAULT_CAMERA_SCALE);
+		// Set camera scales
+		map_camera.set_scale(GAME::MAP::UI::DEFAULT_CAMERA_SCALE);
+		sandbox_camera.set_scale(GAME::SANDBOX::UI::DEFAULT_CAMERA_SCALE);
 
-	// Set transition
-	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+		// Set transition
+		set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+	}
 }
 
 void GameStage::start() {
-	load_settings();
-	load_sandbox();
+	if (game_state.paused) {
+		transition->set_open();
+	}
+	else {
+		load_settings();
+		load_sandbox();
 
-	init_temporaries();
+		init_temporaries();
 
-	// Open transition
-	transition->open();
+		// Open transition
+		transition->open();
+	}
+
+	game_state.paused = false;
 }
 
 void GameStage::end() {
@@ -125,6 +134,9 @@ void GameStage::load_sandbox() {
 		}
 
 		create_planets(planets);
+
+		data.at("current_rocket").get_to(sandbox_temporaries.current_rocket);
+
 	}
 	catch (const json::exception& e) {
 		// Ignore - we set defaults already so it's not the end of the world
@@ -135,7 +147,7 @@ void GameStage::load_sandbox() {
 		new_sandbox();
 
 		// For now, create basic rocket (handle loading later)
-		create_components();
+		//create_components();
 	}
 }
 
@@ -161,7 +173,8 @@ void GameStage::save_sandbox() {
 	
 	json data = json{
 		{"planets", planets},
-		{"rockets", rockets}
+		{"rockets", rockets},
+		{"current_rocket", sandbox_temporaries.current_rocket}
 	};
 
 	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::SANDBOX_SAVES::LOCATION + save_name + PATHS::SANDBOX_SAVES::EXTENSION, data);
@@ -570,15 +583,16 @@ void GameStage::render_debug() {
 		"Paused: " + std::string(game_state.paused ? "yes" : "no"),
 		"Time multiplier: " + std::to_string(GAME::SANDBOX::WARP_SPEEDS[game_state.time_warp_index]) + "x",
 		"Map type: " + std::string(game_state.show_map ? "fullscreen" : "minimap"),
-		"Map Scale: " + Framework::trim_precision(map_camera.get_scale() * 1e6f, GAME::DEBUG::PRECISION::MAP_SCALE) + "e-6x",
-		"Map Position: (" + Framework::trim_precision(map_camera.get_position().x, GAME::DEBUG::PRECISION::MAP_POSITION) + ", " + Framework::trim_precision(map_camera.get_position().y, GAME::DEBUG::PRECISION::MAP_POSITION) + ")",
-		"Sandbox Scale: " + Framework::trim_precision(sandbox_camera.get_scale(), GAME::DEBUG::PRECISION::SANDBOX_SCALE) + "x",
-		"Sandbox Position: (" + Framework::trim_precision(sandbox_camera.get_position().x, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ", " + Framework::trim_precision(sandbox_camera.get_position().y, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ")",
+		"Map scale: " + Framework::trim_precision(map_camera.get_scale() * 1e6f, GAME::DEBUG::PRECISION::MAP_SCALE) + "e-6x",
+		"Map position: (" + Framework::trim_precision(map_camera.get_position().x, GAME::DEBUG::PRECISION::MAP_POSITION) + ", " + Framework::trim_precision(map_camera.get_position().y, GAME::DEBUG::PRECISION::MAP_POSITION) + ")",
+		"Sandbox scale: " + Framework::trim_precision(sandbox_camera.get_scale(), GAME::DEBUG::PRECISION::SANDBOX_SCALE) + "x",
+		"Sandbox position: (" + Framework::trim_precision(sandbox_camera.get_position().x, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ", " + Framework::trim_precision(sandbox_camera.get_position().y, GAME::DEBUG::PRECISION::SANDBOX_POSITION) + ")",
 		"Nearest planet: " + STRINGS::GAME::PLANET_NAMES[sandbox_temporaries.nearest_planet],
 		"Altitude: " + Framework::trim_precision(sandbox_temporaries.distance_to_nearest_planet - GAME::SANDBOX::BODIES::RADII[sandbox_temporaries.nearest_planet], GAME::DEBUG::PRECISION::ALTITUDE),
 		"Relative velocity: " + Framework::trim_precision(relative_speed, GAME::DEBUG::PRECISION::RELATIVE_VELOCITY),
 		"Direction: " + std::to_string(rocket_controls.direction),
-		"Engine power: " + Framework::trim_precision(rocket_controls.engine_power, GAME::DEBUG::PRECISION::ENGINE_POWER)
+		"Engine power: " + Framework::trim_precision(rocket_controls.engine_power, GAME::DEBUG::PRECISION::ENGINE_POWER),
+		"Current rocket: " + std::to_string(sandbox_temporaries.current_rocket)
 	};
 
 	for (uint8_t i = 0; i < debug_text.size(); i++) {
@@ -651,6 +665,11 @@ void GameStage::update_temporaries(float dt) {
 		}
 	}
 
+	if (sandbox_temporaries.current_rocket == GAME::SANDBOX::NO_ROCKET_SELECTED) {
+		// No rocket selected so default to Earth launch pad
+		sandbox_temporaries.cmd_mdl_centre = get_launch_site_position(GAME::SANDBOX::LAUNCH_SITES::DEFAULT_LAUNCH_PLANET, GAME::SANDBOX::LAUNCH_SITES::DEFAULT_LAUNCH_SITE);
+	}
+
 	// Find nearest planet
 	phyflt nearest_planet_squared_distance = PHYFLT_MAX;
 
@@ -694,10 +713,59 @@ void GameStage::update_game_state(float dt) {
 	}
 
 
-	if (input->just_down(Framework::KeyHandler::Key::SPACE)) game_state.paused = !game_state.paused;
+	if (input->just_down(Framework::KeyHandler::Key::ESCAPE) || input->just_down(Framework::KeyHandler::Key::SPACE)) {
+		if (!game_state.paused) {
+			// Go to paused menu
+			game_state.paused = true;
+			finish(new PausedStage(this), false);
+		}
+	}
 
 	if (input->just_down(Framework::KeyHandler::Key::M)) toggle_map();
 
+
+	// Handle changing of current rocket selected
+	if (input->just_down(Framework::KeyHandler::Key::Q)) {
+		// Wrap round if necessary
+		if (sandbox_temporaries.current_rocket == rockets.begin()->first) {
+			sandbox_temporaries.current_rocket = rockets.rbegin()->first;
+		}
+		else {
+			sandbox_temporaries.current_rocket--;
+		}
+
+		while (!rockets.count(sandbox_temporaries.current_rocket)) {
+			// Rocket id doesn't exist so decrement it
+			// Wrap round if necessary
+			if (sandbox_temporaries.current_rocket == rockets.begin()->first) {
+				sandbox_temporaries.current_rocket = rockets.rbegin()->first;
+			}
+			else {
+				sandbox_temporaries.current_rocket--;
+			}
+		}
+	}
+
+	if (input->just_down(Framework::KeyHandler::Key::E)) {
+		// Wrap round if necessary
+		if (sandbox_temporaries.current_rocket == rockets.rbegin()->first) {
+			sandbox_temporaries.current_rocket = rockets.begin()->first;
+		}
+		else {
+			sandbox_temporaries.current_rocket++;
+		}
+
+		while (!rockets.count(sandbox_temporaries.current_rocket)) {
+			// Rocket id doesn't exist so decrement it
+			// Wrap round if necessary
+			if (sandbox_temporaries.current_rocket == rockets.rbegin()->first) {
+				sandbox_temporaries.current_rocket = rockets.begin()->first;
+			}
+			else {
+				sandbox_temporaries.current_rocket++;
+			}
+		}
+	}
 
 
 	// Controls
@@ -934,4 +1002,101 @@ PhysicsEngine::RigidBody* GameStage::get_planet_from_rigidbodies(uint32_t id) {
 
 	// Couldn't find it
 	return nullptr;
+}
+
+
+phyvec GameStage::get_launch_site_position(uint8_t planet, uint8_t site) {
+	PhysicsEngine::RigidBody* planet_ptr = get_planet_from_rigidbodies(planet);
+
+	phyvec position = planet_ptr->centre;
+	position += PhysicsEngine::mul(PhysicsEngine::rotation_matrix(PhysicsEngine::deg_to_rad(GAME::SANDBOX::LAUNCH_SITES::SITES[planet][site])), { 0.0f, -1.0f }) * GAME::SANDBOX::BODIES::RADII[planet];
+
+	return position;
+}
+
+
+
+
+
+
+
+
+
+// PausedStage
+
+PausedStage::PausedStage(BaseStage* background_stage) : BaseStage() {
+	// Save the background stage so we can still render it, and then go back to it when done
+	_background_stage = background_stage;
+}
+
+void PausedStage::init() {
+	// Create buttons for selecting save file
+	buttons = create_menu_from_constants(graphics_objects, STRINGS::BUTTONS::PAUSED);
+
+	// Create transition
+	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
+}
+
+void PausedStage::start() {
+	transition->set_open();
+}
+
+bool PausedStage::update(float dt) {
+	//transition->update(dt);
+
+	_background_stage->update(dt);
+
+	// Un-pause if ESCAPE pressed
+	if (input->just_down(Framework::KeyHandler::Key::ESCAPE) || input->just_down(Framework::KeyHandler::Key::SPACE)) {
+		// Return to game (exit pause)
+		finish(_background_stage);
+	}
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed() && transition->is_open()) {
+			button_selected = button.get_id();
+
+			switch (button_selected) {
+			case BUTTONS::PAUSED::RESUME:
+				// Return to game (exit pause)
+				finish(_background_stage);
+				break;
+
+			case BUTTONS::PAUSED::LOAD_ROCKET:
+				// TODO
+				break;
+
+			case BUTTONS::PAUSED::EXIT:
+				transition->close();
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	if (transition->is_closed()) {
+		if (button_selected == BUTTONS::PAUSED::EXIT) {
+			_background_stage->end();
+			//delete _background_stage;???
+
+			finish(new TitleStage());
+		}
+	}
+
+	return true;
+}
+
+void PausedStage::render() {
+	// Render background stage
+	if (_background_stage) _background_stage->render();
+
+	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
+
+	// Render pause menu
+	for (const Framework::Button& button : buttons) button.render();
 }

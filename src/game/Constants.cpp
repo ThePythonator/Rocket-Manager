@@ -51,6 +51,7 @@ namespace STRINGS {
 
 		const std::vector<std::string> PAUSED {
 			"Resume",
+			"Load Rocket",
 			"Exit"
 		};
 
@@ -280,8 +281,8 @@ namespace BUTTONS {
 
 namespace MENU {
 	const Framework::Rect BACKGROUND_RECT = Framework::Rect(WINDOW::SIZE.x * 0.1f, 0.0f, BUTTONS::SIZE.x, WINDOW::SIZE.y);
-	extern const Framework::Rect SUBMENU_BACKGROUND_RECT = Framework::Rect(BACKGROUND_RECT.topright(), BACKGROUND_RECT.size);
-	extern const Framework::Rect OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
+	const Framework::Rect SUBMENU_BACKGROUND_RECT = Framework::Rect(BACKGROUND_RECT.topright(), BACKGROUND_RECT.size);
+	const Framework::Rect OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
 
 	const uint8_t BACKGROUND_ALPHA = 0x60;
 	const uint8_t OVERLAY_ALPHA = 0x60;//0xA0;
@@ -346,7 +347,10 @@ namespace GAME {
 		};
 
 		// ~95% of atmosphere is below 3 scale heights
-		extern const float SCALE_HEIGHT_TO_ATMOSPHERE_HEIGHT_FACTOR = 3.0f;
+		const float SCALE_HEIGHT_TO_ATMOSPHERE_HEIGHT_FACTOR = 3.0f;
+
+		// Use -1 to wrap round to max value
+		const uint32_t NO_ROCKET_SELECTED = -1;
 
 		namespace UI {
 			const float SCROLL_ZOOM_RATE = 0.2f;
@@ -481,6 +485,27 @@ namespace GAME {
 		namespace CONNECTIONS {
 			const float MAX_EXTENSION = 1.0f;
 			const float MODULUS_OF_ELASTICITY = 2e5f;
+		}
+
+
+		namespace LAUNCH_SITES {
+			const uint8_t DEFAULT_LAUNCH_PLANET = BODIES::ID::EARTH;
+			const uint8_t DEFAULT_LAUNCH_SITE = 0;
+
+			// Stores the angle of the location
+			const std::vector<std::vector<float>> SITES {
+				{ }, // Sun
+				{ }, // Mercury
+				{ }, // Venus
+				{ 0.0f }, // Earth
+				{ }, // Mars
+				{ }, // Jupiter
+				{ }, // Saturn
+				{ }, // Uranus
+				{ }, // Neptune
+
+				{ 0.0f } // Moon
+			};
 		}
 	}
 

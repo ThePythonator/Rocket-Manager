@@ -45,6 +45,8 @@ private:
 	void create_components();
 	void create_rocket(const Rocket& rocket);
 
+
+
 	phyflt find_eccentricity(phyflt aphelion, phyflt perihelion);
 	phyflt find_semimajor_axis(phyflt aphelion, phyflt perihelion);
 	phyflt find_velocity(phyflt primary_mass, phyflt radius, phyflt semimajor_axis);
@@ -75,6 +77,8 @@ private:
 
 	PhysicsEngine::RigidBody* get_planet_from_rigidbodies(uint32_t id);
 
+	phyvec get_launch_site_position(uint8_t planet, uint8_t site);
+
 	PhysicsEngine::PhysicsManager physics_manager;
 	PhysicsEngine::PhysicsData physics_data;
 
@@ -92,7 +96,7 @@ private:
 
 	// State variables
 	struct {
-		bool paused = true;
+		bool paused = false;
 		bool show_map = false;
 		uint8_t time_warp_index = 0;
 	} game_state;
@@ -103,7 +107,7 @@ private:
 		phyflt distance_to_nearest_planet = 0.0f;
 		phyvec nearest_planet_centre, nearest_planet_velocity;
 
-		uint32_t current_rocket = 0;
+		uint32_t current_rocket = GAME::SANDBOX::NO_ROCKET_SELECTED;
 		phyvec cmd_mdl_centre, last_cmd_mdl_centre, cmd_mdl_velocity;
 	} sandbox_temporaries;
 
@@ -116,4 +120,20 @@ private:
 	struct {
 		float fps = 0.0f; // Used for debug info
 	} debug_temporaries;
+};
+
+
+class PausedStage : public Framework::BaseStage {
+public:
+	PausedStage(BaseStage* background_stage);
+
+	void init();
+
+	void start();
+
+	bool update(float dt);
+	void render();
+
+private:
+	BaseStage* _background_stage;
 };
