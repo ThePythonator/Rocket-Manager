@@ -76,5 +76,20 @@ std::string trim_extension(std::string filename) {
 
 
 std::string random_save_name() {
-	return STRINGS::RANDOM_SAVE_ADJECTIVES[std::rand() % STRINGS::RANDOM_SAVE_ADJECTIVES.size()] + " " + STRINGS::RANDOM_SAVE_NOUNS[std::rand() % STRINGS::RANDOM_SAVE_NOUNS.size()];
+	return random_word_pair(STRINGS::RANDOM_SAVE_ADJECTIVES, STRINGS::RANDOM_SAVE_NOUNS);
+}
+
+std::string random_rocket_name(const std::vector<std::string>& existing_names) {
+	std::string name = STRINGS::RANDOM_ROCKET_NAMES[std::rand() % STRINGS::RANDOM_ROCKET_NAMES.size()] + STRINGS::ROCKET_NAME_SEPARATOR;
+	uint8_t i = 1;
+
+	while (std::count(existing_names.begin(), existing_names.end(), name + std::to_string(i))) {
+		i++;
+	}
+
+	return name + std::to_string(i);
+}
+
+std::string random_word_pair(const std::vector<std::string>& first_words, const std::vector<std::string>& second_words) {
+	return first_words[std::rand() % first_words.size()] + " " + second_words[std::rand() % second_words.size()];
 }

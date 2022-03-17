@@ -68,6 +68,7 @@ namespace STRINGS {
 
 
 		const std::vector<std::string> EDITOR {
+			"Unnamed Rocket",
 			"Save",
 			"Exit"
 		};
@@ -147,6 +148,28 @@ namespace STRINGS {
 		"Colony"
 	};
 
+	const std::vector<std::string> RANDOM_ROCKET_NAMES {
+		"Mercury",
+		"Apollo",
+		"Gemini",
+		"Skylab",
+		"Shuttle",
+		"Atlas",
+		"Thor",
+		"Juno",
+		"Titan",
+		"Delta",
+		"Scout",
+		"Saturn",
+		"Falcon",
+		"Minotaur",
+		"Ares",
+		"Vanguard",
+		"Pegasus"
+	};
+	
+
+	const std::string ROCKET_NAME_SEPARATOR = "-";
 
 	const std::string GITHUB_URL = "https://github.com/ThePythonator";
 	const std::string ITCHIO_URL = "https://scorpion-games-uk.itch.io/";

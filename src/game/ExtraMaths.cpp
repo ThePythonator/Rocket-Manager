@@ -53,3 +53,12 @@ Framework::Rect find_bounding_rect(const std::vector<phyvec>& vertices) {
 
 	return rect;
 }
+
+
+
+template<typename T>
+T pop_front(std::vector<T>& v) {
+	T val = v.at(0);
+	v.erase(v.begin());
+	return val;
+}

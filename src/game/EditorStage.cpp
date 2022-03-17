@@ -35,6 +35,14 @@ void EditorStage::init() {
 		component_bounding_rects[p.first] = find_bounding_rect(GAME::COMPONENTS::VERTICES[p.first]);
 		icon_scales[p.first] = 0.5f * BUTTONS::EDITOR_SIZE.y / component_bounding_radii[p.first];
 	}
+
+
+	// Find valid rocket files:
+	std::vector<std::string> filepaths = find_files_with_extension(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION, PATHS::ROCKET_TEMPLATES::EXTENSION);
+
+	for (std::string path : filepaths) {
+		rocket_names.push_back(trim_extension(get_filename(path)));
+	}
 }
 
 void EditorStage::start() {
@@ -42,6 +50,7 @@ void EditorStage::start() {
 	rocket = Rocket();
 
 	rocket.set_is_template(true);
+	rocket.set_name(STRINGS::BUTTONS::EDITOR[BUTTONS::EDITOR::NAME]);
 
 	Component command_module = Component(GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE);
 
@@ -62,6 +71,11 @@ bool EditorStage::update(float dt) {
 			button_selected = button.get_id();
 
 			switch (button_selected) {
+			case BUTTONS::EDITOR::NAME:
+				rocket.set_name(random_rocket_name(rocket_names));
+				button.set_text(rocket.get_name());
+				break;
+
 			case BUTTONS::EDITOR::SAVE:
 				save_rocket();
 				break;
@@ -318,6 +332,5 @@ void EditorStage::erase_connections(uint32_t component_id) {
 
 
 void EditorStage::save_rocket() {
-	// TODO: set name, no pretty print
-	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + "a_test" + PATHS::ROCKET_TEMPLATES::EXTENSION, rocket, true);
+	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::ROCKET_TEMPLATES::LOCATION + rocket.get_name() + PATHS::ROCKET_TEMPLATES::EXTENSION, rocket);
 }

@@ -51,6 +51,10 @@ namespace STRINGS {
 	extern const std::vector<std::string> RANDOM_SAVE_ADJECTIVES;
 	extern const std::vector<std::string> RANDOM_SAVE_NOUNS;
 
+	extern const std::vector<std::string> RANDOM_ROCKET_NAMES;
+
+	extern const std::string ROCKET_NAME_SEPARATOR;
+
 	extern const std::string GITHUB_URL;
 	extern const std::string ITCHIO_URL;
 
@@ -278,6 +282,7 @@ namespace BUTTONS {
 
 	namespace EDITOR {
 		enum EDITOR {
+			NAME,
 			SAVE,
 			EXIT,
 

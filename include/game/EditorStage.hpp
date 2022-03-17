@@ -40,4 +40,6 @@ private:
 
 	uint32_t component_selected = EDITOR::NO_COMPONENT_SELECTED;
 	phyvec click_offset;
+
+	std::vector<std::string> rocket_names;
 };

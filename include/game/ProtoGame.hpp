@@ -44,7 +44,8 @@ private:
 	void new_sandbox();
 	void create_planets(const std::vector<Planet>& planets);
 
-	void create_components();
+	//void create_components();
+
 	void create_rocket(const Rocket& rocket);
 
 
@@ -54,7 +55,6 @@ private:
 	phyflt find_velocity(phyflt primary_mass, phyflt radius, phyflt semimajor_axis);
 	phyflt volume_to_area_density(phyflt volume_density, phyflt radius);
 
-	//void render_physics_objects();
 	void render_planet(PhysicsEngine::RigidBody* planet, const Camera& camera, bool map);
 	void render_component(PhysicsEngine::RigidBody* component, const Camera& camera, bool map);
 
@@ -80,6 +80,10 @@ private:
 	PhysicsEngine::RigidBody* get_planet_from_rigidbodies(uint32_t id);
 
 	phyvec get_launch_site_position(uint8_t planet, uint8_t site);
+
+	bool command_module_is_connected(Rocket& rocket, uint32_t component_id);
+
+	Component* breadth_first_component_search(Rocket& rocket, uint32_t start_id, uint32_t target_type);
 
 	PhysicsEngine::PhysicsManager physics_manager;
 	PhysicsEngine::PhysicsData physics_data;

@@ -23,6 +23,12 @@ void Component::set_offset(phyvec offset) {
 	_offset = offset;
 }
 
+bool Component::get_broken() const {
+	return _broken;
+}
+void Component::set_broken() const {
+	_broken = true;
+}
 
 
 
@@ -114,20 +120,4 @@ void to_json(json& j, const Component& c) {
 void from_json(const json& j, Component& c) {
 	c.set_type(j.at("type").get<uint32_t>());
 	c.set_offset(j.at("offset").get<phyvec>());
-}
-
-void to_json(json& j, const ComponentManager& c) {
-	std::map<uint32_t, Component> components = c.get_components();
-	std::vector<Connection> connections = c.get_connections();
-
-	connections.erase(std::remove_if(connections.begin(), connections.end(), [](Connection& connection) { return connection.broken; }), connections.end());
-
-	ComponentManager reduced;
-	reduced.set_components(components);
-	reduced.set_connections(connections);
-
-	j = c;
-}
-void from_json(const json& j, ComponentManager& c) {
-	j.get_to(c);
 }

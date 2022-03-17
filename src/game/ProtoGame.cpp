@@ -56,17 +56,21 @@ void GameStage::end() {
 }
 
 bool GameStage::update(float dt) {
-	transition->update(dt);
 
 	// Handle inputs etc
 	update_game_state(dt);
 
-	// Note: slight issue where sun actually does slowly move
-	// This seems to cause other orbit to go crazy after a little bit too
-	if (!game_state.paused) update_physics(dt);
+	if (!game_state.paused) {
+		transition->update(dt);
 
-	// Temporary positions etc
-	update_temporaries(dt);
+		// Note: slight issue where sun actually does slowly move
+		// This seems to cause other orbit to go crazy after a little bit too
+		update_physics(dt);
+
+		// Temporary positions etc
+		update_temporaries(dt);
+	}
+
 
 	update_map(dt);
 	update_sandbox(dt);
@@ -323,7 +327,7 @@ void GameStage::create_planets(const std::vector<Planet>& planets) {
 }
 
 // TEST
-void GameStage::create_components() {
+/*void GameStage::create_components() {
 
 	// Test component
 	//PhysicsEngine::Polygon* poly_ptr = new PhysicsEngine::Polygon(GAME::COMPONENTS::VERTICES[0]); // just a test
@@ -388,7 +392,7 @@ void GameStage::create_components() {
 
 	create_rocket(r);
 	//create_rocket(1, object.centre + phyvec{20, 0});
-}
+}*/
 
 // Creates RigidBodies and Constraints, using the positions stored in the Rocket instance identified by rocket_id, offsetting by the supplied offset
 void GameStage::create_rocket(const Rocket& rocket) {
@@ -421,7 +425,7 @@ void GameStage::create_rocket(const Rocket& rocket) {
 		PhysicsEngine::Material* material_ptr = &GAME::SANDBOX::DEFAULT_MATERIALS::MATERIALS[GAME::COMPONENTS::MATERIALS[component_type]];
 
 		// TODO: change so that angle isn't necessarily just same as CMD MODULE?
-		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset()) + initial_data.position + GAME::COMPONENTS::CENTROIDS[component_type], initial_data.angle);
+		PhysicsEngine::RigidBody* object_ptr = new PhysicsEngine::RigidBody(shape_ptr, material_ptr, PhysicsEngine::mul(PhysicsEngine::rotation_matrix(initial_data.angle), component.get_offset() + GAME::COMPONENTS::CENTROIDS[component_type]) + initial_data.position, initial_data.angle);
 		physics_data.bodies.push_back(object_ptr);
 
 		object_ptr->ids.assign(GAME::SANDBOX::RIGID_BODY_IDS::TOTAL, 0); // Set size of vector
@@ -505,10 +509,6 @@ phyflt GameStage::volume_to_area_density(phyflt volume_density, phyflt radius) {
 	return volume_density * 4.0f * radius / 3.0f;
 }
 
-
-//void GameStage::render_physics_objects() {
-//	// todo?
-//}
 
 void GameStage::render_planet(PhysicsEngine::RigidBody* planet, const Camera& camera, bool map) {
 	PhysicsEngine::Circle* circle_ptr = static_cast<PhysicsEngine::Circle*>(planet->shape);
@@ -914,52 +914,61 @@ void GameStage::update_sandbox(float dt) {
 			if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::CATEGORY] == GAME::SANDBOX::CATEGORIES::COMPONENT) {
 				// Does this component belong to the current rocket?
 				if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP] == sandbox_temporaries.current_rocket) {
+
 					// Is the component an engine?
 					if (body->ids[GAME::SANDBOX::RIGID_BODY_IDS::TYPE] == GAME::COMPONENTS::COMPONENT_TYPE::ENGINE) {
-						// Add force
-						phyflt force_magnitude = GAME::CONTROLS::ENGINE_FORCE * rocket_controls.engine_power;
 
-						phyvec force = phyvec{ 0, -force_magnitude }; // Force up
+						// Is the component connected to the command module?
+						Rocket& rocket = rockets[body->ids[GAME::SANDBOX::RIGID_BODY_IDS::GROUP]];
+						Component* component_ptr = rocket.get_component_ptr(body->ids[GAME::SANDBOX::RIGID_BODY_IDS::OBJECT]);
 
-						phyflt direction_angle = GAME::CONTROLS::ENGINE_TURN_ANGLE * rocket_controls.direction;
+						if (!component_ptr->get_broken()) {
 
-						force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body->angle), force);
+							// Add force
+							phyflt force_magnitude = GAME::CONTROLS::ENGINE_FORCE * rocket_controls.engine_power;
 
-						body->apply_force(force);
+							phyvec force = phyvec{ 0, -force_magnitude }; // Force up
 
-						// Smoke particles
+							phyflt direction_angle = GAME::CONTROLS::ENGINE_TURN_ANGLE * rocket_controls.direction;
 
-						// Create more particles if engine throttle is higher
-						// NOTE: currently not framerate independent code!!
-						if (rocket_controls.engine_power > Framework::randf()) {
+							force = PhysicsEngine::mul(PhysicsEngine::rotation_matrix(direction_angle + body->angle), force);
 
-							phyflt size = Framework::randf(GAME::PARTICLES::SMOKE::MIN_SIZE, GAME::PARTICLES::SMOKE::MAX_SIZE);
-							phyflt size_change = GAME::PARTICLES::SMOKE::SIZE_CHANGE;
+							body->apply_force(force);
 
-							phyvec position = body->centre;
+							// Smoke particles
 
-							phyvec velocity = body->velocity;
-							velocity += PhysicsEngine::mul(PhysicsEngine::rotation_matrix(Framework::randf(0.0, 2 * PhysicsEngine::PI)), { 1, 0 }) * Framework::randf() * GAME::PARTICLES::SMOKE::VELOCITY_OFFSET_MAX;
+							// Create more particles if engine throttle is higher
+							// NOTE: currently not framerate independent code!!
+							if (rocket_controls.engine_power > Framework::randf()) {
 
-							// Average between nearest planet's velocity and current velocity?
-							velocity += sandbox_temporaries.nearest_planet_velocity;
-							velocity /= 2;
+								phyflt size = Framework::randf(GAME::PARTICLES::SMOKE::MIN_SIZE, GAME::PARTICLES::SMOKE::MAX_SIZE);
+								phyflt size_change = GAME::PARTICLES::SMOKE::SIZE_CHANGE;
 
-							phyflt age = Framework::randf(GAME::PARTICLES::SMOKE::MIN_AGE, GAME::PARTICLES::SMOKE::MAX_AGE);
+								phyvec position = body->centre;
 
-							uint8_t a = Framework::randf(GAME::PARTICLES::SMOKE::RGB_MIN, GAME::PARTICLES::SMOKE::RGB_MAX);
-							Framework::Colour colour = Framework::Colour(a, a, a);
+								phyvec velocity = body->velocity;
+								velocity += PhysicsEngine::mul(PhysicsEngine::rotation_matrix(Framework::randf(0.0, 2 * PhysicsEngine::PI)), { 1, 0 }) * Framework::randf() * GAME::PARTICLES::SMOKE::VELOCITY_OFFSET_MAX;
 
-							phyflt alpha_change = -0xFF / age;
+								// Average between nearest planet's velocity and current velocity?
+								velocity += sandbox_temporaries.nearest_planet_velocity;
+								velocity /= 2;
 
-							particles.add_particle({ size, size_change, position, velocity, age, colour, alpha_change });
+								phyflt age = Framework::randf(GAME::PARTICLES::SMOKE::MIN_AGE, GAME::PARTICLES::SMOKE::MAX_AGE);
+
+								uint8_t a = Framework::randf(GAME::PARTICLES::SMOKE::RGB_MIN, GAME::PARTICLES::SMOKE::RGB_MAX);
+								Framework::Colour colour = Framework::Colour(a, a, a);
+
+								phyflt alpha_change = -0xFF / age;
+
+								particles.add_particle({ size, size_change, position, velocity, age, colour, alpha_change });
+							}
 						}
 					}
 				}
 			}
 		}
 
-		// Handle broken constraints
+		// Handle broken constraints and components
 
 		// TODO: remove from PhysicsEngine?
 
@@ -974,10 +983,21 @@ void GameStage::update_sandbox(float dt) {
 
 				Connection* connection = rocket.get_connection_ptr(connection_id);
 
-				// TODO: if no path via connections to CMD_MODULE then remove component from rocket
 
-				// Remove connection
-				connection->broken = true;
+				// If connection is broken then we don't need to set other components to broken
+				if (!connection->broken) {
+
+					// Remove connection
+					connection->broken = true;
+
+					// Check each component to see if it's still connected or not
+					for (const std::pair<uint32_t, Component>& p : rocket.get_components()) {
+						if (!command_module_is_connected(rocket, p.first)) {
+							// We have to get a ptr to the component to be able to set broken (otherwise we set broken on a copy)
+							rocket.get_component_ptr(p.first)->set_broken();
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1091,8 +1111,49 @@ phyvec GameStage::get_launch_site_position(uint8_t planet, uint8_t site) {
 }
 
 
+bool GameStage::command_module_is_connected(Rocket& rocket, uint32_t component_id) {
+	return breadth_first_component_search(rocket, component_id, GAME::COMPONENTS::COMPONENT_TYPE::COMMAND_MODULE) != nullptr;
+}
 
 
+Component* GameStage::breadth_first_component_search(Rocket& rocket, uint32_t start_id, uint32_t target_type) {
+	// Inspired by https://en.wikipedia.org/wiki/Breadth-first_search
+
+	std::vector<uint32_t> explored;
+	std::queue<uint32_t> queue;
+
+	explored.push_back(start_id);
+	queue.push(start_id);
+
+	while (!queue.empty()) {
+		uint32_t component_id = queue.front();
+		queue.pop();
+
+		Component* component_ptr = rocket.get_component_ptr(component_id);
+
+		if (component_ptr->get_type() == target_type) {
+			return component_ptr;
+		}
+
+		for (const Connection& c : rocket.get_connections()) {
+			// Is connection not broken?
+			if (!c.broken) {
+				// Is component is linked to it?
+				if (c.a.component_id == component_id || c.b.component_id == component_id) {
+					uint32_t other_id = component_id == c.a.component_id ? c.b.component_id : c.a.component_id;
+
+					if (!std::count(explored.begin(), explored.end(), other_id)) {
+						// Not already explored
+						explored.push_back(other_id);
+						queue.push(other_id);
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
 
 
 
@@ -1118,7 +1179,7 @@ void PausedStage::start() {
 }
 
 bool PausedStage::update(float dt) {
-	//transition->update(dt);
+	transition->update(dt);
 
 	_background_stage->update(dt);
 
@@ -1171,10 +1232,13 @@ void PausedStage::render() {
 	// Render background stage
 	if (_background_stage) _background_stage->render();
 
+	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::EDITOR_GREY, 0x40); // Add non-black colour as base just to allow viewing of bar when background is black
 	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
 
 	// Render pause menu
 	for (const Framework::Button& button : buttons) button.render();
+
+	transition->render();
 }
 
 

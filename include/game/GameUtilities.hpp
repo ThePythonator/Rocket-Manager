@@ -28,3 +28,6 @@ std::string get_filename(std::string path);
 std::string trim_extension(std::string filename);
 
 std::string random_save_name();
+std::string random_rocket_name(const std::vector<std::string>& existing_names);
+
+std::string random_word_pair(const std::vector<std::string>& first_words, const std::vector<std::string>& second_words);

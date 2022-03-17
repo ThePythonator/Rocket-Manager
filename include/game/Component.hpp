@@ -37,10 +37,14 @@ public:
 	phyvec get_offset() const;
 	void set_offset(phyvec offset);
 
+	bool get_broken() const;
+	void set_broken() const;
+
 private:
 	//uint32_t _component_id = 0;
 	uint32_t _type = 0;
 	phyvec _offset;
+	mutable bool _broken = false; // probably shouldn't really be mutable :/
 };
 
 
@@ -82,6 +86,3 @@ void from_json(const json& j, Connection& c);
 
 void to_json(json& j, const Component& c);
 void from_json(const json& j, Component& c);
-
-void to_json(json& j, const ComponentManager& c);
-void from_json(const json& j, ComponentManager& c);

@@ -31,11 +31,27 @@ bool Rocket::get_is_template() const {
 // Conversion methods
 
 void to_json(json& j, const Rocket& r) {
+	// Remove all broken components before saving
+	std::map<uint32_t, Component> components = r.get_components();
+	std::vector<Connection> connections = r.get_connections();
+
+	for (std::map<uint32_t, Component>::iterator i = components.begin(), last = components.end(); i != last; ) {
+		if ((*i).second.get_broken()) {
+			i = components.erase(i);
+		}
+		else {
+			++i;
+		}
+	}
+
+	connections.erase(std::remove_if(connections.begin(), connections.end(), [](Connection& connection) { return connection.broken; }), connections.end());
+
+	// Convert to json
 	j = json{
 		{"name", r.get_name()},
 		{"is_template", r.get_is_template()},
-		{"components", r.get_components()},
-		{"connections", r.get_connections()}
+		{"components", components},
+		{"connections", connections}
 	};
 
 	if (!r.get_is_template()) {
