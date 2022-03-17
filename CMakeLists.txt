@@ -24,7 +24,7 @@ set(GAME_SOURCES
 
 	"Stages.cpp"
 #	"GameStage.cpp"
-	"ProtoGame.cpp" # to remove
+	"ProtoGame.cpp"
 	"EditorStage.cpp"
 
 	"Settings.cpp"
@@ -71,7 +71,6 @@ set(FRAMEWORK_SOURCES
 	"Button.cpp"
 	
 	"Audio.cpp"
-	"Sound.cpp"
 	
 	"Graphics.cpp"
 	"Window.cpp"
@@ -163,7 +162,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include/external)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link
-target_link_libraries(${PROJECT_NAME} SDL2::SDL2main SDL2::SDL2 SDL2::image nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} SDL2::SDL2main SDL2::SDL2 SDL2::image SDL2::mixer nlohmann_json::nlohmann_json)
 
 
 # Setup release packages
