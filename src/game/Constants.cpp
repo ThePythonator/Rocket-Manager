@@ -95,9 +95,9 @@ namespace STRINGS {
 
 	const std::vector<std::pair<std::string, std::vector<std::string>>> CREDITS{
 		{ "Created by: ", { "The Pythonator" } },
-		{ "Created using: ",  {"C++ with SDL", "Aseprite" } },
+		{ "Created using: ",  {"C++", "SDL2" } },
 		{ "", { "" }},
-		{ "Inspirations:", { "Stage system by Ali1324", "Impulse Engine by Randy Gaul", "Arc rendering code in Pygame"}},
+		{ "Inspirations:", { "Stage system by Ali1234", "Impulse Engine by Randy Gaul", "Arc rendering code in Pygame"}},
 		{ "", { "" }},
 		{ "GitHub:", { "ThePythonator/CS_NEA" }}
 	};
