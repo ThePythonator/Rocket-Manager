@@ -103,4 +103,6 @@ namespace Framework {
 	*/
 	std::string trim_precision(float num, uint8_t precision);
 	std::string trim_precision(double num, uint8_t precision);
+
+	std::string normalise_magnitude(double num, uint8_t precision, std::string suffix);
 }

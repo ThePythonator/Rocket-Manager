@@ -30,6 +30,20 @@ namespace STRINGS {
 		extern const std::string NO;
 	}
 
+	namespace HUD {
+		extern const std::string MAP;
+		extern const std::string ALTITUDE;
+		extern const std::string VELOCITY;
+		extern const std::string PAUSED;
+		extern const std::string TIME_WARP;
+		extern const std::string TIMES;
+		extern const std::string NEAREST_PLANET;
+		extern const std::string CURRENT_ROCKET;
+
+		extern const std::string DISTANCE_SUFFIX;
+		extern const std::string VELOCITY_SUFFIX;
+	}
+
 	namespace BUTTONS {
 		extern const std::vector<std::string> TITLE;
 		extern const std::vector<std::string> PLAY_OPTIONS;
@@ -169,6 +183,7 @@ namespace FONTS {
 		extern const uint8_t MAIN_FONT;
 		extern const uint8_t MAP_OBJECT_FONT;
 		extern const uint8_t DEBUG_FONT;
+		extern const uint8_t HUD_FONT;
 	}
 
 	namespace SPACING {
@@ -232,12 +247,6 @@ namespace SCALES {
 	extern const uint8_t LOGO;
 }
 
-namespace CURVES {
-	namespace BEZIER {
-		
-	}
-}
-
 namespace BUTTONS {
 	extern const Framework::vec2 SIZE;
 	extern const Framework::vec2 WIDE_SIZE;
@@ -245,6 +254,7 @@ namespace BUTTONS {
 	extern const Framework::vec2 EDITOR_SIZE;
 
 	extern const Framework::vec2 OFFSET;
+	extern const float HUD_OFFSET;
 
 	//extern const int INDENT;
 	
@@ -525,6 +535,15 @@ namespace GAME {
 			extern const uint8_t SANDBOX_SCALE;
 			extern const uint8_t SANDBOX_POSITION;
 
+			extern const uint8_t ALTITUDE;
+			extern const uint8_t RELATIVE_VELOCITY;
+
+			extern const uint8_t ENGINE_POWER;
+		}
+	}
+
+	namespace HUD {
+		namespace PRECISION {
 			extern const uint8_t ALTITUDE;
 			extern const uint8_t RELATIVE_VELOCITY;
 

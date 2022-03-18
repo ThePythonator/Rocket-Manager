@@ -87,6 +87,8 @@ void GameStage::render() {
 	render_map();
 
 	if (settings.show_debug) render_debug();
+	
+	render_hud();
 
 	transition->render();
 }
@@ -588,7 +590,7 @@ void GameStage::render_map() {
 	if (game_state.show_map) {
 		// Fullscreen map
 		// Title text
-		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text("Map", Framework::Vec(WINDOW::SIZE_HALF.x, 0.0f), COLOURS::WHITE, FONTS::SCALE::MAIN_FONT, Framework::Font::TOP_CENTER);
+		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::MAP, Framework::Vec(WINDOW::SIZE_HALF.x, 0.0f), COLOURS::WHITE, FONTS::SCALE::MAIN_FONT, Framework::Font::TOP_CENTER);
 	}
 	else {
 		// Minimap
@@ -602,7 +604,7 @@ void GameStage::render_map() {
 		graphics_objects->graphics_ptr->render_rect(GAME::MAP::UI::MINIMAP::RECT, COLOURS::WHITE);
 
 		// Title text
-		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text("Map", Framework::Vec(GAME::MAP::UI::MINIMAP::RECT.centre().x, GAME::MAP::UI::MINIMAP::RECT.position.y), COLOURS::WHITE, 1, Framework::Font::BOTTOM_CENTER);
+		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::MAP, Framework::Vec(GAME::MAP::UI::MINIMAP::RECT.centre().x, GAME::MAP::UI::MINIMAP::RECT.position.y), COLOURS::WHITE, 1, Framework::Font::BOTTOM_CENTER);
 	}
 }
 
@@ -631,6 +633,27 @@ void GameStage::render_debug() {
 	for (uint8_t i = 0; i < debug_text.size(); i++) {
 		float y = i * FONTS::SCALE::DEBUG_FONT * FONTS::SIZE::MAIN_FONT;
 		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(debug_text[i], Framework::Vec(0.0f, y), COLOURS::WHITE, FONTS::SCALE::DEBUG_FONT, Framework::Font::AnchorPosition::TOP_LEFT);
+	}
+}
+
+void GameStage::render_hud() {
+	std::string altitude = Framework::normalise_magnitude(sandbox_temporaries.distance_to_nearest_planet - GAME::SANDBOX::BODIES::RADII[sandbox_temporaries.nearest_planet], GAME::HUD::PRECISION::ALTITUDE, STRINGS::HUD::DISTANCE_SUFFIX);
+	std::string velocity = Framework::normalise_magnitude(PhysicsEngine::length(sandbox_temporaries.nearest_planet_velocity - sandbox_temporaries.cmd_mdl_velocity), GAME::HUD::PRECISION::ALTITUDE, STRINGS::HUD::VELOCITY_SUFFIX);
+	std::string nearest_planet = STRINGS::GAME::PLANET_NAMES[sandbox_temporaries.nearest_planet];
+	std::string current_rocket = rockets[sandbox_temporaries.current_rocket].get_name();
+
+	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::ALTITUDE + altitude, Framework::vec2(BUTTONS::HUD_OFFSET, 0.0f), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::TOP_LEFT);
+	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::VELOCITY + velocity, Framework::vec2(BUTTONS::HUD_OFFSET, BUTTONS::SIZE.y / 2), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::TOP_LEFT);
+
+	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::NEAREST_PLANET + nearest_planet, Framework::vec2(WINDOW::SIZE.x - BUTTONS::HUD_OFFSET, 0.0f), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::TOP_RIGHT);
+
+	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::CURRENT_ROCKET + current_rocket, Framework::vec2(BUTTONS::HUD_OFFSET, WINDOW::SIZE.y), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::BOTTOM_LEFT);
+
+	if (game_state.time_warp_index && !game_state.paused) {
+		// Isn't 1x speed
+		std::string warp_rate = std::to_string(GAME::SANDBOX::WARP_SPEEDS[game_state.time_warp_index]) + STRINGS::HUD::TIMES;
+
+		graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::TIME_WARP + warp_rate, Framework::vec2(WINDOW::SIZE_HALF.x, 0.0f), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::TOP_CENTER);
 	}
 }
 
@@ -1215,6 +1238,8 @@ void PausedStage::render() {
 
 	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::EDITOR_GREY, 0x40); // Add non-black colour as base just to allow viewing of bar when background is black
 	graphics_objects->graphics_ptr->fill(MENU::BACKGROUND_RECT, COLOURS::BLACK, MENU::BACKGROUND_ALPHA);
+
+	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::PAUSED, Framework::vec2(WINDOW::SIZE_HALF.x, 0.0f), COLOURS::WHITE, Framework::Font::TOP_CENTER);
 
 	// Render pause menu
 	for (const Framework::Button& button : buttons) button.render();

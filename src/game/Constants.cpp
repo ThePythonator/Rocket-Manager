@@ -21,6 +21,20 @@ namespace STRINGS {
 		const std::string NO = "No";
 	}
 
+	namespace HUD {
+		const std::string MAP = "Map";
+		const std::string ALTITUDE = "Altitude: ";
+		const std::string VELOCITY = "Velocity: ";
+		const std::string PAUSED = "Paused ";
+		const std::string TIME_WARP = "Time Warp: ";
+		const std::string TIMES = "x";
+		const std::string NEAREST_PLANET = "Planet: ";
+		const std::string CURRENT_ROCKET = "Rocket: ";
+
+		const std::string DISTANCE_SUFFIX = "m";
+		const std::string VELOCITY_SUFFIX = "m/s";
+	}
+
 	namespace BUTTONS {
 		const std::vector<std::string> TITLE {
 			"Play",
@@ -243,6 +257,7 @@ namespace FONTS {
 		const uint8_t MAIN_FONT = 3;
 		const uint8_t MAP_OBJECT_FONT = 1;
 		const uint8_t DEBUG_FONT = 1;
+		const uint8_t HUD_FONT = 2;
 	}
 
 	namespace SPACING {
@@ -343,6 +358,7 @@ namespace BUTTONS {
 	const Framework::vec2 EDITOR_SIZE = Framework::Vec(320, 56);
 
 	const Framework::vec2 OFFSET = Framework::Vec(16, 0);
+	const float HUD_OFFSET = 8.0f;
 
 	//const int INDENT = 64;
 
@@ -593,6 +609,15 @@ namespace GAME {
 			const uint8_t SANDBOX_SCALE = 2;
 			const uint8_t SANDBOX_POSITION = 0;
 
+			const uint8_t ALTITUDE = 0;
+			const uint8_t RELATIVE_VELOCITY = 0;
+
+			const uint8_t ENGINE_POWER = 1;
+		}
+	}
+
+	namespace HUD {
+		namespace PRECISION {
 			const uint8_t ALTITUDE = 0;
 			const uint8_t RELATIVE_VELOCITY = 0;
 

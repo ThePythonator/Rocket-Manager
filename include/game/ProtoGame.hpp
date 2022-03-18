@@ -58,6 +58,7 @@ private:
 	void render_atmosphere();
 	void render_map();
 	void render_debug();
+	void render_hud();
 	void render_sandbox();
 
 	void update_temporaries(float dt);

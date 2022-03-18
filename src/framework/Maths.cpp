@@ -139,4 +139,23 @@ namespace Framework {
 	std::string trim_precision(double num, uint8_t precision) {
 		return trim_precision(std::to_string(num), precision);
 	}
+
+
+
+	std::string normalise_magnitude(double num, uint8_t precision, std::string suffix) {
+		if (num >= 1e9) {
+			num /= 1e9;
+			suffix = "G" + suffix;
+		}
+		else if (num >= 1e6) {
+			num /= 1e6;
+			suffix = "M" + suffix;
+		}
+		else if (num >= 1e3) {
+			num /= 1e3;
+			suffix = "k" + suffix;
+		}
+
+		return trim_precision(num, precision) + suffix;
+	}
 }
