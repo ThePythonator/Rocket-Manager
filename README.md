@@ -20,7 +20,7 @@ Once in-game, you can pause the game by pressing Escape or Space, select 'Load R
 Up/Down: Increase/Decrease engine throttle
 Left/Right: Turn rocket
 Space/Escape: Pause/Unpause
-Z: change warp rate
+Z/X: decrease/increase warp rate
 Q/E: change currently selected/controlled rocket
 M: open/close main map
 

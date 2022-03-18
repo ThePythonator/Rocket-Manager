@@ -755,9 +755,15 @@ void GameStage::update_temporaries(float dt) {
 
 void GameStage::update_game_state(float dt) {
 	// Warping. To redo controls
-	if (input->just_down(Framework::KeyHandler::Key::Z)) {
-		game_state.time_warp_index++;
-		if (game_state.time_warp_index >= GAME::SANDBOX::WARP_SPEEDS.size()) game_state.time_warp_index = 0;
+	if (!game_state.paused) {
+		if (input->just_down(Framework::KeyHandler::Key::X)) {
+			game_state.time_warp_index++;
+			if (game_state.time_warp_index >= GAME::SANDBOX::WARP_SPEEDS.size()) game_state.time_warp_index = 0;
+		}
+		if (input->just_down(Framework::KeyHandler::Key::Z)) {
+			game_state.time_warp_index--;
+			if (game_state.time_warp_index < 0) game_state.time_warp_index = GAME::SANDBOX::WARP_SPEEDS.size() - 1;
+		}
 	}
 
 	// Compare distance above surface to "atmosphere" height
@@ -769,8 +775,8 @@ void GameStage::update_game_state(float dt) {
 	}
 
 
-	if (input->just_down(Framework::KeyHandler::Key::ESCAPE) || input->just_down(Framework::KeyHandler::Key::SPACE)) {
-		if (!game_state.paused) {
+	if (!game_state.paused) {
+		if (input->just_down(Framework::KeyHandler::Key::ESCAPE) || input->just_down(Framework::KeyHandler::Key::SPACE)) {
 			// Go to paused menu
 			game_state.paused = true;
 			finish(new PausedStage(this), false);
