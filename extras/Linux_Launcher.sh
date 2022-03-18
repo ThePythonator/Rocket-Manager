@@ -1,2 +1,2 @@
 #!/bin/bash
-LD_LIBRARY_PATH=bin ./bin/YourGame
+LD_LIBRARY_PATH=bin ./bin/RocketManager

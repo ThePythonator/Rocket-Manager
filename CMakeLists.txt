@@ -183,7 +183,7 @@ install(DIRECTORY ${PROJECT_ASSETS}
 
 if (UNIX AND NOT APPLE)
 	# Todo: auto-gen this file using current PROJECT_NAME
-    install(FILES Launcher_Linux.sh
+    install(FILES extras/Launcher_Linux.sh
 	    DESTINATION .
     )
 endif()
