@@ -38,7 +38,7 @@ void GameStage::start() {
 		transition->set_open();
 	}
 	else {
-		load_settings();
+		settings = load_settings();
 		load_sandbox();
 
 		init_temporaries();
@@ -51,7 +51,7 @@ void GameStage::start() {
 }
 
 void GameStage::end() {
-	save_settings();
+	//save_settings();
 	save_sandbox();
 }
 
@@ -139,25 +139,6 @@ void GameStage::init_temporaries() {
 	map_camera.set_position(sandbox_temporaries.cmd_mdl_centre);
 }
 
-void GameStage::load_settings() {
-	// Set defaults
-	settings = Settings();
-
-	try {
-		// Read json
-		json j = Framework::JSONHandler::read(PATHS::BASE_PATH + PATHS::DATA::LOCATION + PATHS::DATA::SETTINGS);
-
-		// Fill settings struct
-		j.get_to(settings);
-	}
-	catch (const json::exception& e) {
-		// Ignore - we set defaults already so it's not the end of the world
-		printf("Couldn't load settings file. Error: %s\n", e.what());
-	}
-}
-void GameStage::save_settings() {
-	Framework::JSONHandler::write(PATHS::BASE_PATH + PATHS::DATA::LOCATION + PATHS::DATA::SETTINGS, settings);
-}
 
 
 void GameStage::load_sandbox() {

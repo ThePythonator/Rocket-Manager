@@ -320,8 +320,12 @@ namespace Framework {
 		// Fill image white first
 		SDLUtils::SDL_RenderFillRectToImage(graphics->get_renderer(), image_ptr, Rect(VEC_NULL, size), Colour(0xFF, 0xFF, 0xFF));
 
-		if (use_alpha)	SDLUtils::SDL_RenderFillImageWithAlphaMod(graphics->get_renderer(), image_ptr, colour);
-		else			SDLUtils::SDL_RenderFillImageWithoutAlphaMod(graphics->get_renderer(), image_ptr, colour);
+		if (use_alpha) {
+			SDLUtils::SDL_RenderFillImageWithAlphaMod(graphics->get_renderer(), image_ptr, colour);
+		}
+		else {
+			SDLUtils::SDL_RenderFillImageWithoutAlphaMod(graphics->get_renderer(), image_ptr, colour);
+		}
 
 		return image_ptr;
 	}

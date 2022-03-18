@@ -23,12 +23,21 @@ namespace WINDOW {
 }
 
 namespace STRINGS {
+	namespace STATUS {
+		extern const std::string ON;
+		extern const std::string OFF;
+		extern const std::string YES;
+		extern const std::string NO;
+	}
+
 	namespace BUTTONS {
 		extern const std::vector<std::string> TITLE;
 		extern const std::vector<std::string> PLAY_OPTIONS;
 		extern const std::vector<std::string> SAVE_SELECT;
 		extern const std::vector<std::string> NEW_SAVE;
 		extern const std::vector<std::string> SETTINGS;
+		extern const std::vector<std::string> GAME_SETTINGS;
+		extern const std::vector<std::string> GRAPHICS_SETTINGS;
 		extern const std::vector<std::string> CREDITS;
 		extern const std::vector<std::string> PAUSED;
 		extern const std::vector<std::string> LOAD_ROCKET;
@@ -297,6 +306,23 @@ namespace BUTTONS {
 			SOUND,
 			CONTROLS,
 			BACK,
+
+			TOTAL
+		};
+	}
+
+	namespace GAME_SETTINGS {
+		enum GAME_SETTINGS {
+			DEBUG_MODE,
+			MAP_AUTO_SCROLL,
+
+			TOTAL
+		};
+	}
+
+	namespace GRAPHICS_SETTINGS {
+		enum GRAPHICS_SETTINGS {
+			FULLSCREEN,
 
 			TOTAL
 		};

@@ -35,9 +35,6 @@ public:
 private:
 	void init_temporaries();
 
-	void load_settings();
-	void save_settings();
-
 	void load_sandbox();
 	void save_sandbox();
 

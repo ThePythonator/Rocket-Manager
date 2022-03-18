@@ -11,6 +11,8 @@
 #include "ProtoGame.hpp"
 #include "EditorStage.hpp"
 
+#include "Settings.hpp"
+
 #include "URL.hpp"
 
 class IntroStage : public Framework::BaseStage {
@@ -118,6 +120,44 @@ public:
 
 private:
 	TitleStage* title_stage = nullptr;
+};
+
+class GameSettingsStage : public Framework::BaseStage {
+public:
+	GameSettingsStage();
+	GameSettingsStage(SettingsStage* settings_stage);
+
+	void init();
+
+	void start();
+	void end();
+
+	bool update(float dt);
+	void render();
+
+private:
+	SettingsStage* _settings_stage = nullptr;
+
+	Settings _settings;
+};
+
+class GraphicsSettingsStage : public Framework::BaseStage {
+public:
+	GraphicsSettingsStage();
+	GraphicsSettingsStage(SettingsStage* settings_stage);
+
+	void init();
+
+	void start();
+	void end();
+
+	bool update(float dt);
+	void render();
+
+private:
+	SettingsStage* _settings_stage = nullptr;
+
+	Settings _settings;
 };
 
 class CreditsStage : public Framework::BaseStage {

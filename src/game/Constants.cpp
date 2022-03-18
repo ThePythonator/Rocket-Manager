@@ -14,6 +14,13 @@ namespace WINDOW {
 }
 
 namespace STRINGS {
+	namespace STATUS {
+		const std::string ON = "On";
+		const std::string OFF = "Off";
+		const std::string YES = "Yes";
+		const std::string NO = "No";
+	}
+
 	namespace BUTTONS {
 		const std::vector<std::string> TITLE {
 			"Play",
@@ -43,6 +50,15 @@ namespace STRINGS {
 			"Sound",
 			"Controls",
 			"Back"
+		};
+
+		const std::vector<std::string> GAME_SETTINGS {
+			"Debug mode: ",
+			"Map auto-scroll: "
+		};
+
+		const std::vector<std::string> GRAPHICS_SETTINGS {
+			"Fullscreen: "
 		};
 
 		const std::vector<std::string> CREDITS {

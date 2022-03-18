@@ -337,8 +337,7 @@ void SaveSelectStage::render() {
 	play_options_stage->render();
 
 	// Menu overlay
-	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::WHITE, 0x60);
-	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0xC0); // TODO change
 	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
 	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
 
@@ -417,10 +416,7 @@ void NewSaveStage::render() {
 	play_options_stage->render();
 
 	// Menu overlay
-	//graphics_objects->graphics_ptr->fill(COLOURS::BLACK, MENU::OVERLAY_BACKGROUND_ALPHA);
-
-	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::WHITE, 0x60);
-	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0xC0); // TODO change
 	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
 	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
 
@@ -471,10 +467,25 @@ bool SettingsStage::update(float dt) {
 
 			// Next stage!
 			switch (button_selected) {
-			/*case BUTTONS::SETTINGS::PLAY:
-			case BUTTONS::SETTINGS::CREATE:
-				transition->close();
-				break;*/
+			case BUTTONS::SETTINGS::GAME:
+				button.reset_state();
+				finish(new GameSettingsStage(this), false);
+				break;
+
+			case BUTTONS::SETTINGS::GRAPHICS:
+				button.reset_state();
+				finish(new GraphicsSettingsStage(this), false);
+				break;
+
+			case BUTTONS::SETTINGS::SOUND:
+				button.reset_state();
+				// Not currently supported
+				break;
+
+			case BUTTONS::SETTINGS::CONTROLS:
+				button.reset_state();
+				// Not currently supported
+				break;
 
 			case BUTTONS::SETTINGS::BACK:
 				finish(title_stage);
@@ -507,6 +518,133 @@ void SettingsStage::render() {
 	for (const Framework::Button& button : buttons) button.render();
 
 	transition->render();
+}
+
+// GameSettingsStage
+
+GameSettingsStage::GameSettingsStage() { }
+GameSettingsStage::GameSettingsStage(SettingsStage* settings_stage) : _settings_stage(settings_stage) { }
+
+void GameSettingsStage::init() {
+	// Create buttons
+	buttons = create_menu_buttons(MENU::OVERLAY_RECT, BUTTONS::WIDE_SIZE, graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], STRINGS::BUTTONS::GAME_SETTINGS, graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], COLOURS::WHITE, MENU::OVERLAY_RECT.position.y);
+}
+
+void GameSettingsStage::start() {
+	_settings = load_settings();
+
+	buttons[BUTTONS::GAME_SETTINGS::DEBUG_MODE].set_text(STRINGS::BUTTONS::GAME_SETTINGS[BUTTONS::GAME_SETTINGS::DEBUG_MODE] + (_settings.show_debug ? STRINGS::STATUS::ON : STRINGS::STATUS::OFF));
+	buttons[BUTTONS::GAME_SETTINGS::MAP_AUTO_SCROLL].set_text(STRINGS::BUTTONS::GAME_SETTINGS[BUTTONS::GAME_SETTINGS::MAP_AUTO_SCROLL] + (_settings.auto_move_map ? STRINGS::STATUS::ON : STRINGS::STATUS::OFF));
+}
+void GameSettingsStage::end() {
+	save_settings(_settings);
+}
+
+bool GameSettingsStage::update(float dt) {
+	// If user clicked outside menu overlay, then go back
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT) && !Framework::colliding(MENU::OVERLAY_RECT, input->get_mouse()->position())) {
+		finish(_settings_stage);
+	}
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed()) {
+			button_selected = button.get_id();
+
+			switch (button_selected) {
+			case BUTTONS::GAME_SETTINGS::DEBUG_MODE:
+				_settings.show_debug = !_settings.show_debug;
+				button.set_text(STRINGS::BUTTONS::GAME_SETTINGS[button_selected] + (_settings.show_debug ? STRINGS::STATUS::ON : STRINGS::STATUS::OFF));
+				break;
+
+			case BUTTONS::GAME_SETTINGS::MAP_AUTO_SCROLL:
+				_settings.auto_move_map = !_settings.auto_move_map;
+				button.set_text(STRINGS::BUTTONS::GAME_SETTINGS[button_selected] + (_settings.auto_move_map ? STRINGS::STATUS::ON : STRINGS::STATUS::OFF));
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+
+void GameSettingsStage::render() {
+	// Render play options stage
+	_settings_stage->render();
+
+	// Menu overlay
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0xC0); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
+	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
+}
+
+// GraphicsSettingsStage
+
+GraphicsSettingsStage::GraphicsSettingsStage() { }
+GraphicsSettingsStage::GraphicsSettingsStage(SettingsStage* settings_stage) : _settings_stage(settings_stage) { }
+
+void GraphicsSettingsStage::init() {
+	// Create buttons
+	buttons = create_menu_buttons(MENU::OVERLAY_RECT, BUTTONS::WIDE_SIZE, graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], STRINGS::BUTTONS::GRAPHICS_SETTINGS, graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], COLOURS::WHITE, MENU::OVERLAY_RECT.position.y);
+}
+
+void GraphicsSettingsStage::start() {
+	_settings = load_settings();
+
+	buttons[BUTTONS::GRAPHICS_SETTINGS::FULLSCREEN].set_text(STRINGS::BUTTONS::GRAPHICS_SETTINGS[BUTTONS::GRAPHICS_SETTINGS::FULLSCREEN] + (_settings.fullscreen ? STRINGS::STATUS::ON : STRINGS::STATUS::OFF));
+}
+void GraphicsSettingsStage::end() {
+	save_settings(_settings);
+}
+
+bool GraphicsSettingsStage::update(float dt) {
+	// If user clicked outside menu overlay, then go back
+	if (input->just_down(Framework::MouseHandler::MouseButton::LEFT) && !Framework::colliding(MENU::OVERLAY_RECT, input->get_mouse()->position())) {
+		finish(_settings_stage);
+	}
+
+	// Update buttons
+	for (Framework::Button& button : buttons) {
+		button.update(input);
+
+		if (button.pressed()) {
+			button_selected = button.get_id();
+
+			switch (button_selected) {
+			case BUTTONS::GRAPHICS_SETTINGS::FULLSCREEN:
+				_settings.fullscreen = !_settings.fullscreen;
+				graphics_objects->window_ptr->set_fullscreen_mode(_settings.fullscreen ? Framework::Window::FullscreenMode::FULLSCREEN_DESKTOP : Framework::Window::FullscreenMode::NONE);
+				button.set_text(STRINGS::BUTTONS::GRAPHICS_SETTINGS[button_selected] + (_settings.fullscreen ? STRINGS::STATUS::ON : STRINGS::STATUS::OFF));
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+
+void GraphicsSettingsStage::render() {
+	// Render play options stage
+	_settings_stage->render();
+
+	// Menu overlay
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0xC0); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
+	graphics_objects->graphics_ptr->render_rect(MENU::OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
+
+	// Buttons
+	for (const Framework::Button& button : buttons) button.render();
 }
 
 // CreditsStage
@@ -579,8 +717,7 @@ void CreditsStage::render() {
 	title_stage->render();
 
 	// Menu overlay
-	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::WHITE, 0x60);
-	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0x80); // TODO change
+	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::ATMOSPHERES[GAME::SANDBOX::BODIES::ID::EARTH], 0xC0); // TODO change
 	graphics_objects->graphics_ptr->fill(MENU::WIDE_OVERLAY_RECT, COLOURS::BLACK, MENU::OVERLAY_ALPHA);
 	graphics_objects->graphics_ptr->render_rect(MENU::WIDE_OVERLAY_RECT, Framework::Colour(COLOURS::WHITE, MENU::BORDER_ALPHA));
 

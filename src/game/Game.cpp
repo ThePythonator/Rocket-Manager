@@ -5,6 +5,12 @@ Game::Game() : BaseGame() {
 }
 
 void Game::start() {
+	// Handle any startup settings
+	Settings settings = load_settings();
+
+	// Set fullscreen if needed
+	graphics_objects.window_ptr->set_fullscreen_mode(settings.fullscreen ? Framework::Window::FullscreenMode::FULLSCREEN_DESKTOP : Framework::Window::FullscreenMode::NONE);
+
 	stage = new IntroStage();
 }
 
