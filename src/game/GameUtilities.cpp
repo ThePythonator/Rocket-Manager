@@ -52,15 +52,20 @@ std::vector<std::string> find_files_with_extension(const std::string& directory,
 	// Load component data: find all json files in component directory and try parsing them
 	printf("Finding %s files in %s...\n", extension.c_str(), directory.c_str());
 
-	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory)) {
-		std::filesystem::path path = entry.path();
+	try {
+		for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory)) {
+			std::filesystem::path path = entry.path();
 
-		// If not .json, skip
-		if (path.extension().string() != extension) continue;
+			// If not .json, skip
+			if (path.extension().string() != extension) continue;
 
-		std::string filepath = path.string();
+			std::string filepath = path.string();
 
-		filepaths.push_back(filepath);
+			filepaths.push_back(filepath);
+		}
+	}
+	catch (const std::filesystem::filesystem_error& e) {
+		printf("Something went wrong! Error: %s", e.what());
 	}
 
 	return filepaths;
