@@ -30,13 +30,7 @@ namespace Framework {
 
 		Image* get_image();
 
-		//void set_blend_mode(SDL_BlendMode blending);
-		//void set_alpha(uint8_t alpha);
-
-		//uint8_t get_alpha();
-
 	private:
-		//Graphics* _graphics = nullptr; // Note that now it appears we don't even need this
 		Image* _spritesheet_image = nullptr;
 
 		uint32_t _w = 0;

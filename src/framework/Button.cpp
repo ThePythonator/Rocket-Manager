@@ -12,7 +12,6 @@ namespace Framework {
 		_images = images;
 		_text = text;
 		_id = id;
-		// TODO: support different images for hover
 	}
 
 	Button::Button(Rect render_rect, Rect collider_rect, ButtonImages images, Text text, uint8_t id) {
@@ -24,7 +23,6 @@ namespace Framework {
 		_images = images;
 		_text = text;
 		_id = id;
-		// TODO: support different images for hover
 	}
 
 	Button::ButtonState Button::state() const {
@@ -51,17 +49,7 @@ namespace Framework {
 			_state = ButtonState::STILL_UP;
 		}
 
-		// THIS VERSION DOESN'T RELEASE WHEN CURSOR MOVES OFF IT
-		/*if (input->just_up(MouseHandler::MouseButton::LEFT)) {
-			_state = ButtonState::JUST_RELEASED;
-		}
-		else if (input->just_down(MouseHandler::MouseButton::LEFT)) {
-			if (colliding(_collider_rect, input->mouse_position())) {
-				_state = ButtonState::JUST_PRESSED;
-			}
-		}*/
-
-		// THIS VERSION RELEASES WHEN CURSOR MOVES OFF IT
+		// Release the button when the cursor moves off it
 		_mouse_over = false;
 		if (colliding(_collider_rect, input->get_mouse()->position())) {
 			_mouse_over = true;
@@ -86,7 +74,7 @@ namespace Framework {
 	}
 
 	void Button::set_position(vec2 position) {
-		_collider_rect.position = position; // may not be right?
+		_collider_rect.position = position;
 		_render_rect.position = position;
 	}
 

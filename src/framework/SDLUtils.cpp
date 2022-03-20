@@ -72,7 +72,7 @@ namespace Framework::SDLUtils {
 		}
 
 		if (test_surface == NULL) {
-			printf("Could not find assbaseets folder!\n");
+			printf("Could not find base folder!\n");
 			return "";
 		}
 

@@ -2,7 +2,6 @@
 
 namespace Framework {
 	const float PI = 3.14159265f;
-	//const float EPSILON = 0.0001f; // todo: check if reasonable
 
 	const vec2 VEC_NULL = vec2{ 0.0f, 0.0f };
 	const vec2 VEC_ONES = vec2{ 1.0f, 1.0f };
@@ -112,7 +111,7 @@ namespace Framework {
 	}
 
 	float randf() {
-		return (rand() % 1001) / 1000.0f;
+		return (std::rand() % 1001) / 1000.0f;
 	}
 
 	float randf(float min, float max) {

@@ -12,8 +12,6 @@
 namespace Framework {
 	typedef linalg::aliases::float2 vec2;
 	typedef linalg::aliases::float2x2 mat22;
-	//typedef vec2 Vec;
-	//typedef mat22 Mat;
 
 	using linalg::mul;
 	using linalg::length;
@@ -23,7 +21,6 @@ namespace Framework {
 	using linalg::identity;
 
 	extern const float PI;
-	// extern const float EPSILON;
 
 	extern const vec2 VEC_NULL;
 	extern const vec2 VEC_ONES;

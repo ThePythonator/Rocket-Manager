@@ -670,11 +670,25 @@ void CreditsStage::init() {
 	}
 
 
-	// Create GitHub repo URL button
-	// Generation of location of button is a bit hacky
+	// Generation of location of URL buttons is a bit hacky
+	// Create StageLib repo URL button
 	Framework::Text text = Framework::Text(graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT], "", COLOURS::WHITE);
-	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 1.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::GITHUB));
+	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 6.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::STAGE_LIB));
 	
+	// Create Impulse Engine repo URL button
+	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 5.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::IMPULSE_ENGINE));
+
+	// Create Box2D Lite repo URL button
+	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 4.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::BOX2D_LITE));
+	
+	// Create Pygame repo URL button
+	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 3.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::PYGAME_DRAW));
+	
+	// Create GitHub repo URL button
+	buttons.push_back(Framework::Button(Framework::Rect(left_position - Framework::vec2{ 0.0f, BUTTONS::VERY_WIDE_SIZE.y * 1.5f }, BUTTONS::VERY_WIDE_SIZE), graphics_objects->button_image_groups[GRAPHICS_OBJECTS::BUTTON_IMAGE_GROUPS::DEFAULT], text, BUTTONS::CREDITS::GITHUB));
+
+
+
 	// Create transition
 	set_transition(graphics_objects->transition_ptrs[GRAPHICS_OBJECTS::TRANSITIONS::FADE_TRANSITION]);
 }
@@ -699,6 +713,22 @@ bool CreditsStage::update(float dt) {
 			button_selected = button.get_id();
 
 			switch (button_selected) {
+			case BUTTONS::CREDITS::STAGE_LIB:
+				Framework::URLHandler::open_url(STRINGS::STAGE_LIB_URL);
+				break;
+
+			case BUTTONS::CREDITS::IMPULSE_ENGINE:
+				Framework::URLHandler::open_url(STRINGS::IMPULSE_ENGINE_URL);
+				break;
+
+			case BUTTONS::CREDITS::BOX2D_LITE:
+				Framework::URLHandler::open_url(STRINGS::BOX2D_LITE_URL);
+				break;
+
+			case BUTTONS::CREDITS::PYGAME_DRAW:
+				Framework::URLHandler::open_url(STRINGS::PYGAME_DRAW_URL);
+				break;
+
 			case BUTTONS::CREDITS::GITHUB:
 				Framework::URLHandler::open_url(STRINGS::REPO_URL);
 				break;

@@ -127,7 +127,7 @@ namespace STRINGS {
 		{ "Created by: ", { "The Pythonator" } },
 		{ "Created using: ",  {"C++", "SDL2" } },
 		{ "", { "" }},
-		{ "Inspirations:", { "Stage system by Ali1234", "Impulse Engine by Randy Gaul", "Arc rendering code in Pygame"}},
+		{ "Inspirations:", { "Stage system by Ali1234", "Impulse Engine by Randy Gaul", "Box2D Lite by Erin Catto", "Arc rendering code in Pygame"}},
 		{ "", { "" }},
 		{ "GitHub:", { "ThePythonator/CS_NEA" }}
 	};
@@ -205,6 +205,10 @@ namespace STRINGS {
 	const std::string ITCHIO_URL = "https://scorpion-games-uk.itch.io/";
 
 	const std::string REPO_URL = "https://github.com/ThePythonator/CS_NEA";
+	const std::string STAGE_LIB_URL = "https://github.com/ali1234/32blit-stagelib";
+	const std::string IMPULSE_ENGINE_URL = "https://github.com/RandyGaul/ImpulseEngine";
+	const std::string BOX2D_LITE_URL = "https://github.com/erincatto/box2d-lite";
+	const std::string PYGAME_DRAW_URL = "https://github.com/pygame/pygame/blob/main/src_c/draw.c#L1631";
 }
 
 namespace PATHS {
@@ -371,7 +375,7 @@ namespace MENU {
 	const Framework::Rect BACKGROUND_RECT = Framework::Rect(WINDOW::SIZE.x * 0.1f, 0.0f, BUTTONS::SIZE.x, WINDOW::SIZE.y);
 	const Framework::Rect SUBMENU_BACKGROUND_RECT = Framework::Rect(BACKGROUND_RECT.topright(), BACKGROUND_RECT.size);
 	const Framework::Rect OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
-	const Framework::Rect WIDE_OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::VERY_WIDE_SIZE.x, WINDOW::SIZE.y * 0.7f });
+	const Framework::Rect WIDE_OVERLAY_RECT = Framework::centred_rect(WINDOW::SIZE_HALF, { BUTTONS::VERY_WIDE_SIZE.x, BUTTONS::VERY_WIDE_SIZE.y * 10 });
 
 	const uint8_t BACKGROUND_ALPHA = 0x60;
 	const uint8_t OVERLAY_ALPHA = 0x60;//0xA0;

@@ -82,6 +82,11 @@ namespace STRINGS {
 	extern const std::string ITCHIO_URL;
 
 	extern const std::string REPO_URL;
+	extern const std::string STAGE_LIB_URL;
+	extern const std::string IMPULSE_ENGINE_URL;
+	extern const std::string BOX2D_LITE_URL;
+	extern const std::string PYGAME_DRAW_URL;
+
 }
 
 namespace PATHS {
@@ -340,6 +345,10 @@ namespace BUTTONS {
 
 	namespace CREDITS {
 		enum CREDITS {
+			STAGE_LIB,
+			IMPULSE_ENGINE,
+			BOX2D_LITE,
+			PYGAME_DRAW,
 			GITHUB,
 
 			TOTAL
