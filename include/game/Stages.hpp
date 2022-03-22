@@ -7,8 +7,7 @@
 #include "GameUtilities.hpp"
 #include "AttractMode.hpp"
 
-//#include "GameStage.hpp"
-#include "ProtoGame.hpp"
+#include "GameStage.hpp"
 #include "EditorStage.hpp"
 
 #include "Settings.hpp"

@@ -2,9 +2,6 @@
 
 #include "Shape.hpp"
 
-// Maybe rename file
-#include "GraphicsData.hpp"
-
 namespace PhysicsEngine {
 	// Information about a material
 	struct Material {
@@ -24,7 +21,7 @@ namespace PhysicsEngine {
 		void set_layers(uint32_t layers);
 		uint32_t get_layers();
 
-		void apply_force(const phyvec& _force, const phyvec& vector_to_contact = phyvec{ 0.0, 0.0 });
+		void apply_force(const phyvec& _force, const phyvec& vector_to_contact = PHYVEC_NULL);
 
 		phymat get_rotation_matrix() const ;
 

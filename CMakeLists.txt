@@ -23,8 +23,7 @@ set(GAME_SOURCES
 	"AttractMode.cpp"
 
 	"Stages.cpp"
-#	"GameStage.cpp"
-	"ProtoGame.cpp"
+	"GameStage.cpp"
 	"EditorStage.cpp"
 
 	"Settings.cpp"

@@ -92,11 +92,6 @@ namespace PhysicsEngine {
 
 		// Convert circle's centre to the model space of the polygon
 		phyvec circle_a_converted_centre = to_model_space(a->centre, b->centre, b->get_rotation_matrix());
-		//printf("rot mat: row1: %f, %f, row2: %f, %f\n", b->get_rotation_matrix().x.x, b->get_rotation_matrix().x.y, b->get_rotation_matrix().y.x, b->get_rotation_matrix().y.y);
-		/*printf("circle centre: %f, %f\n", a->centre.x, a->centre.y);
-		printf("polygon centre: %f, %f\n", b->centre.x, b->centre.y);
-		printf("converted centre: %f, %f\n", circle_a_converted_centre.x, circle_a_converted_centre.y);*/
-		// ISSUE: FOR SOME REASON, CIRCLE'S CENTRE SEEMS TO DRIFT OFF OF WHERE IT SHOULD BE (maybe fixed)
 		
 		// Find minimum penetration
 		phyflt separation = -PHYFLT_MAX;
@@ -105,11 +100,6 @@ namespace PhysicsEngine {
 			// Find which side of each polygon face the circle is on
 			// signed_distance is distance from line to centre of circle
 			phyflt signed_distance = dot(polygon_b->face_normals[i], circle_a_converted_centre - polygon_b->vertices[i]);
-
-			// TODO: ISSUE tracked to here: signed_distance is slightly out....? about 0.5 units
-
-			//printf("signed_dist: %f\n", signed_distance);
-			//printf("circle_rads: %f\n", circle_a->radius);
 
 			if (signed_distance > circle_a->radius) {
 				// Impossible for a collision to have occurred with ANY face, so early-out
