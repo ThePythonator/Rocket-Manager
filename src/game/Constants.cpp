@@ -319,10 +319,10 @@ namespace COLOURS {
 namespace TIMINGS {
 	namespace INTRO {
 		namespace DURATION {
-			const float FADE_LENGTH = 0.1f;//2.0f;
+			const float FADE_LENGTH = 1.5f;
 
-			const float INITIAL_DELAY = 0.1f;// 1.0f;
-			const float INTRO_DELAY = 0.1f;// 2.5f;
+			const float INITIAL_DELAY = 0.5f;
+			const float INTRO_DELAY = 2.5f;
 		}
 
 		namespace CUMULATIVE {
