@@ -594,6 +594,7 @@ namespace GAME {
 				COMMAND_MODULE,
 				FUEL_TANK,
 				ENGINE,
+				SUPPORT_BEAM,
 
 				TOTAL,
 
