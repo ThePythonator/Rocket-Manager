@@ -16,6 +16,7 @@ StarField::StarField(Framework::Graphics* graphics, Framework::vec2 size) {
 
 void StarField::set_constants(const StarFieldConstants& constants) {
 	_constants = constants;
+	// TODO reload stars since constants have changed?
 }
 
 void StarField::render() {

@@ -67,6 +67,8 @@ namespace STRINGS {
 
 	namespace GAME {
 		extern const std::vector<std::string> PLANET_NAMES;
+
+		extern const std::string NO_ROCKET_SELECTED;
 	}
 
 	extern const std::vector<std::pair<std::string, std::vector<std::string>>> CREDITS;

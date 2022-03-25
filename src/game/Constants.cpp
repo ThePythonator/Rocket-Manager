@@ -121,6 +121,8 @@ namespace STRINGS {
 			// Moons
 			"Moon"
 		};
+
+		const std::string NO_ROCKET_SELECTED = "None";
 	}
 
 	const std::vector<std::pair<std::string, std::vector<std::string>>> CREDITS{
@@ -303,13 +305,13 @@ namespace COLOURS {
 		// Planets
 		{ 0xe4, 0x9b, 0x35 }, // todo?
 		{ 0x00, 0x00, 0x00 },
-		{ 0xed, 0xd5, 0xa5 }, // todo?
+		{ 0xFD, 0xF5, 0xC5 }, // todo?
 		{ 0x41, 0x9D, 0xD9 },
 		{ 0xCC, 0x70, 0x2F },
-		{ 0xFF, 0xFF, 0xFF }, // todo... (maybe later change anyways) fix this and below
-		{ 0xFF, 0xFF, 0xFF },
-		{ 0xFF, 0xFF, 0xFF },
-		{ 0xFF, 0xFF, 0xFF },
+		{ 0xFF, 0x60, 0x40 }, // todo... (maybe later change anyways) fix this and below
+		{ 0xFF, 0x6F, 0x40 },
+		{ 0x5F, 0x5F, 0xDF },
+		{ 0x5F, 0x5F, 0xDF },
 
 		// Moons
 		{ 0xFF, 0xFF, 0xFF },
@@ -588,14 +590,14 @@ namespace GAME {
 			// Stores the angle of the location
 			const std::vector<std::vector<float>> SITES {
 				{ }, // Sun
-				{ }, // Mercury
-				{ }, // Venus
-				{ 0.0f }, // Earth
-				{ }, // Mars
-				{ }, // Jupiter
-				{ }, // Saturn
-				{ }, // Uranus
-				{ }, // Neptune
+				{ 0.0f }, // Mercury
+				{ 0.0f }, // Venus
+				{ 0.0f, 180.0f }, // Earth
+				{ 0.0f }, // Mars
+				{ 0.0f }, // Jupiter
+				{ 0.0f }, // Saturn
+				{ 0.0f }, // Uranus
+				{ 0.0f }, // Neptune
 
 				{ 0.0f } // Moon
 			};

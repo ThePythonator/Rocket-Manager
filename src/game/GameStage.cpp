@@ -193,6 +193,7 @@ void GameStage::save_sandbox() {
 			break;
 		}
 	}
+	//printf("Rocket count: %u\n", rockets.size());
 	
 	json data = json{
 		{"planets", planets},
@@ -376,7 +377,7 @@ void GameStage::create_rocket(const Rocket& rocket) {
 
 	// Add rocket to rockets
 	rockets[rocket_id] = rocket;
-
+	printf("Added rocket : %u\n", rocket_id);
 
 	Rocket::InitialData initial_data = rocket.get_initial_data();
 
@@ -626,7 +627,12 @@ void GameStage::render_hud() {
 	std::string altitude = Framework::normalise_magnitude(sandbox_temporaries.distance_to_nearest_planet - GAME::SANDBOX::BODIES::RADII[sandbox_temporaries.nearest_planet], GAME::HUD::PRECISION::ALTITUDE, STRINGS::HUD::DISTANCE_SUFFIX);
 	std::string velocity = Framework::normalise_magnitude(PhysicsEngine::length(sandbox_temporaries.nearest_planet_velocity - sandbox_temporaries.cmd_mdl_velocity), GAME::HUD::PRECISION::ALTITUDE, STRINGS::HUD::VELOCITY_SUFFIX);
 	std::string nearest_planet = STRINGS::GAME::PLANET_NAMES[sandbox_temporaries.nearest_planet];
-	std::string current_rocket = rockets[sandbox_temporaries.current_rocket].get_name();
+
+	std::string current_rocket = STRINGS::GAME::NO_ROCKET_SELECTED;
+	if (sandbox_temporaries.current_rocket != GAME::SANDBOX::NO_ROCKET_SELECTED) {
+		// If we try accessing a rocket which doesn't exist, it'll create a blank one
+		current_rocket = rockets[sandbox_temporaries.current_rocket].get_name();
+	}
 
 	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::ALTITUDE + altitude, Framework::vec2(BUTTONS::HUD_OFFSET, 0.0f), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::TOP_LEFT);
 	graphics_objects->font_ptrs[GRAPHICS_OBJECTS::FONTS::MAIN_FONT]->render_text(STRINGS::HUD::VELOCITY + velocity, Framework::vec2(BUTTONS::HUD_OFFSET, BUTTONS::SIZE.y / 2), COLOURS::WHITE, FONTS::SCALE::HUD_FONT, Framework::Font::AnchorPosition::TOP_LEFT);
@@ -774,7 +780,6 @@ void GameStage::update_game_state(float dt) {
 	}
 
 	if (input->just_down(Framework::KeyHandler::Key::M)) toggle_map();
-
 
 	// Handle changing of current rocket selected
 	if (input->just_down(Framework::KeyHandler::Key::Q)) {

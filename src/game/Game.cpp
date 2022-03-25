@@ -12,6 +12,9 @@ void Game::start() {
 	graphics_objects.window_ptr->set_fullscreen_mode(settings.fullscreen ? Framework::Window::FullscreenMode::FULLSCREEN_DESKTOP : Framework::Window::FullscreenMode::NONE);
 
 	stage = new IntroStage();
+
+	// Initialise random generator
+	std::srand(static_cast<unsigned int>(std::time(0)));
 }
 
 void Game::end() {
