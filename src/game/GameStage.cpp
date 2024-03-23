@@ -106,6 +106,7 @@ void GameStage::load_rocket(std::string rocket_name, uint8_t planet, uint8_t sit
 	phyvec position = get_launch_site_position(planet, site);
 	phyvec velocity = planet_ptr->velocity;
 	phyflt angle = GAME::SANDBOX::LAUNCH_SITES::SITES[planet][site];
+	//phyflt angle = PhysicsEngine::deg_to_rad(GAME::SANDBOX::LAUNCH_SITES::SITES[planet][site]);
 
 	phyvec normalised_planet_to_me = PhysicsEngine::normalise(position - planet_ptr->centre);
 
